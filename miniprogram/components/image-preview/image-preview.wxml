@@ -1,0 +1,46 @@
+<view wx:if="{{visible}}" class="ip-overlay" catch:tap="onClose">
+  <!-- 内容区，阻止冒泡 -->
+  <view class="ip-body" catch:tap="onStopPropagation">
+    <!-- 关闭按钮 -->
+    <view class="ip-close" bind:tap="onClose">
+      <text class="ip-close-icon">✕</text>
+    </view>
+
+    <!-- 图片轮播 -->
+    <swiper
+      class="ip-swiper"
+      current="{{_current}}"
+      duration="300"
+      bind:change="onSwiperChange"
+    >
+      <swiper-item wx:for="{{images}}" wx:key="*this">
+        <image
+          class="ip-image"
+          src="{{item}}"
+          mode="aspectFit"
+          show-menu-by-longpress
+        />
+      </swiper-item>
+    </swiper>
+
+    <!-- 底部工具栏 -->
+    <view class="ip-toolbar">
+      <view class="ip-toolbar-left">
+        <!-- 页码指示器 -->
+        <text class="ip-indicator">{{indicatorText}}</text>
+      </view>
+      <view class="ip-toolbar-right">
+        <!-- 查看原图 -->
+        <view class="ip-tool-btn" bind:tap="onViewOriginal">
+          <text class="ip-tool-icon">⊡</text>
+          <text class="ip-tool-text">查看原图</text>
+        </view>
+        <!-- 下载 -->
+        <view class="ip-tool-btn" bind:tap="onDownload">
+          <text class="ip-tool-icon">↓</text>
+          <text class="ip-tool-text">下载</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

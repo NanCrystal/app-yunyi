@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "bottom-tab-bar": "/components/bottom-tab-bar/bottom-tab-bar"
+  },
+  "navigationBarTitleText": "STARVIEW",
+  "navigationStyle": "custom"
+}

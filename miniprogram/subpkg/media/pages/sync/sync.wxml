@@ -1,0 +1,267 @@
+<!-- 自定义导航栏 -->
+<view class="custom-nav" style="padding-top: {{statusBarHeight}}px;">
+  <view class="custom-nav-inner">
+    <view class="custom-nav-left" bind:tap="onGoBack">
+      <text class="nav-back-icon">‹</text>
+    </view>
+    <text class="custom-nav-title">动态</text>
+    <view class="custom-nav-right" />
+  </view>
+</view>
+
+<view class="page">
+  <!-- 固定顶部 Tab 栏 -->
+  <view class="tabs-fixed" style="top: {{statusBarHeight + 44}}px;">
+    <scroll-view
+      class="tabs-scroll"
+      scroll-x
+      enhanced
+      show-scrollbar="{{false}}"
+    >
+      <view class="tabs-inner">
+        <view
+          wx:for="{{tabs}}"
+          wx:key="key"
+          class="tab-item {{activeTab === item.key ? 'tab-item--active' : ''}}"
+          data-key="{{item.key}}"
+          bind:tap="onTabTap"
+        >
+          <text>{{item.label}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+  <!-- 内容滚动区 -->
+  <scroll-view
+    class="content-scroll"
+    scroll-y
+    enhanced
+    show-scrollbar="{{false}}"
+    scroll-top="{{scrollTop}}"
+    bind:scrolltolower="onScrollToLower"
+    style="top: {{statusBarHeight + 44 + tabBarHeight}}px;"
+    lower-threshold="300"
+  >
+    <!-- Phase 1：骨架屏 — 仅渲染轻量 view，无 video/swiper/image -->
+    <view wx:if="{{skeleton}}" class="skeleton-list">
+      <view wx:for="{{[1,2,3]}}" wx:key="*this" class="skeleton-card">
+        <view class="skeleton-header">
+          <view class="skeleton-avatar" />
+          <view class="skeleton-name" />
+        </view>
+        <view class="skeleton-media" />
+        <view class="skeleton-caption" />
+      </view>
+    </view>
+
+    <!-- 加载中（切换 Tab 等场景） -->
+    <view wx:elif="{{loading && cards.length === 0}}" class="loading-wrap">
+      <text class="loading-text">加载中...</text>
+    </view>
+    <!-- 空状态 -->
+    <view wx:elif="{{!loading && cards.length === 0}}" class="empty-wrap">
+      <text class="empty-text">暂无动态</text>
+    </view>
+    <!-- Phase 2：卡片列表 — listReady 后挂载 scroll-view 内容 -->
+    <view wx:else class="feed-list">
+      <view
+        wx:for="{{cards}}"
+        wx:key="id"
+        class="card-item"
+        id="item-{{index}}"
+      >
+        <!-- 顶部：头像 + 用户名 + 平台 -->
+        <view class="card-header">
+          <view class="card-header-info">
+            <image
+              class="card-avatar"
+              src="{{item.artistAvatar}}"
+              mode="aspectFill"
+              lazy-load />
+            <text class="card-username">{{item.artistName}}</text>
+          </view>
+          <image
+            wx:if="{{item.platformIcon}}"
+            class="card-platform-icon"
+            src="{{item.platformIcon}}"
+            mode="aspectFit" />
+        </view>
+        <!-- 中部：媒体区 -->
+        <view class="card-media" wx:if="{{item.mediaList.length > 0}}">
+          <!-- 单媒体 -->
+          <block wx:if="{{item.mediaList.length === 1}}">
+            <!-- 单图 -->
+            <view class="media-single" wx:if="{{item.mediaList[0].type === 'PHOTO'}}">
+              <image
+                class="media-image"
+                src="{{item.mediaList[0].url}}"
+                mode="aspectFit"
+                lazy-load />
+            </view>
+            <!-- Phase 4：单视频 — 点击封面才挂载 video 组件 -->
+            <view class="media-single {{item.videoAspectClass || 'aspect-square'}}" wx:else>
+              <view
+                wx:if="{{!item.videoVisible}}"
+                class="media-poster-wrap"
+                bind:tap="onTapPoster"
+                data-index="{{index}}"
+              >
+                <image
+                  class="media-image"
+                  src="{{item.mediaList[0].poster}}"
+                  mode="aspectFill" />
+                <view class="poster-play-btn">
+                  <view class="play-triangle" />
+                </view>
+              </view>
+              <video
+                wx:if="{{item.videoVisible}}"
+                class="media-video"
+                src="{{item.mediaList[0].url}}"
+                poster="{{item.mediaList[0].poster}}"
+                muted
+                autoplay="{{false}}"
+                object-fit="cover"
+                show-center-play-btn="{{true}}"
+                bindloadedmetadata="onVideoLoadedMeta"
+                data-id="{{item.id}}" />
+            </view>
+          </block>
+          <!-- Phase 3：多图/多视频 — 视口外仅渲染轻量占位符 -->
+          <block wx:else>
+            <!-- 占位符：未进入视口 -->
+            <view wx:if="{{!item.swiperVisible}}" class="swiper-placeholder">
+              <image
+                class="swiper-image"
+                src="{{item.mediaList[0].poster || item.mediaList[0].url}}"
+                mode="aspectFill" />
+            </view>
+            <!-- swiper：已进入视口才挂载 -->
+            <view wx:else class="media-swiper-wrap">
+              <swiper
+                class="media-swiper"
+                indicator-dots="{{true}}"
+                indicator-color="rgba(255,255,255,0.3)"
+                indicator-active-color="rgba(255,255,255,0.9)"
+                bindchange="onSwiperChange"
+                data-id="{{item.id}}"
+              >
+                <swiper-item
+                  wx:for="{{item.mediaList}}"
+                  wx:for-item="media"
+                  wx:for-index="mediaIdx"
+                  wx:key="mediaIdx"
+                >
+                  <image
+                    wx:if="{{media.type === 'PHOTO'}}"
+                    class="swiper-image"
+                    src="{{media.url}}"
+                    mode="aspectFit"
+                    lazy-load />
+                  <block wx:elif="{{media.type === 'VIDEO'}}">
+                    <!-- 性能优化：仅当前帧 ±1 挂载 video 组件 -->
+                    <video
+                      wx:if="{{(item.swiperCurrent || 0) >= mediaIdx - 1 && (item.swiperCurrent || 0) <= mediaIdx + 1}}"
+                      class="swiper-video"
+                      id="video-{{item.id}}-{{mediaIdx}}"
+                      src="{{media.url}}"
+                      poster="{{media.poster}}"
+                      muted
+                      autoplay="{{false}}"
+                      object-fit="cover"
+                      show-center-play-btn="{{true}}" />
+                    <image
+                      wx:else
+                      class="swiper-image"
+                      src="{{media.poster}}"
+                      mode="aspectFill" />
+                  </block>
+                </swiper-item>
+              </swiper>
+            </view>
+          </block>
+        </view>
+        <!-- 媒体下方 caption -->
+        <view class="card-caption-below" wx:if="{{item.mediaList.length > 0 && item.content}}">
+          <!-- 短内容：直接展示 -->
+          <block wx:if="{{item.contentLength <= 60}}">
+            <view class="card-caption-line">
+              <text class="card-artist-name">{{item.artistName}}</text>
+              <text class="card-caption-text" user-select="{{true}}">{{item.content}}</text>
+            </view>
+          </block>
+          <!-- 折叠态：两行截断 + 更多按钮 -->
+          <block wx:elif="{{!item.expanded}}">
+            <view class="card-caption-collapsed">
+              <view class="card-caption-clamp">
+                <text class="card-artist-name">{{item.artistName}}</text>
+                <text class="card-caption-text">{{item.content}}</text>
+              </view>
+              <text
+                class="card-toggle"
+                bind:tap="onToggleExpand"
+                data-id="{{item.id}}"
+              >更多</text>
+            </view>
+          </block>
+          <!-- 展开态：全部内容 + 收起 -->
+          <block wx:else>
+            <view class="card-caption-line">
+              <text class="card-artist-name">{{item.artistName}}</text>
+              <text class="card-caption-text" user-select="{{true}}">{{item.content}}</text>
+              <text
+                class="card-toggle"
+                bind:tap="onToggleExpand"
+                data-id="{{item.id}}"
+              >收起</text>
+            </view>
+          </block>
+          <text class="card-time">{{item.publishTimeText}}</text>
+        </view>
+        <!-- 无媒体时单独显示 caption -->
+        <view class="card-caption-only" wx:elif="{{item.content}}">
+          <!-- 短内容 -->
+          <block wx:if="{{item.contentLength <= 60}}">
+            <view class="card-caption-line">
+              <text class="card-artist-name">{{item.artistName}}</text>
+              <text class="card-caption-text" user-select="{{true}}">{{item.content}}</text>
+            </view>
+          </block>
+          <!-- 折叠态 -->
+          <block wx:elif="{{!item.expanded}}">
+            <view class="card-caption-collapsed">
+              <view class="card-caption-clamp">
+                <text class="card-artist-name">{{item.artistName}}</text>
+                <text class="card-caption-text">{{item.content}}</text>
+              </view>
+              <text
+                class="card-toggle"
+                bind:tap="onToggleExpand"
+                data-id="{{item.id}}"
+              >更多</text>
+            </view>
+          </block>
+          <!-- 展开态 -->
+          <block wx:else>
+            <view class="card-caption-line">
+              <text class="card-artist-name">{{item.artistName}}</text>
+              <text class="card-caption-text" user-select="{{true}}">{{item.content}}</text>
+              <text
+                class="card-toggle"
+                bind:tap="onToggleExpand"
+                data-id="{{item.id}}"
+              >收起</text>
+            </view>
+          </block>
+        </view>
+      </view>
+      <!-- 加载更多 -->
+      <view class="load-more" wx:if="{{cards.length > 0}}">
+        <text wx:if="{{loadMoreLoading}}" class="load-more-text">加载中...</text>
+        <text wx:elif="{{!hasMore}}" class="load-more-text">— 没有更多了 —</text>
+      </view>
+    </view>
+    <!-- 底部安全区占位 -->
+    <view class="bottom-safe" />
+  </scroll-view>
+</view>

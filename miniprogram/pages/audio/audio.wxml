@@ -1,0 +1,173 @@
+<scroll-view class="page" scroll-y enhanced show-scrollbar="{{false}}" style="--theme: {{themeColor}}; --theme-r: {{themeR}}; --theme-g: {{themeG}}; --theme-b: {{themeB}};">
+  <!-- 全屏播放器视图 -->
+  <block wx:if="{{showNowPlaying && currentTrack}}">
+    <view class="now-playing-mask">
+      <view class="np-header">
+        <view class="np-close" bind:tap="onCloseNowPlaying">
+          <text>✕</text>
+        </view>
+        <text class="np-label">NOW PLAYING</text>
+        <view class="np-share">
+          <text>↗</text>
+        </view>
+      </view>
+
+      <view class="np-body">
+        <!-- 专辑封面 -->
+        <view class="np-cover-wrap">
+          <view class="np-cover-corners">
+            <view class="np-corner np-corner--tl"></view>
+            <view class="np-corner np-corner--tr"></view>
+            <view class="np-corner np-corner--bl"></view>
+            <view class="np-corner np-corner--br"></view>
+          </view>
+          <view class="np-cover">
+            <image
+              class="np-cover-img"
+              src="../assets/images/1 (44).jpg"
+              mode="aspectFill"
+            />
+          </view>
+        </view>
+
+        <!-- 元信息 -->
+        <view class="np-meta">
+          <text class="np-track-title">{{currentTrack.title}}</text>
+          <view class="np-track-info">
+            <text>{{currentTrack.author}}</text>
+            <text class="np-dot">•</text>
+            <text>{{currentTrack.date}}</text>
+            <text class="np-dot">•</text>
+            <view class="np-bitrate">
+              <text>{{currentTrack.bitRate}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 播放控制 -->
+        <view class="np-controls">
+          <!-- 进度条 -->
+          <view class="np-progress">
+            <view class="np-progress-fill" style="width: {{isPlayingAudio ? '42%' : '1%'}};"></view>
+            <view class="np-progress-dot" style="left: {{isPlayingAudio ? '42%' : '1%'}};"></view>
+          </view>
+
+          <!-- 时间 -->
+          <view class="np-times">
+            <text>{{isPlayingAudio ? '01:42' : '00:00'}}</text>
+            <text>{{currentTrack.duration}}</text>
+          </view>
+
+          <!-- 按钮组 -->
+          <view class="np-buttons">
+            <view class="np-btn" bind:tap="onPrevTrack">
+              <text>⏮</text>
+            </view>
+            <view class="np-btn np-btn--play" bind:tap="onTogglePlay">
+              <text>{{isPlayingAudio ? '⏸' : '▶'}}</text>
+            </view>
+            <view class="np-btn" bind:tap="onNextTrack">
+              <text>⏭</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 底部选项 -->
+        <view class="np-options">
+          <text>🔀</text>
+          <text>🔁</text>
+          <text>📋</text>
+          <text>🔊</text>
+        </view>
+      </view>
+
+      <view class="np-footer">
+        <text>INDEXING ARCHIVE... 84% COMPLETE</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- 音轨列表 -->
+  <block wx:else>
+    <view class="audio-list-header">
+      <text class="audio-list-title">音频库 / SOUND REGISTRY</text>
+      <text class="audio-list-count">4 TRACKS</text>
+    </view>
+
+    <!-- 六月 -->
+    <view class="audio-month">
+      <view class="audio-month-title">
+        <text>2026年06月</text>
+      </view>
+      <view class="audio-tracks">
+        <view
+          wx:for="{{juneTracks}}"
+          wx:key="id"
+          class="audio-track {{playingTrackId === item.id ? 'audio-track--active' : ''}}"
+          data-id="{{item.id}}"
+          bind:tap="onTrackRowTap"
+        >
+          <image class="audio-track-img" src="{{item.thumbnail}}" mode="aspectFill" lazy-load />
+          <view class="audio-track-info">
+            <text class="audio-track-name {{playingTrackId === item.id ? 'audio-track-name--active' : ''}}">{{item.title}}</text>
+            <text class="audio-track-meta">{{item.author}} • {{item.bitRate}}</text>
+          </view>
+          <view class="audio-track-play" data-id="{{item.id}}" bind:tap="onTrackRowTap">
+            <text>{{playingTrackId === item.id && isPlayingAudio ? '⏸' : '▶'}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 五月 -->
+    <view class="audio-month">
+      <view class="audio-month-title">
+        <text>2026年05月</text>
+      </view>
+      <view class="audio-tracks">
+        <view
+          wx:for="{{mayTracks}}"
+          wx:key="id"
+          class="audio-track {{playingTrackId === item.id ? 'audio-track--active' : ''}}"
+          data-id="{{item.id}}"
+          bind:tap="onTrackRowTap"
+        >
+          <image class="audio-track-img" src="{{item.thumbnail}}" mode="aspectFill" lazy-load />
+          <view class="audio-track-info">
+            <text class="audio-track-name {{playingTrackId === item.id ? 'audio-track-name--active' : ''}}">{{item.title}}</text>
+            <text class="audio-track-meta">{{item.author}} • {{item.bitRate}}</text>
+          </view>
+          <view class="audio-track-play" data-id="{{item.id}}" bind:tap="onTrackRowTap">
+            <text>{{playingTrackId === item.id && isPlayingAudio ? '⏸' : '▶'}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <view class="bottom-placeholder"></view>
+</scroll-view>
+
+<!-- 迷你播放器 -->
+<view wx:if="{{!showNowPlaying && playingTrackId && currentTrack}}" class="mini-player safe-area-bottom" bind:tap="onMiniPlayerTap">
+  <view class="mini-player-left">
+    <image class="mini-player-img" src="{{currentTrack.thumbnail}}" mode="aspectFill" />
+    <view class="mini-player-info">
+      <text class="mini-player-title">{{currentTrack.title}}</text>
+      <text class="mini-player-author">{{currentTrack.author}}</text>
+    </view>
+  </view>
+  <view class="mini-player-controls">
+    <view class="mini-player-btn" catch:tap="onPrevTrack">
+      <text>⏮</text>
+    </view>
+    <view class="mini-player-btn" catch:tap="onTogglePlay">
+      <text>{{isPlayingAudio ? '⏸' : '▶'}}</text>
+    </view>
+    <view class="mini-player-btn" catch:tap="onNextTrack">
+      <text>⏭</text>
+    </view>
+  </view>
+</view>
+
+<bottom-tab-bar current="audio" tabs="{{tabTabs}}" />

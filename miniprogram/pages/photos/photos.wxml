@@ -1,0 +1,141 @@
+<scroll-view class="page" scroll-y enhanced show-scrollbar="{{false}}" style="--theme: {{themeColor}}; --theme-r: {{themeR}}; --theme-g: {{themeG}}; --theme-b: {{themeB}};">
+  <!-- 筛选面板 -->
+  <view class="filter-panel">
+    <view class="filter-row">
+      <text class="filter-label">Format</text>
+      <view class="filter-tags-inline">
+        <view
+          wx:for="{{typeItems}}"
+          wx:key="value"
+          class="filter-tag {{selectedType === item.value ? 'filter-tag--active' : ''}}"
+          data-value="{{item.value}}"
+          data-type="type"
+          bind:tap="onTypeChange"
+        >
+          <text>{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="filter-row">
+      <text class="filter-label">Region</text>
+      <view class="filter-tags-inline">
+        <view
+          wx:for="{{regionItems}}"
+          wx:key="value"
+          class="filter-tag {{selectedRegion === item.value ? 'filter-tag--active' : ''}}"
+          data-value="{{item.value}}"
+          data-type="region"
+          bind:tap="onRegionChange"
+        >
+          <text>{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="filter-row">
+      <text class="filter-label">System</text>
+      <view class="filter-tags-inline">
+        <view
+          wx:for="{{systemItems}}"
+          wx:key="value"
+          class="filter-tag {{selectedSystem === item.value ? 'filter-tag--active' : ''}}"
+          data-value="{{item.value}}"
+          data-type="system"
+          bind:tap="onSystemChange"
+        >
+          <text>{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 统计信息 -->
+  <view class="count-bar">
+    <text class="count-text">SELECT MULTIPLE ITEMS</text>
+    <text class="count-num">CHECKED: {{checkedPhotoIds.length}} / {{filteredPhotos.length}} IMAGES</text>
+  </view>
+
+  <!-- 照片网格（按月分组） -->
+  <view class="photos-content">
+    <view wx:for="{{groupedPhotos}}" wx:key="month" class="month-group">
+      <view class="month-header">
+        <text class="month-title">{{item.month}}</text>
+        <text class="month-count">{{item.count}} STILLS</text>
+      </view>
+
+      <view wx:for="{{item.days}}" wx:key="day" class="day-group">
+        <text class="day-title">{{item.day}}</text>
+
+        <view class="photo-grid">
+          <view
+            wx:for="{{item.items}}"
+            wx:key="id"
+            class="photo-item"
+            data-id="{{item.id}}"
+            bind:tap="onPhotoTap"
+          >
+            <image class="photo-img" src="{{item.url}}" mode="aspectFill" lazy-load />
+            <view class="photo-check" bind:tap="onCheckTap" data-id="{{item.id}}">
+              <view class="photo-check-box {{checkedPhotoIds.indexOf(item.id) > -1 ? 'photo-check-box--active' : ''}}">
+                <text wx:if="{{checkedPhotoIds.indexOf(item.id) > -1}}" class="photo-check-mark">✓</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{filteredPhotos.length === 0}}" class="empty-state">
+      <text class="empty-text">NO CORRESPONDING PHOTOS FOUND IN ARCHIVE</text>
+    </view>
+  </view>
+
+  <view class="bottom-placeholder"></view>
+</scroll-view>
+
+<!-- 全屏预览 -->
+<view wx:if="{{previewPhoto}}" class="preview-mask" catchtouchmove="noop">
+  <view class="preview-header">
+    <view class="preview-close" bind:tap="onClosePreview">
+      <text>✕</text>
+    </view>
+    <text class="preview-label">GALLERY PREVIEW</text>
+    <view class="preview-type-badge">
+      <text>{{previewPhoto.type}}</text>
+    </view>
+  </view>
+
+  <view class="preview-body">
+    <view class="preview-nav preview-nav--left" bind:tap="onPrevPreview">
+      <text>‹</text>
+    </view>
+    <image class="preview-img" src="{{previewPhoto.url}}" mode="aspectFit" />
+    <view class="preview-nav preview-nav--right" bind:tap="onNextPreview">
+      <text>›</text>
+    </view>
+    <view class="preview-counter">
+      <text>{{previewIndex + 1}} / {{filteredPhotos.length}}</text>
+    </view>
+  </view>
+
+  <view class="preview-info">
+    <view class="preview-meta-row">
+      <text class="preview-filename">{{previewPhoto.file_name}}</text>
+      <text class="preview-date">{{previewPhoto.date}}</text>
+    </view>
+    <text class="preview-title">{{previewPhoto.title}}</text>
+    <text class="preview-desc">"Captured with technical precision at {{previewPhoto.location}}."</text>
+    <view class="preview-tags">
+      <view class="preview-tag">
+        <text>{{previewPhoto.region}}</text>
+      </view>
+      <view class="preview-tag">
+        <text>{{previewPhoto.system}}</text>
+      </view>
+      <view wx:for="{{previewPhoto.tags}}" wx:key="*this" class="preview-tag preview-tag--green">
+        <text>{{item}}</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<bottom-tab-bar current="photos" tabs="{{tabTabs}}" />

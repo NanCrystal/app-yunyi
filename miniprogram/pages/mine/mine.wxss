@@ -1,0 +1,15 @@
+/* pages/mine.wxss */
+.mine-page {
+  min-height: 100vh;
+  background-color: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mine-title {
+  color: #ffffff;
+  font-size: 36rpx;
+  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: 8rpx;
+}

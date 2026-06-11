@@ -1,0 +1,13 @@
+<scroll-view class="filter-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+  <view class="filter-row">
+    <view
+      wx:for="{{items}}"
+      wx:key="value"
+      class="filter-tag {{current === item.value ? 'filter-tag--active' : ''}}"
+      data-value="{{item.value}}"
+      bind:tap="onTagTap"
+    >
+      <text class="filter-tag-text">{{item.label}}</text>
+    </view>
+  </view>
+</scroll-view>

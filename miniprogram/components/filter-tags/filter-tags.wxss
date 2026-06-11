@@ -1,0 +1,40 @@
+.filter-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.filter-row {
+  display: flex;
+  flex-direction: row;
+  gap: 12rpx;
+  padding: 8rpx 0;
+}
+
+.filter-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10rpx 28rpx;
+  background: transparent;
+  border: 1px solid #262626;
+  border-radius: 40rpx;
+  flex-shrink: 0;
+}
+
+.filter-tag-text {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 24rpx;
+  font-weight: 400;
+  letter-spacing: 2rpx;
+  text-transform: uppercase;
+  color: #cccccc;
+}
+
+.filter-tag--active {
+  background-color: #ffffff;
+  border-color: #ffffff;
+}
+
+.filter-tag--active .filter-tag-text {
+  color: #000000;
+}

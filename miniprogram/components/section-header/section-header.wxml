@@ -1,0 +1,7 @@
+<view class="section-header" style="--theme: {{themeColor}}; --theme-r: {{themeR}}; --theme-g: {{themeG}}; --theme-b: {{themeB}};">
+  <text class="section-title">{{title}}</text>
+  <view wx:if="{{showMore}}" class="section-more" bind:tap="onMoreTap">
+    <text class="more-text">{{moreText}}</text>
+    <view class="more-arrow"></view>
+  </view>
+</view>

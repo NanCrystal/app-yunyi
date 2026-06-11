@@ -1,0 +1,147 @@
+<!-- 自定义导航栏 -->
+<view class="custom-nav" style="padding-top: {{statusBarHeight}}px;">
+  <view class="custom-nav-inner">
+    <view class="custom-nav-left" bind:tap="onGoBack">
+      <text class="nav-back-icon">‹</text>
+    </view>
+    <text class="custom-nav-title">日程</text>
+    <view class="custom-nav-right" />
+  </view>
+</view>
+<scroll-view
+  class="page"
+  scroll-y
+  enhanced
+  show-scrollbar="{{false}}"
+  style="padding-top: {{statusBarHeight + 44}}px; --theme: {{themeColor}}; --theme-r: {{themeR}}; --theme-g: {{themeG}}; --theme-b: {{themeB}};"
+>
+  <!-- 筛选标签 -->
+  <view class="filter-bar">
+    <view class="date-picker-year" bind:tap="onToggleYearPicker">
+      <text class="year-text">{{currentYear}}</text>
+      <text class="year-arrow">▼</text>
+    </view>
+    <filter-tags
+      items="{{filterItems}}"
+      current="{{activeFilter}}"
+      bind:change="onFilterChange" />
+    <image class="filter-icon" src="../assets/icons/filter.svg" bind:tap="onToggleMonthPicker" />
+  </view>
+  <!-- 月份筛选 -->
+  <view class="date-picker" wx:if="{{showMonthPicker}}">
+    <scroll-view class="date-picker-months" scroll-x enhanced show-scrollbar="{{false}}">
+      <view class="months-row">
+        <view
+          wx:for="{{months}}"
+          wx:key="*this"
+          class="month-tag {{currentMonth === item ? 'month-tag--active' : ''}}"
+          data-month="{{item}}"
+          bind:tap="onSelectMonth"
+        >
+          <text>{{item}}月</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 年份选择弹窗 -->
+  <view class="year-picker-mask {{showYearPicker ? 'year-picker-mask--show' : ''}}" catch:tap="onCloseYearPicker"></view>
+  <view class="year-picker {{showYearPicker ? 'year-picker--show' : ''}}">
+    <view class="year-picker-header">
+      <text class="year-picker-close" bind:tap="onCloseYearPicker">✕</text>
+      <text class="year-picker-title">选择年份</text>
+      <text class="year-picker-confirm" bind:tap="onConfirmYear">确定</text>
+    </view>
+    <picker-view
+      value="{{[yearIndex]}}"
+      bindchange="onYearScroll"
+      indicator-style="height: 80rpx; border-top: 1px solid #333; border-bottom: 1px solid #333;"
+      mask-style="background: transparent;"
+      style="height: 360rpx; width: 100%; background: #000000;"
+    >
+      <picker-view-column>
+        <view wx:for="{{yearRange}}" wx:key="*this" class="year-picker-item">{{item}}年</view>
+      </picker-view-column>
+    </picker-view>
+  </view>
+
+  <!-- 骨架屏 -->
+  <view class="skeleton-container" wx:if="{{skeletonVisible}}">
+    <view class="skeleton-line skeleton-line--short"></view>
+    <view class="skeleton-timeline">
+      <view class="skeleton-timeline-item" wx:for="{{3}}" wx:key="*this">
+        <view class="skeleton-date-row">
+          <view class="skeleton-dot"></view>
+          <view class="skeleton-line skeleton-line--date"></view>
+        </view>
+        <view class="skeleton-card">
+          <view class="skeleton-line skeleton-line--title"></view>
+          <view class="skeleton-line skeleton-line--text"></view>
+          <view class="skeleton-line skeleton-line--text"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 时间线 -->
+  <view class="timeline" wx:if="{{!skeletonVisible}}">
+    <view class="timeline-line">
+    </view>
+    <view
+      wx:for="{{groupedByDate}}"
+      wx:key="date"
+      class="timeline-group"
+    >
+      <!-- 日期节点 -->
+      <view class="timeline-date">
+        <view class="timeline-dot">
+          <view class="timeline-dot-inner">
+          </view>
+        </view>
+        <text class="timeline-date-text">{{item.date}}</text>
+      </view>
+      <!-- 事件列表 -->
+      <view class="timeline-events">
+        <view
+          wx:for="{{item.items}}"
+          wx:key="id"
+          class="event-card {{item.status === 'cancelled' ? 'event-card--cancelled' : ''}}"
+        >
+          <view class="event-header">
+            <text class="event-title {{item.status === 'cancelled' ? 'event-title--cancelled' : ''}}">{{item.title}}</text>
+            <view class="event-status {{getStatusClass(item.status)}}">
+              <text>{{getStatusLabel(item.status)}}</text>
+            </view>
+          </view>
+          <view class="event-meta">
+            <view class="event-row">
+              <text class="event-icon">📍</text>
+              <text class="event-text">{{item.location}}</text>
+            </view>
+            <view class="event-row">
+              <text class="event-icon">🕐</text>
+              <text class="event-text-dim">{{item.time}}</text>
+            </view>
+          </view>
+          <!-- 附件图片 -->
+          <view wx:if="{{item.imageUrl}}" class="event-attachment">
+            <image
+              class="event-attachment-img"
+              src="{{item.imageUrl}}"
+              mode="aspectFit"
+              lazy-load />
+            <view class="event-attachment-badge">
+              <text>{{item.statusLabel}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+    <!-- 空状态 -->
+    <view wx:if="{{filteredEvents.length === 0 && !loading}}" class="empty-state">
+      <text class="empty-text">NO CORRESPONDING RECORDS FOUND</text>
+    </view>
+  </view>
+  <view class="bottom-placeholder">
+  </view>
+</scroll-view>

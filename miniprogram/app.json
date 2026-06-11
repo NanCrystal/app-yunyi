@@ -1,0 +1,36 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/home/home",
+    "pages/schedule/schedule",
+    "pages/photos/photos",
+    "pages/videos/videos",
+    "pages/social/social",
+    "pages/audio/audio",
+    "pages/mine/mine"
+  ],
+  "subPackages": [
+    {
+      "root": "subpkg/media",
+      "pages": [
+        "pages/sync/sync"
+      ]
+    }
+  ],
+  "preloadRule": {
+    "pages/home/home": {
+      "network": "all",
+      "packages": ["subpkg/media"]
+    }
+  },
+  "window": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "STARVIEW ARCHIVE",
+    "navigationBarBackgroundColor": "#000000",
+    "backgroundColor": "#000000"
+  },
+  "usingComponents": {},
+  "style": "v2",
+  "componentFramework": "glass-easel",
+  "lazyCodeLoading": "requiredComponents"
+}
