@@ -1,15 +1,14 @@
 /* ── 页面容器 ── */
 
-/* ── 自定义导航栏 ── */
+
+/* ===== 自定义导航栏 ===== */
 .custom-nav {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  z-index: 200;
-  background: rgba(0, 0, 0, 0.92);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  z-index: 100;
+  background-color: #000000;
 }
 
 .custom-nav-inner {
@@ -25,20 +24,22 @@
   width: 64rpx;
   display: flex;
   align-items: center;
-  justify-content: center;
 }
 
 .nav-back-icon {
-  font-size: 56rpx;
-  color: #fff;
+  font-size: 48rpx;
+  color: #ffffff;
   font-weight: 300;
-  line-height: 1;
 }
 
 .custom-nav-title {
-  font-size: 30rpx;
-  font-weight: 600;
-  color: #fff;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 22rpx;
+  font-weight: 400;
+  letter-spacing: 24rpx;
+  color: #ffffff;
+  flex: 1;
+  text-align: center;
 }
 
 .page {
@@ -189,6 +190,22 @@
   position: relative;
   width: 100%;
   overflow: hidden;
+}
+
+.media-image {
+  width: 100%;
+  display: block;
+  background: #1a1a1a;
+  min-height: 600rpx; /* 宽度 × 0.8，防止横图过矮 */
+  max-height: 940rpx; /* 宽度 × 1.25，防止竖图过高 */
+  object-fit: cover; /* 配合 widthFix：超出 max-height 居中裁切 */
+  object-position: center;
+}
+
+.media-video {
+  width: 100%;
+  height: 100%;
+  background: #1a1a1a;
 }
 
 .media-image {
@@ -433,6 +450,8 @@
 .media-poster-wrap .media-image {
   width: 100%;
   height: 100%;
+  min-height: unset;
+  max-height: unset;
 }
 
 .poster-play-btn {

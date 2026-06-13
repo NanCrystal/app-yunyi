@@ -2,7 +2,7 @@
   <!-- 内容区，阻止冒泡 -->
   <view class="vp-body" catch:tap="onStopPropagation">
     <!-- 关闭按钮 -->
-    <view class="vp-close" bind:tap="onClose">
+    <view class="vp-close" style="top: {{statusBarHeight + 44 + 24}}px;" bind:tap="onClose">
       <text class="vp-close-icon">✕</text>
     </view>
 

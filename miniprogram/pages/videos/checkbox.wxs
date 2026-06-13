@@ -1,0 +1,55 @@
+/**
+ * 复选框状态判断工具（WXS 版本）
+ * 注意: WXS 中不支持 this 调用，需使用独立函数
+ */
+
+function isPhotoChecked(checkedIds, photoId) {
+  if (!checkedIds || !photoId) return false;
+  var len = checkedIds.length;
+  for (var i = 0; i < len; i++) {
+    if (checkedIds[i] === photoId) return true;
+  }
+  return false;
+}
+
+function isDayAllChecked(checkedIds, dayItems) {
+  if (!checkedIds || !dayItems || dayItems.length === 0) return false;
+  var len = dayItems.length;
+  for (var i = 0; i < len; i++) {
+    if (!isPhotoChecked(checkedIds, dayItems[i].id)) return false;
+  }
+  return true;
+}
+
+function isMonthAllChecked(checkedIds, days) {
+  if (!checkedIds || !days || days.length === 0) return false;
+  var dLen = days.length;
+  for (var d = 0; d < dLen; d++) {
+    var dayItems = days[d].items;
+    if (!dayItems) continue;
+    var iLen = dayItems.length;
+    for (var i = 0; i < iLen; i++) {
+      if (!isPhotoChecked(checkedIds, dayItems[i].id)) return false;
+    }
+  }
+  return true;
+}
+
+module.exports = {
+  isPhotoChecked: isPhotoChecked,
+  isDayAllChecked: isDayAllChecked,
+  isMonthAllChecked: isMonthAllChecked,
+  isInArray: isInArray
+};
+
+/**
+ * 判断值是否在数组中（用于筛选多选）
+ */
+function isInArray(arr, value) {
+  if (!arr || arr.length === 0) return false;
+  var len = arr.length;
+  for (var i = 0; i < len; i++) {
+    if (arr[i] === value) return true;
+  }
+  return false;
+}

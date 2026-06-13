@@ -1,6 +1,6 @@
-import { getAudioList } from "../../services/api";
-import type { AudioItem } from "../../utils/types";
-import { themeBehavior } from "../../behaviors/theme";
+import { getAudioList } from '../../services/api';
+import type { AudioItem } from '../../utils/types';
+import { themeBehavior } from '../../behaviors/theme';
 
 const app = getApp<IAppOption>();
 
@@ -11,6 +11,7 @@ interface AudioData {
   playingTrackId: string | null;
   isPlayingAudio: boolean;
   currentTrack: AudioItem | null;
+  tabTabs: { key: string; label: string; icon: string }[];
 }
 
 Component({
@@ -23,19 +24,14 @@ Component({
     playingTrackId: null as string | null,
     isPlayingAudio: false,
     currentTrack: null as AudioItem | null,
-
-    /** 状态栏高度 */
-    statusBarHeight: 20,
+    tabTabs: [
+      { key: 'home', label: '首页', icon: '◼' },
+      { key: 'mine', label: '我的', icon: '◷' },
+    ],
   } as AudioData,
 
   lifetimes: {
     attached() {
-      const artistId = (app.globalData.selectedCharId || "haoyiran") as string;
-      const { statusBarHeight } = (wx as any).getWindowInfo?.() ?? {
-        statusBarHeight: 20,
-      };
-      const navBarHeight = statusBarHeight + 44;
-      this.setData({ artistId, statusBarHeight, navBarHeight });
       this.syncState();
     },
   },
@@ -43,17 +39,11 @@ Component({
   methods: {
     syncState() {
       const audioList = getAudioList();
-      const juneTracks = audioList.filter((a: AudioItem) =>
-        a.date.includes(".06.")
-      );
-      const mayTracks = audioList.filter((a: AudioItem) =>
-        a.date.includes(".05.")
-      );
+      const juneTracks = audioList.filter((a: AudioItem) => a.date.includes('.06.'));
+      const mayTracks = audioList.filter((a: AudioItem) => a.date.includes('.05.'));
       const playingTrackId = app.globalData.playingTrackId;
       const isPlayingAudio = app.globalData.isPlayingAudio;
-      const currentTrack =
-        audioList.find((a: AudioItem) => a.id === playingTrackId) ||
-        audioList[0];
+      const currentTrack = audioList.find((a: AudioItem) => a.id === playingTrackId) || audioList[0];
 
       this.setData({
         juneTracks,
@@ -72,8 +62,7 @@ Component({
         playingTrackId: trackId,
         isPlayingAudio: true,
         showNowPlaying: true,
-        currentTrack:
-          getAudioList().find((a: AudioItem) => a.id === trackId) || null,
+        currentTrack: getAudioList().find((a: AudioItem) => a.id === trackId) || null,
       });
     },
 
@@ -86,9 +75,7 @@ Component({
     onNextTrack() {
       const audioList = getAudioList();
       const { playingTrackId } = this.data;
-      const currentIdx = audioList.findIndex(
-        (a: AudioItem) => a.id === playingTrackId
-      );
+      const currentIdx = audioList.findIndex((a: AudioItem) => a.id === playingTrackId);
       const nextIdx = currentIdx >= 0 ? (currentIdx + 1) % audioList.length : 0;
       app.globalData.playingTrackId = audioList[nextIdx].id;
       app.globalData.isPlayingAudio = true;
@@ -102,13 +89,10 @@ Component({
     onPrevTrack() {
       const audioList = getAudioList();
       const { playingTrackId } = this.data;
-      const currentIdx = audioList.findIndex(
-        (a: AudioItem) => a.id === playingTrackId
-      );
-      const prevIdx =
-        currentIdx >= 0
-          ? (currentIdx - 1 + audioList.length) % audioList.length
-          : 0;
+      const currentIdx = audioList.findIndex((a: AudioItem) => a.id === playingTrackId);
+      const prevIdx = currentIdx >= 0
+        ? (currentIdx - 1 + audioList.length) % audioList.length
+        : 0;
       app.globalData.playingTrackId = audioList[prevIdx].id;
       app.globalData.isPlayingAudio = true;
       this.setData({

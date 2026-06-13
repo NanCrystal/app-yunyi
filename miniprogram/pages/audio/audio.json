@@ -1,6 +1,5 @@
 {
-  "usingComponents": {
-    "bottom-tab-bar": "/components/bottom-tab-bar/bottom-tab-bar"
-  },
-  "navigationBarTitleText": "声音"
+  "navigationStyle": "custom",
+  "component": true,
+  "usingComponents": {}
 }

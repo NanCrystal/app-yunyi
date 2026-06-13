@@ -61,6 +61,28 @@ export const getThumbUrl = (url: string): string => {
   if (url.startsWith("/pages/")) return url;
   return `${getImageUrl(url)}?imageView2/1/w/200/h/200/q/75`;
 };
+/** 获取缩略图
+ * 七牛云缩略图 URL 工具
+ *
+ * @param {string} rawUrl  原始图片 URL（不含处理参数）
+ * @param {number} size    目标边长（px，物理像素）
+ * @returns {string}       带七牛参数的缩略图 URL
+ *
+ * 参数说明：
+ *   imageView2/1  — 模式1：等比缩放后居中裁剪，保证正方形填满
+ *   w/{size}      — 目标宽度（物理像素）
+ *   h/{size}      — 目标高度
+ *   format/webp   — 转 WebP，同质量体积小 ~30%
+ *   q/75          — 质量 75，缩略图场景肉眼无损
+ *   interlace/1   — 渐进加载，弱网下从模糊到清晰显示
+ *   ignore-error/1— 原图处理失败时返回原图，防止整批挂掉
+ */
+export const buildThumbUrl = (rawUrl: string, size: number) => {
+  if (!rawUrl) return "";
+  // 避免对已带参数的 URL 重复拼接
+  const base = rawUrl.split("?")[0];
+  return `${base}?imageView2/1/w/${size}/h/${size}/format/webp/q/75/interlace/1/ignore-error/1`;
+};
 
 // ───────────── 日期/时间格式化工具 ─────────────
 

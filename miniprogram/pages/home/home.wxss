@@ -826,3 +826,233 @@
 .bottom-placeholder {
   height: 160rpx;
 }
+
+/* ===== 骨架屏通用样式 ===== */
+.skeleton-shimmer {
+  position: relative;
+  background-color: #1a1a1a;
+  overflow: hidden;
+}
+
+.skeleton-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    transparent 100%
+  );
+  animation: shimmer 2s infinite;
+}
+
+@-webkit-keyframes shimmer {
+  from {
+    left: -100%;
+  }
+  to {
+    left: 100%;
+  }
+}
+
+@keyframes shimmer {
+  from {
+    left: -100%;
+  }
+  to {
+    left: 100%;
+  }
+}
+
+.skeleton-line {
+  display: block;
+  border-radius: 4rpx;
+}
+
+/* ===== Hero 骨架屏 ===== */
+.skeleton-hero {
+  width: 100%;
+  height: 640rpx;
+}
+
+.skeleton-hero-img {
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== 最新动态骨架屏 ===== */
+.skeleton-post {
+  padding: 40rpx;
+}
+
+.skeleton-post-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 20rpx;
+  margin-bottom: 32rpx;
+}
+
+.skeleton-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.skeleton-post-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.skeleton-images {
+  display: flex;
+  flex-direction: row;
+  gap: 8rpx;
+}
+
+.skeleton-img {
+  width: 220rpx;
+  height: 220rpx;
+  border-radius: 4rpx;
+}
+
+/* ===== 近期行程骨架屏 ===== */
+.skeleton-schedule {
+  padding: 40rpx 20rpx;
+}
+
+.skeleton-schedule-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 0;
+  border-top: 1px solid #262626;
+}
+
+.skeleton-schedule-item:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.skeleton-schedule-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16rpx;
+}
+
+/* ===== 图片档案馆骨架屏 ===== */
+.skeleton-photo-item {
+  aspect-ratio: 3/4;
+  background-color: #141414 !important;
+  border: 1px solid #262626;
+}
+
+.skeleton-photo-img {
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== 视频档案馆骨架屏 ===== */
+.skeleton-video {
+  aspect-ratio: 16/9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48rpx;
+  background-color: #141414 !important;
+  border: 1px solid #262626;
+}
+
+.skeleton-video-img {
+  width: 100%;
+  height: 300rpx;
+  border-radius: 4rpx;
+}
+
+.skeleton-video-info {
+  width: 100%;
+  margin-top: 24rpx;
+  padding-left: 16rpx;
+}
+
+/* ===== 小卡档案馆骨架屏 ===== */
+.skeleton-photocard {
+  aspect-ratio: 3/4;
+  padding: 12rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.skeleton-photocard-img {
+  aspect-ratio: 2/3;
+  width: 100%;
+  border-radius: 4rpx;
+}
+
+/* ===== 语音馆骨架屏 ===== */
+.skeleton-voice {
+  padding: 64rpx 48rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.skeleton-voice-title,
+.skeleton-voice-desc {
+  border-radius: 4rpx;
+}
+
+.skeleton-voice-disc {
+  width: 240rpx;
+  height: 240rpx;
+  border-radius: 50%;
+  margin-top: 32rpx;
+}
+
+/* ===== 错误状态样式 ===== */
+.error-card {
+  margin-top: 24rpx;
+  padding: 64rpx 48rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 240rpx;
+}
+
+.error-card--small {
+  min-height: 160rpx;
+  padding: 32rpx 48rpx;
+}
+
+.error-text {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 24rpx;
+  color: #666666;
+  letter-spacing: 4rpx;
+  text-transform: uppercase;
+  margin-bottom: 24rpx;
+}
+
+.error-retry-btn {
+  padding: 16rpx 32rpx;
+  border: 1px solid var(--theme);
+  border-radius: 4rpx;
+}
+
+.error-retry-btn text {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 22rpx;
+  color: var(--theme);
+  letter-spacing: 2rpx;
+}

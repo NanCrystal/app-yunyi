@@ -4,7 +4,7 @@
     <view class="custom-nav-left" bind:tap="onGoBack">
       <text class="nav-back-icon">‹</text>
     </view>
-    <text class="custom-nav-title">日程</text>
+    <text class="custom-nav-title">行程馆</text>
     <view class="custom-nav-right" />
   </view>
 </view>

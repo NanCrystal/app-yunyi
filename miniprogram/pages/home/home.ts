@@ -20,7 +20,7 @@ import {
   formatYearMonthChinese,
   formatMonthAbbrUpper,
   formatMonthDayEnUpper,
-  formatMonthDayNum
+  formatMonthDayNum,
 } from "../../utils/util";
 import { characters as localCharacters } from "../../utils/data";
 
@@ -92,11 +92,32 @@ interface HomeData {
   previewVideoUrl: string;
   previewVideoPoster: string;
   previewVideoTitle: string;
+  // 加载状态
+  isLoading: boolean;
+  loadingStates: {
+    hero: boolean;
+    post: boolean;
+    schedule: boolean;
+    photos: boolean;
+    video: boolean;
+    photocards: boolean;
+    audio: boolean;
+  };
+  // 错误状态
+  hasError: boolean;
+  errorStates: {
+    post: boolean;
+    schedule: boolean;
+    photos: boolean;
+    video: boolean;
+    photocards: boolean;
+    audio: boolean;
+  };
 }
 
 /** 分包页面路径映射（key → 完整路径） */
 const SUBPKG_PAGES: Record<string, string> = {
-  sync: '/subpkg/media/pages/sync/sync',
+  sync: "/subpkg/media/pages/sync/sync",
 };
 
 Component({
@@ -131,6 +152,27 @@ Component({
     previewVideoUrl: "",
     previewVideoPoster: "",
     previewVideoTitle: "",
+    // 加载状态
+    isLoading: true,
+    loadingStates: {
+      hero: true,
+      post: true,
+      schedule: true,
+      photos: true,
+      video: true,
+      photocards: true,
+      audio: true,
+    },
+    // 错误状态
+    hasError: false,
+    errorStates: {
+      post: false,
+      schedule: false,
+      photos: false,
+      video: false,
+      photocards: false,
+      audio: false,
+    },
   } as HomeData,
 
   lifetimes: {
@@ -154,6 +196,29 @@ Component({
     async initData() {
       const selectedCharId = (app.globalData.selectedCharId ||
         "haoyiran") as string;
+
+      // 初始化加载状态
+      this.setData({
+        isLoading: true,
+        loadingStates: {
+          hero: true,
+          post: true,
+          schedule: true,
+          photos: true,
+          video: true,
+          photocards: true,
+          audio: true,
+        },
+        hasError: false,
+        errorStates: {
+          post: false,
+          schedule: false,
+          photos: false,
+          video: false,
+          photocards: false,
+          audio: false,
+        },
+      });
 
       try {
         const data: IntegrationData = await get("/integration/home", {
@@ -236,6 +301,17 @@ Component({
           birthdayTrack,
           playingTrackId: app.globalData.playingTrackId,
           isPlayingAudio: app.globalData.isPlayingAudio,
+          // 更新加载状态为完成
+          isLoading: false,
+          loadingStates: {
+            hero: false,
+            post: false,
+            schedule: false,
+            photos: false,
+            video: false,
+            photocards: false,
+            audio: false,
+          },
         });
 
         this.setData({ navTitle: activeChar.artistId.toUpperCase() });
@@ -243,10 +319,12 @@ Component({
         this.restoreScrollPosition();
       } catch (err) {
         console.error("首页数据加载失败:", err);
+
         // 兜底：确保角色列表可用
         const fallbackChar =
           localCharacters.find((c) => c.artistId === selectedCharId) ||
           localCharacters[0];
+
         this.setData({
           characters: localCharacters.map((c) => ({
             ...c,
@@ -255,6 +333,26 @@ Component({
           selectedCharId,
           activeChar: fallbackChar,
           navTitle: fallbackChar.artistId.toUpperCase(),
+          // 标记错误状态
+          hasError: true,
+          isLoading: false,
+          loadingStates: {
+            hero: false,
+            post: false,
+            schedule: false,
+            photos: false,
+            video: false,
+            photocards: false,
+            audio: false,
+          },
+          errorStates: {
+            post: true,
+            schedule: true,
+            photos: true,
+            video: true,
+            photocards: true,
+            audio: true,
+          },
         });
       }
     },
@@ -267,13 +365,14 @@ Component({
         post.linkedMedia ||
         post.mediaLinks ||
         []
-      ).map((m: any) => ({
-        type: m.type || m.mediaType,
-        url: getImageUrl(
-          m.url || m.photo?.url || m.video?.coverUrl || m.video?.playUrl || ""
-        ),
-      })).slice(0, 3);
- 
+      )
+        .map((m: any) => ({
+          type: m.type || m.mediaType,
+          url: getImageUrl(
+            m.url || m.photo?.url || m.video?.coverUrl || m.video?.playUrl || ""
+          ),
+        }))
+        .slice(0, 3);
 
       return {
         id: String(post.id),
@@ -292,8 +391,8 @@ Component({
     },
 
     mapEvent(itinerary: any): EventItem {
-      console.log('itinerary',itinerary);
-      
+      console.log("itinerary", itinerary);
+
       return {
         id: String(itinerary.id),
         status: (statusLabel[itinerary.status] ||
@@ -348,8 +447,8 @@ Component({
     },
 
     mapAudio(audio: any): AudioItem {
-      console.log('audio',audio);
-      
+      console.log("audio", audio);
+
       return {
         id: String(audio.id),
         title: audio.title || audio.fileName || "",
@@ -397,6 +496,11 @@ Component({
 
     // ───────────── 事件处理 ─────────────
 
+    /** 重新加载数据 */
+    onRetryLoad() {
+      this.initData();
+    },
+
     onSlideTap(e: WechatMiniprogram.BaseEvent) {
       const index = e.currentTarget.dataset.index as number;
       this.setData({ currentSlide: index });
@@ -416,7 +520,7 @@ Component({
     },
 
     onGoIndex() {
-      wx.reLaunch({ url: '/pages/index/index' });
+      wx.reLaunch({ url: "/pages/index/index" });
     },
 
     /** 记录滚动位置 */
@@ -445,6 +549,8 @@ Component({
 
     onNavigate(e: WechatMiniprogram.CustomEvent) {
       const key = e.detail.key as string;
+      console.log("key", key);
+      
       const url = SUBPKG_PAGES[key] || `/pages/${key}/${key}`;
       wx.reLaunch({ url });
     },
@@ -454,19 +560,20 @@ Component({
       // 保存滚动位置到全局，以便返回时恢复
       this.saveScrollPosition();
       const url = SUBPKG_PAGES[key] || `/pages/${key}/${key}`;
-      
+
       // 使用 reLaunch 跳转，schedule 页面通过自定义导航栏返回首页
       wx.reLaunch({
         url,
         fail(err) {
-          console.error('跳转失败:', key, err);
-          wx.showToast({ title: '跳转失败', icon: 'none' });
+          console.error("跳转失败:", key, err);
+          wx.showToast({ title: "跳转失败", icon: "none" });
         },
       });
     },
 
     onNavigateTo(e: WechatMiniprogram.BaseEvent) {
       const key = e.currentTarget.dataset.key as string;
+      console.log("key", key);
       wx.reLaunch({ url: `/pages/${key}/${key}` });
     },
 
@@ -509,11 +616,15 @@ Component({
         .map((m) => m.url);
       const currentUrl = mediaList?.[index]?.url || "";
       const currentIdx = Math.max(0, images.indexOf(currentUrl));
-      this.setData({
-        showImagePreview: true,
-        previewImages: images,
-        previewImageIndex: currentIdx,
+      wx.previewImage({
+        current: currentUrl,
+        urls: [currentUrl],
       });
+      // this.setData({
+      //   showImagePreview: true,
+      //   previewImages: images,
+      //   previewImageIndex: currentIdx,
+      // });
     },
 
     onCloseImagePreview() {

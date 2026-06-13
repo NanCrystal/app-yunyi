@@ -95,6 +95,39 @@ export interface AudioItem {
   date: string;
   bitRate: string;
   coverUrl: string;
+ 
+}
+/** 音频条目 */
+export interface AudioItem2 {
+ id: number;
+  fileName:string;
+  title:string;
+  artistId:string;
+  qiniuKey: string;
+  originalUrl: string;
+  coverUrl: string;
+  mimeType: any;
+  size: any;
+  duration: any;
+  codec: any;
+  bitrate: any;
+  shootDate: string;
+  tagTypeId: any;
+  tagLocationId: any;
+  tagPlatformId: any;
+  tagCardTypeId: any;
+  itineraryId: any;
+  description: string;
+  status: string;
+  sortOrder: number;
+  deletedAt: any;
+  createdAt: string;
+  updatedAt: string;
+  tagType: any;
+  tagLocation: any;
+  tagPlatform: any;
+  itinerary: any;
+ 
 }
 
 /** 角色 */

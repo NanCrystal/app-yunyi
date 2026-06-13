@@ -1,2 +1,98 @@
 <!--pages/cards/cards.wxml-->
-<text>pages/cards/cards.wxml</text>
+
+<view class="cards-page" style="--theme: {{themeColor}}; --theme-r: {{themeR}}; --theme-g: {{themeG}}; --theme-b: {{themeB}};">
+  <!-- 自定义导航栏（fixed） -->
+  <view class="custom-nav" style="padding-top: {{statusBarHeight}}px;">
+    <view class="custom-nav-inner">
+      <view class="custom-nav-left" bindtap="onGoBack">
+        <text class="nav-back-icon">‹</text>
+      </view>
+      <text class="custom-nav-title">小卡馆</text>
+      <view class="custom-nav-right" />
+    </view>
+  </view>
+
+  <!-- 标签栏（fixed 在导航栏下方） -->
+  <view class="tag-bar" style="top: {{navBarHeight}}px;">
+    <!-- 第一行：[全部] + 二级节点 -->
+    <scroll-view class="tag-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+      <view class="tag-list">
+        <view
+          class="tag-item {{isAllSelected ? 'tag-active' : ''}}"
+          data-id="{{'all'}}"
+          data-has-children="{{false}}"
+          bindtap="onFirstRowTap"
+        >全部</view>
+        <view
+          wx:for="{{firstRowTags}}"
+          wx:key="id"
+          class="tag-item {{!isAllSelected && selectedId === item.id ? 'tag-active' : ''}}"
+          data-id="{{item.id}}"
+          data-has-children="{{!!(item.children && item.children.length)}}"
+          bindtap="onFirstRowTap"
+        >{{item.name}}</view>
+      </view>
+    </scroll-view>
+
+    <!-- 第二行：三级子节点 -->
+    <scroll-view
+      class="sub-tags-wrap"
+      scroll-x
+      enhanced
+      show-scrollbar="{{false}}"
+      wx:if="{{secondRowChildren.length > 0}}"
+    >
+      <view class="tag-list sub-list">
+        <view
+          wx:for="{{secondRowChildren}}"
+          wx:key="id"
+          class="tag-item tag-child {{selectedSecondId === item.id ? 'tag-active' : ''}}"
+          data-id="{{item.id}}"
+          bindtap="onSecondRowTap"
+        >{{item.name}}</view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 主滚动区域：卡片列表 -->
+  <scroll-view
+    class="main-scroll"
+    scroll-y
+    enhanced
+    show-scrollbar="{{false}}"
+    bindscrolltolower="onScrollToLower"
+    lower-threshold="200"
+  >
+    <view class="main-content" style="padding-top: {{navBarHeight + tagBarHeight}}px;">
+
+      <!-- 小卡列表 -->
+      <view class="card-list">
+        <view
+          wx:for="{{cards}}"
+          wx:key="id"
+          class="card"
+          data-index="{{index}}"
+          bindtap="onCardTap"
+        >
+          <image
+            class="card-img"
+            src="{{item._frontImage}}"
+            mode="aspectFill"
+            lazy-load
+          />
+          <view class="card-overlay">
+            <text class="card-name">{{item.name}}</text>
+            <text class="card-date">{{item._releaseDate}}</text>
+          </view>
+        </view>
+        <view wx:if="{{cards.length === 0 && !loading}}" class="empty-tip">暂无小卡</view>
+
+        <!-- 加载更多状态 -->
+        <view wx:if="{{cards.length > 0}}" class="load-more">
+          <text wx:if="{{loadingMore}}" class="load-more-text">加载中...</text>
+          <text wx:elif="{{!hasMore}}" class="load-more-text">— 已经到底了 —</text>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</view>

@@ -1,157 +1,295 @@
-<scroll-view class="page" scroll-y enhanced show-scrollbar="{{false}}" style="--theme: {{themeColor}}; --theme-r: {{themeR}}; --theme-g: {{themeG}}; --theme-b: {{themeB}};">
-  <!-- 视频详情播放器视图 -->
-  <block wx:if="{{selectedVideo}}">
-    <view class="player-header">
-      <text class="player-breadcrumb">VIDEO OUTLINE / DETAILED PLAYING</text>
-      <view class="player-close-btn" bind:tap="onCloseVideo">
-        <text>CLOSE ✕</text>
-      </view>
+<!-- 复选框状态判断工具（WXS） -->
+<wxs src="./checkbox.wxs" module="check" />
+<!-- 自定义导航栏 -->
+<view class="custom-nav" style="padding-top: {{statusBarHeight}}px;">
+  <view class="custom-nav-inner">
+    <view class="custom-nav-left" bind:tap="onGoBack">
+      <text class="nav-back-icon">‹</text>
     </view>
-
-    <!-- 播放器区域 -->
-    <view class="player-wrapper">
-      <image class="player-bg" src="{{selectedVideo.thumbnail}}" mode="aspectFill" />
-      <view class="player-overlay">
-        <view class="player-top-bar">
-          <view class="player-rec-badge">
-            <text>● 正在录制 / RECORDING</text>
-          </view>
-          <text class="player-tech-info">MASTER FRAME RECTIFICATION ON</text>
-        </view>
-
-        <view class="player-bottom-controls">
-          <!-- 进度条 -->
-          <view class="player-progress">
-            <view class="player-progress-fill" style="width: 45%;"></view>
-          </view>
-
-          <!-- 控制按钮 -->
-          <view class="player-ctrl-row">
-            <view class="player-ctrl-left">
-              <view class="player-ctrl-btn" bind:tap="onTogglePlay">
-                <text>{{isPlaying ? '⏸' : '▶'}}</text>
-              </view>
-              <view class="player-ctrl-btn">
-                <text>⏭</text>
-              </view>
-              <text class="player-time-text">{{isPlaying ? '01:42' : '00:00'}} / {{selectedVideo.duration}}</text>
-            </view>
-            <view class="player-ctrl-right">
-              <view class="player-quality-tag">
-                <text>4K HDR</text>
-              </view>
-              <text class="player-ctrl-icon">⚙</text>
-              <text class="player-ctrl-icon">⛶</text>
-            </view>
-          </view>
-        </view>
-      </view>
+    <text class="custom-nav-title">视频馆</text>
+    <view class="custom-nav-right" />
+  </view>
+</view>
+<scroll-view
+  id="videoScrollView"
+  class="page"
+  scroll-y
+  enhanced
+  show-scrollbar="{{false}}"
+  scroll-top="{{_scrollTop}}"
+  bindscroll="onScroll"
+  style="--theme: {{themeColor}}; --theme-r: {{themeR}}; --theme-g: {{themeG}}; --theme-b: {{themeB}}; padding-top: {{statusBarHeight + 44}}px;"
+>
+  <!-- 统计信息 -->
+  <view class="count-bar">
+    <text class="count-num">
+    </text>
+    <view class="count-actions">
+      <image
+        class="filter-icon"
+        src="../assets/icons/check.svg"
+        bind:tap="onToggleCheckboxMode" />
+      <image
+        class="filter-icon"
+        src="../assets/icons/filter.svg"
+        bind:tap="onTogglfilterPicker" />
     </view>
-
-    <!-- 视频描述 -->
-    <view class="player-desc">
-      <text class="player-title">{{selectedVideo.title}}</text>
-      <view class="player-meta">
-        <text>郝熠然</text>
-        <text class="player-meta-sep">|</text>
-        <text>2026.06.24</text>
-        <text class="player-meta-sep">|</text>
-        <text>{{selectedVideo.duration}} SEC</text>
-        <text class="player-meta-sep">|</text>
-        <text class="player-meta-green">4K DOLBY VISION</text>
-      </view>
-      <view class="player-description-wrap">
-        <text class="player-description-text">
-          {{isDescriptionExpanded ? selectedVideo.description : selectedVideo.description.substring(0, 60) + '...'}}
-        </text>
-        <text class="player-expand-btn" bind:tap="onToggleDescription">{{isDescriptionExpanded ? '...收起' : '...展开'}}</text>
-      </view>
-      <view class="player-tags">
-        <view wx:for="{{selectedVideo.tags}}" wx:key="*this" class="player-tag">
-          <text>{{item}}</text>
-        </view>
-      </view>
-    </view>
-
-    <!-- 关联动态 -->
-    <view class="player-related">
-      <text class="player-related-title">关联动态 / ASSOCIATED ENTRIES</text>
-      <view class="player-related-grid">
-        <view class="related-card">
-          <image class="related-img" src="../assets/images/1 (45).jpg" mode="aspectFill" />
-          <view class="related-info">
-            <text class="related-text">"午夜拍摄幕后。使用全新的35mm变形镜头…"</text>
-            <text class="related-platform">INSTAGRAM • 2小时前</text>
-          </view>
-        </view>
-        <view class="related-card">
-          <image class="related-img" src="../assets/images/1 (46).jpg" mode="aspectFill" />
-          <view class="related-info">
-            <text class="related-text">"城市永不眠，镜头亦然。新宿凌晨3点…"</text>
-            <text class="related-platform">WEIBO • 1天前</text>
-          </view>
-        </view>
-        <view class="related-card">
-          <image class="related-img" src="../assets/images/1 (47).jpg" mode="aspectFill" />
-          <view class="related-info">
-            <text class="related-text">"低光环境下捕捉宽动态范围的暗部校准…"</text>
-            <text class="related-platform">MEDIUM • 3天前</text>
-          </view>
-        </view>
-      </view>
-    </view>
-  </block>
-
-  <!-- 视频列表视图 -->
-  <block wx:else>
-    <view class="list-header">
-      <text class="list-title">视频馆 / MOVIE ARCHIVES</text>
-      <text class="list-count">{{totalCount}} ENTRIES</text>
-    </view>
-
-    <view class="video-list">
-      <view wx:for="{{monthGroups}}" wx:key="month" class="video-month">
-        <view class="video-month-header">
-          <view class="video-month-line"></view>
-          <text class="video-month-title">{{item.month}}</text>
-        </view>
-
-        <view class="video-grid">
+  </view>
+  <!-- 视频网格（按月分组） -->
+  <view class="photos-content">
+    <view
+      wx:for="{{groupedVideos}}"
+      wx:key="yearMonth"
+      wx:for-index="monthIdx"
+      class="month-group"
+    >
+      <view class="month-header">
+        <view class="month-header-left">
           <view
-            wx:for="{{item.items}}"
-            wx:key="id"
-            class="video-card"
-            data-id="{{item.id}}"
-            bind:tap="onOpenVideo"
+            wx:if="{{showCheckboxMode}}"
+            class="checkbox-wrap"
+            catchtap="onMonthCheckTap"
+            data-month-idx="{{monthIdx}}"
           >
-            <view class="video-card-thumb">
-              <image class="video-card-img" src="{{item.thumbnail}}" mode="aspectFill" lazy-load />
-              <view class="video-card-play">
-                <text>▶</text>
-              </view>
-              <view class="video-card-duration">
-                <text>{{item.duration}}</text>
-              </view>
-              <view class="video-card-date-badge">
-                <text>{{item.date}}</text>
+            <view class="checkbox-box {{check.isMonthAllChecked(checkedVideoIds, item.days) ? 'checkbox-box--active' : ''}}">
+              <text wx:if="{{check.isMonthAllChecked(checkedVideoIds, item.days)}}" class="check-mark">✓</text>
+            </view>
+          </view>
+          <text class="month-title">{{item.month}}</text>
+        </view>
+        <text class="month-count">{{item.count}} VIDEOS</text>
+      </view>
+      <!-- 已加载：展示真实视频封面 -->
+      <block wx:if="{{item.loaded}}">
+        <view
+          wx:for="{{item.days}}"
+          wx:key="day"
+          wx:for-index="dayIdx"
+          class="day-group"
+        >
+          <view class="day-header">
+            <view
+              wx:if="{{showCheckboxMode}}"
+              class="day-checkbox-wrap"
+              catchtap="onDayCheckTap"
+              data-month-idx="{{monthIdx}}"
+              data-day-idx="{{dayIdx}}"
+            >
+              <view class="checkbox-box {{check.isDayAllChecked(checkedVideoIds, item.items) ? 'checkbox-box--active' : ''}}">
+                <text wx:if="{{check.isDayAllChecked(checkedVideoIds, item.items)}}" class="check-mark">✓</text>
               </view>
             </view>
-            <view class="video-card-info">
-              <text class="video-card-title">{{item.title}}</text>
-              <text class="video-card-desc">{{item.description}}</text>
-              <view class="video-card-tags">
-                <view wx:for="{{item.tags}}" wx:key="*this" class="video-card-tag">
-                  <text>{{item}}</text>
+            <text class="day-title">{{item.day}}</text>
+          </view>
+          <view class="photo-grid">
+            <block
+              wx:for="{{item.items}}"
+              wx:key="id"
+              wx:for-item="video"
+              wx:for-index="videoIdx"
+            >
+              <view
+                class="photo-item {{!video.hasCover ? 'photo-item--no-cover' : ''}}"
+                bindtap="{{showCheckboxMode ? 'onVideoTap' : 'onVideoTap'}}"
+                data-id="{{video.id}}"
+              >
+                <view
+                  wx:if="{{showCheckboxMode}}"
+                  class="photo-check"
+                  catchtap="onCheckTap"
+                  data-id="{{video.id}}"
+                >
+                  <view class="photo-check-box {{check.isPhotoChecked(checkedVideoIds, video.id) ? 'photo-check-box--active' : ''}}">
+                    <text wx:if="{{check.isPhotoChecked(checkedVideoIds, video.id)}}" class="photo-check-mark">✓</text>
+                  </view>
+                </view>
+                <!-- 骨架屏（单张图片级别） -->
+                <photo-skeleton wx:if="{{!video.loaded}}" />
+                <!-- 视频封面图 -->
+                <image
+                  wx:if="{{video.hasCover}}"
+                  class="photo-img {{video.loaded ? 'photo-img--visible' : ''}}"
+                  src="{{video.coverUrl}}"
+                  mode="aspectFill"
+                  lazy-load
+                  webp
+                  bindload="onImageLoad"
+                  binderror="onImageError"
+                  data-month-idx="{{monthIdx}}"
+                  data-day-idx="{{dayIdx}}"
+                  data-video-idx="{{videoIdx}}" />
+                <!-- 播放图标叠加层 -->
+                <view class="play-overlay">
+                  <image
+                    class="play-icon"
+                    src="../assets/icons/play_circle-fill.svg"
+                    mode="aspectFit" />
                 </view>
               </view>
-            </view>
+            </block>
+          </view>
+        </view>
+      </block>
+      <!-- 加载中：显示 loading 骨架动画 -->
+      <block wx:elif="{{item.loading}}">
+        <view class="month-loading">
+          <view class="month-loading-spinner">
+          </view>
+          <text class="month-loading-text">LOADING...</text>
+        </view>
+      </block>
+      <!-- 未加载：骨架屏占位网格 -->
+      <block wx:else>
+        <view class="skeleton-grid">
+          <view
+            wx:for="{{item.count > 24 ? 24 : item.count}}"
+            wx:key="*this"
+            class="skeleton-item"
+            style="animation-delay: {{(index % 12) * 0.05}}s;"
+          >
+          </view>
+        </view>
+      </block>
+    </view>
+    <view wx:if="{{filteredVideos.length === 0 && !isLoading}}" class="empty-state">
+      <text class="empty-text">NO CORRESPONDING VIDEOS FOUND IN ARCHIVE</text>
+    </view>
+    <!-- 加载中状态 -->
+    <view wx:if="{{isLoading}}" class="loading-state">
+      <text class="loading-text">LOADING...</text>
+    </view>
+  </view>
+  <view class="bottom-placeholder">
+    <view wx:if="{{allLoaded && groupedVideos.length > 0}}" class="end-tip">
+      <text class="end-tip-text">— END OF ARCHIVE —</text>
+    </view>
+  </view>
+  <!-- 滚动条按钮（模拟真实滚动条，GPU加速） -->
+  <view
+    class="drag-btn {{isDragExpanded ? 'drag-btn--expanded' : ''}} {{showDragBtn ? 'drag-btn--visible' : ''}}"
+    style="transform: {{_scrollbarTransform || 'translateY(0)'}};"
+    catchtouchstart="onDragTouchStart"
+    catchtouchmove="onDragTouchMove"
+    catchtouchend="onDragTouchEnd"
+  >
+    <block wx:if="{{!isDragExpanded}}">
+      <image
+        class="drag-btn-icon"
+        src="../assets/icons/drag.svg"
+        mode="aspectFit" />
+    </block>
+    <block wx:else>
+      <text class="drag-btn-date">{{currentDragDate}}</text>
+      <image
+        class="drag-btn-icon"
+        src="../assets/icons/drag.svg"
+        mode="aspectFit" />
+    </block>
+  </view>
+</scroll-view>
+<!-- 底部浮动统计栏（选择模式） -->
+<view wx:if="{{showCheckboxMode}}" class="selection-bar {{checkedVideoIds.length > 0 ? 'selection-bar--visible' : ''}}">
+  <text class="selection-count">已选中 {{checkedVideoIds.length}} 项</text>
+  <view class="selection-actions">
+    <view class="btn-download" bindtap="onDownloadSelected">
+      <text>下载</text>
+    </view>
+    <view class="btn-cancel" bind:tap="onToggleCheckboxMode">
+      <text>取消</text>
+    </view>
+  </view>
+</view>
+<!-- 筛选面板 - 顶部弹出  -->
+<view
+  class="filter-overlay {{showFilter ? 'filter-overlay--show' : ''}}"
+  bind:tap="onCloseFilter"
+  catchtouchmove="preventMove"
+  style="--theme: {{themeColor}}; --theme-r: {{themeR}}; --theme-g: {{themeG}}; --theme-b: {{themeB}};"
+>
+  <view class="filter-dropdown  {{showFilter ? 'filter-dropdown--show' : ''}}" catch:tap="preventBubble" style="padding-top: {{statusBarHeight}}px;">
+    <view class="filter-panel">
+      <view class="filter-row">
+        <text class="filter-label">类型</text>
+        <view class="filter-tags-inline">
+          <view
+            class="filter-tag {{selectedType.length === 0 ? 'filter-tag--active' : ''}}"
+            data-type="type"
+            bind:tap="onResetFilter"
+          >
+            <text>不限</text>
+          </view>
+          <view
+            wx:for="{{typeItems}}"
+            wx:key="id"
+            class="filter-tag {{check.isInArray(selectedType, item.id) ? 'filter-tag--active' : ''}}"
+            data-value="{{item.id}}"
+            bind:tap="onTypeChange"
+          >
+            <text>{{item.name}}</text>
           </view>
         </view>
       </view>
+      <view class="filter-row">
+        <text class="filter-label">地点</text>
+        <view class="filter-tags-inline">
+          <view
+            class="filter-tag {{selectedRegion.length === 0 ? 'filter-tag--active' : ''}}"
+            data-type="region"
+            bind:tap="onResetFilter"
+          >
+            <text>不限</text>
+          </view>
+          <view
+            wx:for="{{regionItems}}"
+            wx:key="id"
+            class="filter-tag {{check.isInArray(selectedRegion, item.id) ? 'filter-tag--active' : ''}}"
+            data-value="{{item.id}}"
+            bind:tap="onRegionChange"
+          >
+            <text>{{item.name}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="filter-row">
+        <text class="filter-label">平台</text>
+        <view class="filter-tags-inline">
+          <view
+            class="filter-tag {{selectedSystem.length === 0 ? 'filter-tag--active' : ''}}"
+            data-type="system"
+            bind:tap="onResetFilter"
+          >
+            <text>不限</text>
+          </view>
+          <view
+            wx:for="{{platformItems}}"
+            wx:key="id"
+            class="filter-tag {{check.isInArray(selectedSystem, item.id) ? 'filter-tag--active' : ''}}"
+            data-value="{{item.id}}"
+            bind:tap="onSystemChange"
+          >
+            <text>{{item.name}}</text>
+          </view>
+        </view>
+      </view>
+    <!-- 底部操作按钮 -->
+    <view class="filter-actions">
+      <view class="filter-btn filter-btn--reset" bind:tap="onResetFilterAll">
+        <text>重置</text>
+      </view>
+      <view class="filter-btn filter-btn--confirm" bind:tap="onConfirmFilter">
+        <text>筛选</text>
+      </view>
     </view>
-  </block>
-
-  <view class="bottom-placeholder"></view>
-</scroll-view>
-
-<bottom-tab-bar current="videos" tabs="{{tabTabs}}" />
+    </view>
+  </view>
+</view>
+<!-- 全屏视频预览（使用 video-preview 组件） -->
+<video-preview
+  wx:if="{{previewVideo}}"
+  visible="{{!!previewVideo}}"
+  videoUrl="{{previewVideo.playUrl}}"
+  poster="{{previewVideo.coverUrl}}"
+  title="{{previewVideo.title}}"
+  statusBarHeight="{{statusBarHeight}}"
+  bind:close="onClosePreview"
+/>

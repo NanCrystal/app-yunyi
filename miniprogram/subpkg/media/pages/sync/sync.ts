@@ -53,11 +53,13 @@ interface FeedCard {
   /** 是否已展开 */
   expanded: boolean;
   /** 媒体列表（统一 PHOTO / VIDEO） */
-  mediaList: { type: "PHOTO" | "VIDEO"; url: string; poster?: string; downloadUrl?: string }[];
+  mediaList: { type: "PHOTO" | "VIDEO"; url: string; poster?: string; downloadUrl?: string; width?: number; height?: number }[];
   publishTime: string;
   publishTimeText: string;
-  /** 单视频：loadedmetadata 后计算的锁定比例 class */
-  videoAspectClass?: string;
+  /** 单视频：loadedmetadata 后计算的精确高度(px) */
+  videoHeight?: number;
+  /** 单视频：根据后端宽高比计算的容器高度(rpx) */
+  videoContainerHeight?: string;
   /** 多视频 Carousel：当前滑动帧索引 */
   swiperCurrent?: number;
   downloadUrl?: string;
@@ -312,6 +314,8 @@ Component({
                 url: getImageUrl(videoUrl),
                 downloadUrl: getImageUrl(media.hdUrl),
                 poster: posterUrl ? getProcessedImageUrl(posterUrl) : "",
+                width: media.width,
+                height: media.height,
               });
             }
           }
@@ -349,6 +353,16 @@ Component({
         .trim();
       const contentLength = [...content].length;
 
+      // 根据视频宽高比计算容器高度（rpx）
+      let videoContainerHeight: string | undefined;
+      const videoMedia = mediaList.find((m) => m.type === "VIDEO");
+      if (videoMedia?.width && videoMedia?.height) {
+        // 基础宽度 750rpx，根据宽高比计算高度
+        const containerHeight = Math.round(750 * (videoMedia.height / videoMedia.width));
+        // 限制范围：最小 400rpx，最大 1200rpx
+        videoContainerHeight = `${Math.max(400, Math.min(1200, containerHeight))}rpx`;
+      }
+
       return {
         id: post.id,
         platform: post.platform,
@@ -362,15 +376,15 @@ Component({
         mediaList: mediaList.slice(0, 20),
         publishTime: post.publishTime,
         publishTimeText: this.formatTime(post.publishTime),
-        videoAspectClass: "",
         swiperCurrent: 0,
         // Phase 3 & 4：初始不挂载 swiper 和 video
         swiperVisible: false,
         videoVisible: false,
+        videoContainerHeight,
       };
     },
 
-    /** 单视频 loadedmetadata：根据原始宽高比锁定容器高度 */
+    /** 单视频 loadedmetadata：根据原始宽高比计算精确容器高度(px) */
     onVideoLoadedMeta(
       e: WechatMiniprogram.CustomEvent<{ width: number; height: number }>
     ) {
@@ -378,20 +392,19 @@ Component({
       const { width, height } = e.detail;
       if (!width || !height) return;
 
-      const ratio = width / height;
-      let videoAspectClass: string;
-      if (ratio > 1.2) {
-        videoAspectClass = "aspect-horiz"; // 横版 → 16:9
-      } else if (ratio < 0.8) {
-        videoAspectClass = "aspect-vert"; // 竖版 → 4:5
-      } else {
-        videoAspectClass = "aspect-square"; // 方形 → 1:1
-      }
+      // 根据屏幕宽度计算实际显示高度
+      const windowInfo = (wx as any).getWindowInfo
+        ? (wx as any).getWindowInfo()
+        : wx.getSystemInfoSync();
+      const screenWidth = windowInfo.screenWidth;
+      // 卡片左右 padding 各 32rpx → 实际内容宽度
+      const contentWidth = screenWidth - (64 * screenWidth / 750);
+      const videoHeight = Math.round(contentWidth * (height / width));
 
       const cards = this.data.cards;
       const idx = cards.findIndex((c) => c.id === cardId);
       if (idx === -1) return;
-      this.setData({ [`cards[${idx}].videoAspectClass`]: videoAspectClass });
+      this.setData({ [`cards[${idx}].videoHeight`]: videoHeight });
     },
 
     /** 多图/多视频 swiper 滑动：控制视频播放/暂停 */

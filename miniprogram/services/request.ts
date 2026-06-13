@@ -1,5 +1,5 @@
 /** 后端 API 基础地址 */
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = 'http://192.168.10.37:3000'; // 局域网 IP
 
 /**
  * 通用请求封装

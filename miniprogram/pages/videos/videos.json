@@ -1,6 +1,9 @@
 {
   "usingComponents": {
-    "bottom-tab-bar": "/components/bottom-tab-bar/bottom-tab-bar"
+    "bottom-tab-bar": "/components/bottom-tab-bar/bottom-tab-bar",
+    "photo-skeleton": "/components/photo-skeleton/photo-skeleton",
+    "video-preview": "/components/video-preview/video-preview"
   },
+  "navigationStyle": "custom",
   "navigationBarTitleText": "视频"
 }

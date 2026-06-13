@@ -94,9 +94,128 @@ export const getPhotos = (): PhotoItem[] => {
   return initialPhotos;
 };
 
+/** 调用后端接口获取照片列表（按月分页） */
+export const fetchPhotoList = (params: {
+  yearMonth?: string;
+  page?: number;
+  pageSize?: number;
+  artistIds?: string[];
+  typeIds?: number[];
+  locationIds?: number[];
+  platformIds?: number[];
+}) => {
+  const queryParams: Record<string, any> = {
+    page: params.page || 1,
+    pageSize: params.pageSize || 50,
+  };
+  if (params.yearMonth) queryParams.yearMonth = params.yearMonth;
+  if (params.artistIds?.length) queryParams.artistIds = params.artistIds.join(',');
+  if (params.typeIds?.length) queryParams.typeIds = params.typeIds.join(',');
+  if (params.locationIds?.length) queryParams.locationIds = params.locationIds.join(',');
+  if (params.platformIds?.length) queryParams.platformIds = params.platformIds.join(',');
+
+  return get<{ items: any[]; total: number; page: number; pageSize: number }>(
+    '/photos/by-month',
+    queryParams
+  );
+};
+
+/** 调用后端接口获取照片时间轴（按月统计） */
+export const fetchPhotoTimeline = (params: {
+  artistIds?: string[];
+  typeIds?: number[];
+  locationIds?: number[];
+  platformIds?: number[];
+}) => {
+  const queryParams: Record<string, any> = {};
+  if (params.artistIds?.length) queryParams.artistIds = params.artistIds.join(',');
+  if (params.typeIds?.length) queryParams.typeIds = params.typeIds.join(',');
+  if (params.locationIds?.length) queryParams.locationIds = params.locationIds.join(',');
+  if (params.platformIds?.length) queryParams.platformIds = params.platformIds.join(',');
+
+  return get<{ yearMonth: string; count: number }[]>('/photos/timeline', queryParams);
+};
+
+/** 调用后端接口获取视频列表（按月分页） */
+export const fetchVideoList = (params: {
+  yearMonth?: string;
+  page?: number;
+  pageSize?: number;
+  artistIds?: string[];
+  typeIds?: number[];
+  locationIds?: number[];
+  platformIds?: number[];
+}) => {
+  const queryParams: Record<string, any> = {
+    page: params.page || 1,
+    pageSize: params.pageSize || 50,
+  };
+  if (params.yearMonth) queryParams.yearMonth = params.yearMonth;
+  if (params.artistIds?.length) queryParams.artistIds = params.artistIds.join(',');
+  if (params.typeIds?.length) queryParams.typeIds = params.typeIds.join(',');
+  if (params.locationIds?.length) queryParams.locationIds = params.locationIds.join(',');
+  if (params.platformIds?.length) queryParams.platformIds = params.platformIds.join(',');
+
+  return get<{ items: any[]; total: number; page: number; pageSize: number }>(
+    '/videos/by-month',
+    queryParams
+  );
+};
+
+/** 调用后端接口获取视频时间轴（按月统计） */
+export const fetchVideoTimeline = (params: {
+  artistIds?: string[];
+  typeIds?: number[];
+  locationIds?: number[];
+  platformIds?: number[];
+}) => {
+  const queryParams: Record<string, any> = {};
+  if (params.artistIds?.length) queryParams.artistIds = params.artistIds.join(',');
+  if (params.typeIds?.length) queryParams.typeIds = params.typeIds.join(',');
+  if (params.locationIds?.length) queryParams.locationIds = params.locationIds.join(',');
+  if (params.platformIds?.length) queryParams.platformIds = params.platformIds.join(',');
+
+  return get<{ yearMonth: string; count: number }[]>('/videos/timeline', queryParams);
+};
+
+/** 获取照片类型列表 */
+export const fetchPhotoTypes = () => {
+  return get<{ id: number; name: string }[]>('/photo-types');
+};
+
+/** 获取拍摄地点列表 */
+export const fetchPhotoLocations = () => {
+  return get<{ id: number; name: string }[]>('/photo-locations');
+};
+
+/** 获取发布平台列表 */
+export const fetchPhotoPlatforms = () => {
+  return get<{ id: number; name: string }[]>('/photo-platforms');
+};
+
 /** 获取小卡列表 */
 export const getCards = (): Photocard[] => {
   return initialCards;
+};
+
+/** 获取小卡分类列表 */
+export const fetchPhotoCardCategories = () => {
+  return get<any[]>('/photo-card-categories');
+};
+
+/** 调用后端接口获取小卡列表（支持分页） */
+export const fetchPhotoCards = (params: {
+  categoryIds?: number[];
+  artistId?: string;
+  page?: number;
+  pageSize?: number;
+}) => {
+  const queryParams: Record<string, any> = {};
+  if (params.categoryIds?.length) queryParams.categoryIds = params.categoryIds.join(',');
+  if (params.artistId) queryParams.artistId = params.artistId;
+  if (params.page) queryParams.page = params.page;
+  if (params.pageSize) queryParams.pageSize = params.pageSize;
+  return get<any>('/photo-cards', queryParams);
 };
 
 /** 获取音频列表 */

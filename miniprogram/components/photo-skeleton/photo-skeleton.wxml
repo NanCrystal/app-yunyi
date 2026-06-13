@@ -1,0 +1,4 @@
+<!-- components/photo-skeleton/photo-skeleton.wxml -->
+<view class="skeleton">
+  <view class="skeleton__shine" />
+</view>

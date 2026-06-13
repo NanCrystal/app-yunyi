@@ -40,6 +40,11 @@ Component({
       type: String,
       value: '',
     },
+    /** 状态栏高度（用于关闭按钮偏移） */
+    statusBarHeight: {
+      type: Number,
+      value: 0,
+    },
   },
 
   data: {

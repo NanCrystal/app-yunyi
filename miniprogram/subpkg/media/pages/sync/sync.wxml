@@ -4,12 +4,11 @@
     <view class="custom-nav-left" bind:tap="onGoBack">
       <text class="nav-back-icon">‹</text>
     </view>
-    <text class="custom-nav-title">动态</text>
+    <text class="custom-nav-title">动态馆</text>
     <view class="custom-nav-right" />
   </view>
 </view>
-
-<view class="page">
+<view class="page" style="--theme: {{themeColor}}; --theme-r: {{themeR}}; --theme-g: {{themeG}}; --theme-b: {{themeB}}; padding-top: {{statusBarHeight + 44}}px;">
   <!-- 固定顶部 Tab 栏 -->
   <view class="tabs-fixed" style="top: {{statusBarHeight + 44}}px;">
     <scroll-view
@@ -44,7 +43,11 @@
   >
     <!-- Phase 1：骨架屏 — 仅渲染轻量 view，无 video/swiper/image -->
     <view wx:if="{{skeleton}}" class="skeleton-list">
-      <view wx:for="{{[1,2,3]}}" wx:key="*this" class="skeleton-card">
+      <view
+        wx:for="{{[1,2,3]}}"
+        wx:key="*this"
+        class="skeleton-card"
+      >
         <view class="skeleton-header">
           <view class="skeleton-avatar" />
           <view class="skeleton-name" />
@@ -53,7 +56,6 @@
         <view class="skeleton-caption" />
       </view>
     </view>
-
     <!-- 加载中（切换 Tab 等场景） -->
     <view wx:elif="{{loading && cards.length === 0}}" class="loading-wrap">
       <text class="loading-text">加载中...</text>
@@ -99,7 +101,7 @@
                 lazy-load />
             </view>
             <!-- Phase 4：单视频 — 点击封面才挂载 video 组件 -->
-            <view class="media-single {{item.videoAspectClass || 'aspect-square'}}" wx:else>
+            <view class="media-single aspect-vert" style="{{item.videoContainerHeight ? 'height:' + item.videoContainerHeight : ''}}" wx:else>
               <view
                 wx:if="{{!item.videoVisible}}"
                 class="media-poster-wrap"
@@ -123,7 +125,6 @@
                 autoplay="{{false}}"
                 object-fit="cover"
                 show-center-play-btn="{{true}}"
-                bindloadedmetadata="onVideoLoadedMeta"
                 data-id="{{item.id}}" />
             </view>
           </block>
@@ -168,7 +169,7 @@
                       poster="{{media.poster}}"
                       muted
                       autoplay="{{false}}"
-                      object-fit="cover"
+                      object-fit="contain"
                       show-center-play-btn="{{true}}" />
                     <image
                       wx:else
