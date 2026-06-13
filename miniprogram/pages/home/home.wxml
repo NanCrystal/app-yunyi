@@ -159,7 +159,7 @@
   <!-- ===== 模块2: 近期行程 ===== -->
   <view class="section">
     <section-header
-      title="近期日程"
+      title="近期行程"
       showMore="{{true}}"
       moreKey="schedule"
       bind:more="onSectionMore" />
@@ -179,7 +179,7 @@
             <view class="skeleton-line skeleton-shimmer" style="width: 100rpx; height: 20rpx; margin-top: 12rpx;">
             </view>
           </view>
-          <view class="skeleton-poster-img skeleton-shimmer">
+          <view class="skeleton-poster-img skeleton-shimmer" >
           </view>
         </view>
       </view>
@@ -207,7 +207,7 @@
               <text class="schedule-location">{{item.location}}</text>
             </view>
           </view>
-          <view class="schedule-poster">
+          <view class="schedule-poster" bind:tap="onPreviewScheduleImage" data-url="{{item.imageUrl}}">
             <image
               class="schedule-poster-img"
               src="{{item.imageUrl}}"
@@ -250,8 +250,9 @@
           wx:for="{{featuredPhotos}}"
           wx:key="id"
           class="photo-grid-item"
-          bind:tap="onNavigateTo"
-          data-key="photos"
+          bind:tap="onPreviewPhotoImage"
+          data-url="{{item.url}}"
+          data-index="{{index}}"
         >
           <image
             class="photo-grid-img"
@@ -361,11 +362,9 @@
           <view
             wx:for="{{photocards}}"
             wx:key="id"
-            class="photocard-item"
-            bind:tap="onNavigateTo"
-            data-key="photos"
+            class="photocard-item" 
           >
-            <view class="photocard-image-wrap">
+            <view class="photocard-image-wrap" bind:tap="onPreviewPhotocardImage" data-url="{{item.imageUrl}}" data-index="{{index}}">
               <image
                 class="photocard-image"
                 src="{{item.imageUrl}}"

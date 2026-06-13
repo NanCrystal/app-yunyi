@@ -8,12 +8,9 @@
     <view class="custom-nav-right" />
   </view>
 </view>
-<scroll-view
+<view
   class="page"
-  scroll-y
-  enhanced
-  show-scrollbar="{{false}}"
-  style="--theme: {{themeColor}}; --theme-r: {{themeR}}; --theme-g: {{themeG}}; --theme-b: {{themeB}};"
+  style="--theme: {{themeColor}}; --theme-r: {{themeR}}; --theme-g: {{themeG}}; --theme-b: {{themeB}}; padding-top: {{navBarHeight}}px;"
 >
   <!-- 全屏播放器视图 -->
   <block wx:if="{{showNowPlaying && currentTrack}}">
@@ -102,10 +99,30 @@
   </block>
   <!-- 音轨列表 -->
   <block wx:else>
-    <view class="audio-list-header">
-      <text class="audio-list-title">音频库 / SOUND REGISTRY</text>
-      <text class="audio-list-count">4 TRACKS</text>
-    </view>
+    <view class="audio-container" style="height: calc(100vh - {{navBarHeight}}px;">
+      <!-- 左侧月份导航（固定） -->
+      <view class="month-nav">
+        <view class="date-picker-year" bind:tap="onToggleYearPicker">
+          <text class="year-text">{{currentYear}}</text>
+          <text class="year-arrow">▼</text>
+        </view>
+        <text class="month-nav-label">ALL</text>
+        <view
+          wx:for="{{months}}"
+          wx:key="value"
+          class="month-nav-item {{currentMonth === item.value ? 'month-nav-item--active' : ''}}"
+          data-month="{{item.value}}"
+          bind:tap="onMonthTap"
+        >
+          <text>{{item.label}}</text>
+        </view>
+      </view>
+      <!-- 右侧内容区（独立滚动） -->
+      <scroll-view class="audio-content" scroll-y enhanced show-scrollbar="{{false}}">
+        <!-- <view class="audio-list-header">
+          <text class="audio-list-title">音频库 / SOUND REGISTRY</text>
+          <text class="audio-list-count">4 TRACKS</text>
+        </view> -->
     <!-- 六月 -->
     <view class="audio-month">
       <view class="audio-month-title">
@@ -170,10 +187,32 @@
         </view>
       </view>
     </view>
+      </scroll-view>
+    </view>
   </block>
   <view class="bottom-placeholder">
   </view>
-</scroll-view>
+</view>
+<!-- 年份选择弹窗 -->
+<view class="year-picker-mask {{showYearPicker ? 'year-picker-mask--show' : ''}}" catch:tap="onCloseYearPicker"></view>
+<view class="year-picker {{showYearPicker ? 'year-picker--show' : ''}}">
+  <view class="year-picker-header">
+    <text class="year-picker-close" bind:tap="onCloseYearPicker">✕</text>
+    <text class="year-picker-title">选择年份</text>
+    <text class="year-picker-confirm" bind:tap="onConfirmYear">确定</text>
+  </view>
+  <picker-view
+    value="{{[yearIndex]}}"
+    bindchange="onYearScroll"
+    indicator-style="height: 60rpx; border-top: 1px solid #333; border-bottom: 1px solid #333;"
+    mask-style="background: transparent;"
+    style="height: 280rpx; width: 100%; background: #000000;"
+  >
+    <picker-view-column>
+      <view wx:for="{{yearRange}}" wx:key="*this" class="year-picker-item">{{item}}年</view>
+    </picker-view-column>
+  </picker-view>
+</view>
 <!-- 迷你播放器 -->
 <view
   wx:if="{{!showNowPlaying && playingTrackId && currentTrack}}"

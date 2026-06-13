@@ -12,6 +12,7 @@ import { getUTCTimeString } from "../../utils/format";
 import { themeBehavior } from "../../behaviors/theme";
 import {
   getThumbUrl,
+  getThumbFullUrl,
   getImageUrl,
   formatDateDot,
   formatTimeShort,
@@ -625,6 +626,47 @@ Component({
       //   previewImages: images,
       //   previewImageIndex: currentIdx,
       // });
+    },
+
+    /** 预览日程海报图片 */
+    onPreviewScheduleImage(e: WechatMiniprogram.BaseEvent) {
+      const url = e.currentTarget.dataset.url as string;
+      if (!url) return;
+      const fullUrl = getThumbFullUrl(url);
+      wx.previewImage({
+        current: fullUrl,
+        urls: [fullUrl],
+      });
+    },
+
+    /** 预览图片档案馆的图片 */
+    onPreviewPhotoImage(e: WechatMiniprogram.BaseEvent) {
+      const { url } = e.currentTarget.dataset as {
+        url: string;
+      };
+      if (!url) return;
+      const { featuredPhotos } = this.data;
+      const urls = featuredPhotos.map((photo) => getThumbFullUrl(photo.url)).filter(Boolean);
+      const currentUrl = getThumbFullUrl(url);
+      wx.previewImage({
+        current: currentUrl,
+        urls: urls,
+      });
+    },
+
+    /** 预览 photocard 图片 */
+    onPreviewPhotocardImage(e: WechatMiniprogram.BaseEvent) {
+      const { url } = e.currentTarget.dataset as {
+        url: string;
+      };
+      if (!url) return;
+      const { photocards } = this.data;
+      const urls = photocards.map((card) => getThumbFullUrl(card.imageUrl)).filter(Boolean);
+      const currentUrl = getThumbFullUrl(url);
+      wx.previewImage({
+        current: currentUrl,
+        urls: urls,
+      });
     },
 
     onCloseImagePreview() {
