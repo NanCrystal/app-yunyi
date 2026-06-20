@@ -1,0 +1,73 @@
+<view wx:if="{{show}}" class="popup-mask" bindtap="onMaskTap">
+  <view class="popup-card" catchtap="noop">
+    <!-- 顶部装饰线 -->
+    <view class="popup-card__line"></view>
+
+    <!-- 标题（支持自定义或根据 mode 自动计算） -->
+    <text class="popup-card__title">{{_computedTitle}}</text>
+
+    <!-- 说明文字 -->
+    <text class="popup-card__desc">{{_computedDesc}}</text>
+
+    <!-- ===== 注册/完善资料模式：头像选择 + 昵称输入 ===== -->
+    <block wx:if="{{mode === 'register' || mode === 'complete'}}">
+      <!-- 头像选择按钮 -->
+      <button
+        class="avatar-picker-btn"
+        open-type="chooseAvatar"
+        bind:chooseavatar="onChooseAvatar"
+      >
+        <image
+          class="avatar-img"
+          src="{{tempAvatarUrl || '/assets/icons/user-default.svg'}}"
+          mode="aspectFill"
+        />
+        <text class="avatar-hint">{{tempAvatarUrl ? '点击更换' : '选择头像'}}</text>
+      </button>
+
+      <!-- 昵称输入框 -->
+      <view class="nickname-input-wrap">
+        <input
+          class="nickname-input"
+          type="nickname"
+          placeholder="请输入昵称"
+          placeholder-class="nickname-placeholder"
+          value="{{tempNickName}}"
+          bindinput="onNicknameInput"
+          maxlength="20"
+        />
+      </view>
+
+      <!-- 双按钮：取消 + 确认 -->
+      <view class="form-actions">
+        <view class="form-cancel-btn" bindtap="onCancelTap">
+          <text>取消</text>
+        </view>
+        <view
+          class="form-confirm-btn {{!tempNickName || !tempAvatarUrl || loading ? 'disabled' : ''}}"
+          bindtap="onConfirmForm"
+        >
+          <text>{{loading ? '处理中...' : (mode === 'complete' ? '确认更新' : '立即注册')}}</text>
+        </view>
+      </view>
+    </block>
+
+    <!-- ===== 纯登录模式（向后兼容）：微信一键登录 ===== -->
+    <block wx:else>
+      <!-- 主操作按钮（登录/完善资料） -->
+      <view class="popup-card__btn popup-card__btn--primary" bindtap="onLoginTap">
+        <image
+          wx:if="{{!loading}}"
+          class="popup-card__btn-icon"
+          src="/assets/icons/wechat.svg"
+          mode="aspectFit"
+        />
+        <view wx:else class="popup-card__loading"></view>
+        <text class="popup-card__btn-text">{{loading ? '处理中...' : _btnText}}</text>
+      </view>
+
+      <!-- 取消按钮 -->
+      <text class="popup-card__cancel" bindtap="onCancelTap">以后再说</text>
+    </block>
+  </view>
+</view>

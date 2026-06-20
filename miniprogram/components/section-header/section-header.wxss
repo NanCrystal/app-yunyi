@@ -7,6 +7,11 @@
   border-bottom: 1px solid #262626;
 }
 
+.section-header--disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 .section-title {
   font-family: "Courier New", Courier, monospace;
   font-size: 40rpx;
@@ -21,6 +26,11 @@
   flex-direction: row;
   align-items: center;
   gap: 6rpx;
+}
+
+.section-more--disabled {
+  pointer-events: none;
+  opacity: 0.5;
 }
 
 .more-text {

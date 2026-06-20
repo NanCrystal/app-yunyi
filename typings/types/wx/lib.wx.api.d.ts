@@ -5845,6 +5845,31 @@ wx.getSetting({
         /** 接口调用成功的回调函数 */
         success?: SwitchTabSuccessCallback
     }
+    interface WindowInfo {
+        /** 设备像素比 */
+        pixelRatio: number
+        /** 屏幕宽度，单位px */
+        screenWidth: number
+        /** 屏幕高度，单位px */
+        screenHeight: number
+        /** 可使用窗口宽度，单位px */
+        windowWidth: number
+        /** 可使用窗口高度，单位px */
+        windowHeight: number
+        /** 状态栏高度，单位px */
+        statusBarHeight: number
+        /** 安全区域 */
+        safeArea: {
+            left: number
+            right: number
+            top: number
+            bottom: number
+            width: number
+            height: number
+        }
+        /** 窗口上边缘的 y 值 */
+        screenTop: number
+    }
     interface SystemInfo {
         /** 客户端基础库版本
          *
@@ -11717,6 +11742,12 @@ try {
 }
 ``` */
         getSystemInfoSync(): SystemInfo
+        /** [Object wx.getWindowInfo()](https://developers.weixin.qq.com/miniprogram/dev/api/base/system/wx.getWindowInfo.html)
+         *
+         * 获取窗口信息（同步）
+         *
+         * 最低基础库： `2.20.1` */
+        getWindowInfo(): WindowInfo
         /** [[Animation](https://developers.weixin.qq.com/miniprogram/dev/api/ui/animation/Animation.html) wx.createAnimation(Object object)](https://developers.weixin.qq.com/miniprogram/dev/api/ui/animation/wx.createAnimation.html)
          *
          * 创建一个动画实例 [animation](https://developers.weixin.qq.com/miniprogram/dev/api/ui/animation/Animation.html)。调用实例的方法来描述动画。最后通过动画实例的 export 方法导出动画数据传递给组件的 animation 属性。 */

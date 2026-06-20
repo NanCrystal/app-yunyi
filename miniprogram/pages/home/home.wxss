@@ -31,13 +31,13 @@
 }
 
 .nav-home-icon {
-  width: 36rpx;
-  height: 36rpx;
+  width: 40rpx;
+  height: 40rpx;
 }
 
 .custom-nav-title {
   font-family: "Courier New", Courier, monospace;
-  font-size: 22rpx;
+  font-size: 36rpx;
   font-weight: 400;
   letter-spacing: 24rpx;
   color: #ffffff;
@@ -149,6 +149,38 @@
   width: 64rpx;
 }
 
+/* Hero 空状态 */
+.hero-empty-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    to top,
+    #000000 0%,
+    rgba(0, 0, 0, 0.6) 40%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+}
+
+.hero-empty-image {
+  width: 300rpx;
+  height: 180rpx;
+  margin-bottom: 32rpx;
+  opacity: 0.6;
+}
+
+.hero-empty-text {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 24rpx;
+  font-weight: 400;
+  letter-spacing: 4rpx;
+  text-transform: uppercase;
+  color: #999999;
+}
+
 /* ===== 状态栏 ===== */
 .status-bar {
   display: flex;
@@ -232,14 +264,40 @@
   height: 40rpx;
 }
 
+.post-content-wrap {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  margin-bottom: 32rpx;
+}
+
 .post-content {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 28rpx;
   font-weight: 600;
   line-height: 1.7;
   color: #ffffff;
-  margin-bottom: 32rpx;
-  display: block;
+  display: -webkit-box;
+  overflow: hidden;
+  word-break: break-all;
+  flex: 1;
+}
+
+.post-content--collapsed {
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.post-expand-btn {
+  flex-shrink: 0;
+  padding-left: 12rpx;
+  margin-top: 4rpx;
+}
+
+.post-expand-btn text {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 24rpx;
+  color: var(--theme);
 }
 
 .post-images {
@@ -254,10 +312,32 @@
   border: 1px solid #262626;
 }
 
-.post-video {
+.post-video-wrap {
+  position: relative;
   width: 220rpx;
   height: 220rpx;
   border: 1px solid #262626;
+  overflow: hidden;
+}
+
+.post-video-cover {
+  width: 100%;
+  height: 100%;
+  filter: grayscale(10%);
+}
+
+.post-video-cover--empty {
+  background-color: #000000;
+}
+
+.post-video-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 64rpx;
+  height: 64rpx;
+  transform: translate(-50%, -50%);
+  opacity: 0.85;
 }
 
 /* ===== 近期行程 ===== */
@@ -337,7 +417,7 @@
   text-transform: uppercase;
 }
 
-.schedule-location { 
+.schedule-location {
   font-family: "Arial Narrow", "Helvetica Neue", sans-serif;
   font-size: 22rpx;
   font-weight: 400;
@@ -370,7 +450,7 @@
 }
 
 .photo-grid-item {
-  flex: 1;
+  flex: 0 0 calc((100% - 16rpx) / 3);
   aspect-ratio: 3/4;
   background-color: #141414;
   border: 1px solid #262626;
@@ -461,11 +541,12 @@
 
 .video-feature-title {
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 28rpx;
-  font-weight: 400;
-  letter-spacing: 2rpx;
+  font-size: 24rpx;
+  /* font-weight: 400; */
+  letter-spacing: 6rpx;
   text-transform: uppercase;
-  color: #ffffff;
+  color: #ffffffc4;
+  opacity: 0.8;
 }
 
 /* ===== 小卡档案馆 ===== */
@@ -482,7 +563,7 @@
 }
 
 .photocard-item {
-  flex: 1;
+  flex: 0 0 calc((100% - 16rpx) / 3);
   aspect-ratio: 3/4;
   background-color: #0a0a0a;
   border: 1px solid #262626;
@@ -649,6 +730,24 @@
   filter: grayscale(1) brightness(0.9);
 }
 
+/* 无封面时的黑色占位 + 默认 icon */
+.voice-disc-img-fallback {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.voice-disc-img-fallback-icon {
+  width: 40%;
+  height: 40%;
+  opacity: 0.5;
+}
+
 .voice-disc-center {
   position: absolute;
   top: 50%;
@@ -659,8 +758,8 @@
 }
 
 .voice-disc-center-dot {
-  width: 20rpx;
-  height: 20rpx;
+  width: 40rpx;
+  height: 40rpx;
   border-radius: 50%;
   background-color: #000000;
   border: 2rpx solid #333333;
@@ -716,9 +815,14 @@
   background: rgba(0, 0, 0, 0.6);
 }
 
+.voice-play-btn--disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
 .voice-play-icon {
-  color: #ffffff;
-  font-size: 32rpx;
+  width: 36rpx;
+  height: 36rpx;
 }
 
 .voice-progress {
@@ -769,6 +873,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding-bottom: 32rpx;
 }
 
 .char-switch-label {
@@ -822,9 +927,85 @@
   text-transform: uppercase;
 }
 
+/* ===== 角色切换弹窗 ===== */
+.switch-dialog-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.switch-dialog {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 64rpx 80rpx;
+  border-radius: 32rpx;
+  background-color: #141414;
+  border: 1px solid #262626;
+  width: 520rpx;
+}
+
+.switch-dialog-avatar {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+  border: 2rpx solid #333333;
+  margin-bottom: 32rpx;
+}
+
+.switch-dialog-text {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 24rpx;
+  color: #999999;
+  margin-bottom: 8rpx;
+  letter-spacing: 2rpx;
+}
+
+.switch-dialog-name {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 36rpx;
+  font-weight: 600;
+  letter-spacing: 6rpx;
+  text-transform: uppercase;
+  margin-bottom: 16rpx;
+}
+
+.switch-dialog-hint {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22rpx;
+  font-style: italic;
+  color: #666666;
+  margin-bottom: 40rpx;
+}
+
+.switch-dialog-progress-wrap {
+  width: 100%;
+  height: 6rpx;
+  background-color: #262626;
+  border-radius: 3rpx;
+  overflow: hidden;
+  margin-bottom: 12rpx;
+}
+
+.switch-dialog-progress-bar {
+  height: 100%;
+  border-radius: 3rpx;
+  transition: width 0.1s linear;
+}
+
+.switch-dialog-percent {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 20rpx;
+  letter-spacing: 2rpx;
+}
+
 /* ===== 底部占位 ===== */
 .bottom-placeholder {
-  height: 160rpx;
+  height: calc(100rpx + env(safe-area-inset-bottom));
 }
 
 /* ===== 骨架屏通用样式 ===== */
@@ -835,7 +1016,7 @@
 }
 
 .skeleton-shimmer::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;

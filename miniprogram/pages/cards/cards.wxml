@@ -5,9 +5,9 @@
   <view class="custom-nav" style="padding-top: {{statusBarHeight}}px;">
     <view class="custom-nav-inner">
       <view class="custom-nav-left" bindtap="onGoBack">
-        <text class="nav-back-icon">‹</text>
+        <image class="nav-back-icon" src="/assets/icons/arrow_right.svg" mode="aspectFit" />
       </view>
-      <text class="custom-nav-title">小卡馆</text>
+      <text class="custom-nav-title">Cards</text>
       <view class="custom-nav-right" />
     </view>
   </view>

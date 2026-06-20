@@ -1,0 +1,277 @@
+/* pages/detail/detail.wxss */
+
+/* ── Design Tokens ── */
+page {
+  --color-bg:             #000000;
+  --color-surface:        #141414;
+  --color-outline:        #262626;
+  --color-on-surface:     #e2e2e2;
+  --color-on-muted:       rgba(255,255,255,0.4);
+  --color-on-dim:         rgba(255,255,255,0.1);
+  --color-primary:        #ffffff;
+  --color-cyan:           #56A4AD;
+
+  --font-mono:            'Courier New', monospace;
+  --font-display:         'PingFang SC', 'Helvetica Neue', sans-serif;
+
+  background-color: var(--color-bg);
+  color: var(--color-on-surface);
+  font-family: var(--font-display);
+}
+/* ===== 自定义导航栏 ===== */
+.custom-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+  background-color: #000000;
+}
+
+.custom-nav-inner {
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32rpx;
+}
+
+.custom-nav-left,
+.custom-nav-right {
+  width: 64rpx;
+  display: flex;
+  align-items: center;
+}
+
+.nav-back-icon {
+  width: 36rpx;
+  height: 36rpx;
+  transform: rotateY(180deg);
+}
+
+.custom-nav-title {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 36rpx;
+  font-weight: 400;
+  letter-spacing: 24rpx;
+  color: #ffffff;
+  flex: 1;
+  text-align: center;
+  text-transform: uppercase;
+}
+/* ── Page Layout ── */
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--color-bg);
+}
+
+/* ── AppBar ── */
+.appbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 28rpx 48rpx;
+  background: rgba(0,0,0,0.80);
+  border-bottom: 1rpx solid var(--color-outline);
+  padding-top: calc(28rpx + env(safe-area-inset-top));
+}
+
+.appbar__left {
+  display: flex;
+  align-items: center;
+  gap: 32rpx;
+}
+
+.appbar__close {
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-on-surface);
+  font-size: 28rpx;
+}
+
+.appbar__title {
+  font-size: 40rpx;
+  font-weight: 400;
+  color: var(--color-on-surface);
+  letter-spacing: 2rpx;
+}
+
+.appbar__right {
+  display: flex;
+  align-items: center;
+}
+
+.appbar__nav {
+  display: flex;
+  gap: 48rpx;
+}
+
+.nav-item {
+  font-family: var(--font-mono);
+  font-size: 18rpx;
+  letter-spacing: 5rpx;
+  color: var(--color-on-muted);
+}
+
+.nav-item--active {
+  color: var(--color-cyan);
+  border-bottom: 3rpx solid var(--color-cyan);
+  padding-bottom: 2rpx;
+}
+
+/* ── Main Scroll ── */
+.main {
+  flex: 1;
+  padding-top: calc(120rpx + env(safe-area-inset-top));
+  padding-bottom: 120rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── Card Wrapper ── */
+.card-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 40rpx;
+  margin-bottom: 80rpx;
+  box-sizing: border-box;
+}
+
+/* 竖屏：55:85 ≈ 0.647，padding-top 撑高 */
+.card-wrap--portrait .card {
+  width: 100%;
+  max-width: 560rpx;
+  padding-top: calc(560rpx * 85 / 55);
+}
+
+/* 横屏：85:55 ≈ 1.545，宽度撑满，高度按比例收窄 */
+.card-wrap--landscape .card {
+  width: 100%;
+  max-width: 100%;
+  padding-top: calc((100vw - 96rpx) * 55 / 85);
+}
+
+/* ── Card Base ── */
+/* perspective 容器：提供 3D 视距 */
+.card {
+  position: relative;
+  perspective: 1200rpx;
+}
+
+/* 翻转过渡：整个 card 不动，靠正反面各自的 rotateY 切换 */
+.card--flipped .card__front {
+  transform: rotateY(180deg);
+}
+
+.card--flipped .card__back {
+  transform: rotateY(0deg);
+}
+
+.card__face {
+  position: absolute;
+  inset: 0;
+  background: var(--color-surface);
+  border: 1rpx solid var(--color-outline);
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+  transition: transform 0.6s ease;
+}
+
+/* 正面默认朝外 */
+.card__front {
+  transform: rotateY(0deg);
+}
+
+/* 背面默认翻转 180° 藏在后面 */
+.card__back {
+  transform: rotateY(180deg);
+  background: linear-gradient(135deg, #0e0e0e 0%, #1a1a1a 100%);
+}
+
+.card__img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ── 指示点 ── */
+.dots {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 32rpx;
+}
+
+.dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: var(--color-on-dim);
+  transition: background 0.3s;
+}
+
+.dot--active {
+  background: var(--color-cyan);
+}
+
+/* ── Metadata ── */
+.meta {
+  width: 100%;
+  padding: 0 48rpx;
+  box-sizing: border-box;
+}
+
+.meta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  padding: 40rpx 16rpx;
+  border-bottom: 1rpx solid var(--color-outline);
+}
+
+.meta-row--last {
+  border-bottom: none;
+}
+
+.meta-row__label {
+  font-family: var(--font-mono);
+  font-size: 18rpx;
+  letter-spacing: 5rpx;
+  color: var(--color-on-muted);
+}
+
+.meta-row__value {
+  font-size: 36rpx;
+  font-weight: 400;
+  color: var(--color-primary);
+  letter-spacing: -1rpx;
+}
+
+.meta-row__value--mono {
+  font-family: var(--font-mono);
+  font-size: 36rpx;
+  letter-spacing: 2rpx;
+}
+
+/* ── Cover 缩略图 ── */
+.cover__img {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 8rpx;
+  border: 1rpx solid var(--color-outline);
+  display: block;
+}

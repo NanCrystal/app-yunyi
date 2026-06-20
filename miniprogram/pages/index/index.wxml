@@ -3,7 +3,7 @@
   <view class="header">
     <view class="header-line"></view>
     <text class="header-brand">STARVIEW</text>
-    <text class="header-sub">ARCHIVE</text>
+    <!-- <text class="header-sub">ARCHIVE</text> -->
     <view class="header-line"></view>
   </view>
 

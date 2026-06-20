@@ -1,32 +1,19 @@
 {
   "pages": [
+    "pages/welcome/welcome",
     "pages/index/index",
     "pages/home/home",
+    "pages/sync/sync",
     "pages/schedule/schedule",
     "pages/photos/photos",
     "pages/videos/videos",
     "pages/cards/cards",
-    "pages/social/social",
     "pages/audio/audio",
     "pages/mine/mine",
-    "pages/audioDetail/audioDetail"
+    "pages/comments/comments",
+    "pages/feedback/feedback",
+    "pages/card-detail/card-detail"
   ],
-  "subPackages": [
-    {
-      "root": "subpkg/media",
-      "pages": [
-        "pages/sync/sync"
-      ]
-    }
-  ],
-  "preloadRule": {
-    "pages/home/home": {
-      "network": "all",
-      "packages": [
-        "subpkg/media"
-      ]
-    }
-  },
   "window": {
     "navigationBarTextStyle": "white",
     "navigationBarTitleText": "STARVIEW ARCHIVE",

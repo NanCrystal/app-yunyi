@@ -1,6 +1,7 @@
 .page {
   min-height: 100vh;
   background-color: #000000;
+  overflow: hidden;
 }
 /* ===== 自定义导航栏 ===== */
 .custom-nav {
@@ -28,19 +29,20 @@
 }
 
 .nav-back-icon {
-  font-size: 48rpx;
-  color: #ffffff;
-  line-height: 1;
+  width: 36rpx;
+  height: 36rpx;
+  transform: rotateY(180deg);
 }
 
 .custom-nav-title {
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 22rpx;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 36rpx;
   font-weight: 400;
   letter-spacing: 24rpx;
   color: #ffffff;
   flex: 1;
   text-align: center;
+  text-transform: uppercase;
 }
 /* ===== 列表视图 ===== */
 .audio-container {
@@ -49,14 +51,18 @@
 }
 
 .month-nav {
-  width: 80rpx;
+  width: 120rpx;
   flex-shrink: 0;
   border-right: 1px solid #262626;
-  padding-top: 32rpx;
+  margin-top: 32rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
   overflow-y: auto;
+  position: sticky;
+  top: 0;
+  height: 100%;
+  align-self: flex-start;
 }
 
 /* 年份选择器（缩小版） */
@@ -64,12 +70,12 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 4rpx;
+  gap: 6rpx;
   flex-shrink: 0;
   padding: 6rpx 10rpx;
   border: 1px solid #333333;
   border-radius: 6rpx;
-  margin-bottom: 8rpx;
+  margin-bottom: 32rpx;
 }
 
 .date-picker-year:active {
@@ -78,7 +84,7 @@
 
 .year-text {
   font-family: Georgia, "Times New Roman", serif;
-  font-size: 20rpx;
+  font-size: 28rpx;
   font-weight: 400;
   color: #ffffff;
 }
@@ -93,9 +99,12 @@
   font-size: 22rpx;
   display: block;
   color: #555555;
-  padding:12rpx 0 12rpx 12rpx;
-  /* margin-bottom: 8rpx; */
-  /* text-align: left; */
+  padding: 12rpx 0 12rpx 12rpx;
+}
+
+.month-nav-label--active {
+  color: var(--theme);
+  font-weight: 600;
 }
 
 .month-nav-item {
@@ -108,12 +117,12 @@
   font-size: 22rpx;
   color: #555555;
   display: block;
-  padding:12rpx 0 12rpx 12rpx;
+  padding: 12rpx 0 12rpx 12rpx;
   text-align: left;
 }
 
 .month-nav-item--active text {
-  color: #ff3333;
+  color: var(--theme);
   font-weight: 600;
 }
 
@@ -121,6 +130,14 @@
   flex: 1;
   min-width: 0;
   height: 100%;
+}
+
+/* 隐藏 scroll-view 滚动条 */
+.audio-content::-webkit-scrollbar {
+  display: none;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent;
 }
 .audio-list-header {
   display: flex;
@@ -141,7 +158,7 @@
 }
 
 .audio-list-count {
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   font-size: 20rpx;
   font-weight: 400;
   color: #555555;
@@ -192,6 +209,25 @@
   opacity: 0.75;
 }
 
+/* 无封面时的黑色占位 + 默认 icon */
+.audio-track-img-fallback {
+  width: 100rpx;
+  height: 100rpx;
+  border: 1px solid #262626;
+  flex-shrink: 0;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.75;
+}
+
+.audio-track-img-fallback-icon {
+  width: 40rpx;
+  height: 40rpx;
+  opacity: 0.5;
+}
+
 .audio-track-info {
   flex: 1;
   min-width: 0;
@@ -199,7 +235,7 @@
 
 .audio-track-name {
   display: block;
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: Georgia, "Times New Roman", serif;
   font-size: 26rpx;
   font-weight: 400;
   color: #ffffff;
@@ -214,7 +250,7 @@
 }
 
 .audio-track-meta {
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   font-size: 20rpx;
   font-weight: 400;
   color: #777777;
@@ -233,9 +269,10 @@
   background: #000000;
 }
 
-.audio-track-play text {
-  color: #ffffff;
-  font-size: 28rpx;
+.audio-track-play-icon {
+  width: 28rpx;
+  height: 28rpx;
+  filter: brightness(0) invert(1);
 }
 
 /* ===== 全屏播放器 ===== */
@@ -243,53 +280,9 @@
   position: fixed;
   inset: 0;
   z-index: 999;
-  background-color: #000000;
+  background-color: #1a1a1e;
   display: flex;
   flex-direction: column;
-}
-
-.np-header {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  height: 100rpx;
-  padding: 0 40rpx;
-  background: rgba(0,0,0,0.8);
-  border-bottom: 1px solid #262626;
-}
-
-.np-close {
-  width: 56rpx;
-  height: 56rpx;
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-  font-size: 24rpx;
-}
-
-.np-label {
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 26rpx;
-  font-weight: 400;
-  letter-spacing: 6rpx;
-  text-transform: uppercase;
-  color: #ffffff;
-}
-
-.np-share {
-  width: 56rpx;
-  height: 56rpx;
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-  font-size: 24rpx;
 }
 
 .np-body {
@@ -297,210 +290,370 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 40rpx;
+  justify-content: flex-start;
+  padding: 88rpx 48rpx 60rpx;
   overflow-y: auto;
+}
+
+/* 唱针 */
+.np-needle-wrap {
+  position: relative;
+  width: 220rpx;
+  height: 250rpx;
+  margin-bottom: -60rpx;
+  z-index: 10;
+  transform-origin: 28rpx 32rpx;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.np-needle--paused {
+  transform: rotate(-30deg);
+}
+
+.np-needle--playing {
+  transform: rotate(0deg);
+}
+
+.np-needle {
+  width: 100%;
+  height: 100%;
+  filter: brightness(0) invert(1);
 }
 
 /* 专辑封面 */
 .np-cover-wrap {
-  position: relative;
-  padding: 32rpx;
-  border: 1px solid #262626;
-  background-color: #050505;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 56rpx;
 }
 
-.np-cover-corners {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
+/* 外层旋转容器 + 外层浅色边框 + 倾斜效果 */
+.np-cover-spin {
+  width: 360rpx;
+  height: 360rpx;
+  padding: 60rpx;
+  border-radius: 50%;
+  border: 3rpx solid
+    rgba(var(--theme-r, 100), var(--theme-g, 180), var(--theme-b, 220), 0.2);
+  transform: rotate(-12deg);
+  animation: np-cover-spin 25s linear infinite;
+  box-shadow: 0 0 80rpx 10rpx
+    rgba(var(--theme-r, 100), var(--theme-g, 180), var(--theme-b, 220), 0.15);
 }
 
-.np-corner {
-  position: absolute;
-  width: 16rpx;
-  height: 16rpx;
-  border-color: #333333;
-}
+/* 内层容器 + 内层主题色边框 */
+.np-cover-spin-inner {
+  width: 100%;
+  height: 100%;
+  /* padding: 12rpx; */
+  border-radius: 50%;
+  /* border-radius: 24rpx; */
+  border: 3rpx solid var(--theme, #4ab8d6);
 
-.np-corner--tl { top: -6rpx; left: -6rpx; border-top: 4rpx solid #333; border-left: 4rpx solid #333; }
-.np-corner--tr { top: -6rpx; right: -6rpx; border-top: 4rpx solid #333; border-right: 4rpx solid #333; }
-.np-corner--bl { bottom: -6rpx; left: -6rpx; border-bottom: 4rpx solid #333; border-left: 4rpx solid #333; }
-.np-corner--br { bottom: -6rpx; right: -6rpx; border-bottom: 4rpx solid #333; border-right: 4rpx solid #333; }
-
-.np-cover {
-  width: 400rpx;
-  height: 400rpx;
   overflow: hidden;
-  border: 1px solid #262626;
+  position: relative;
+}
+
+@keyframes np-cover-spin {
+  from {
+    transform: rotate(-12deg);
+  }
+  to {
+    transform: rotate(348deg);
+  }
 }
 
 .np-cover-img {
   width: 100%;
   height: 100%;
-  filter: grayscale(1);
-  opacity: 0.9;
+  border-radius: 18rpx;
+  opacity: 0.95;
+}
+
+/* 无封面时的黑色占位 + 默认 icon */
+.np-cover-fallback {
+  width: 100%;
+  height: 100%;
+  border-radius: 18rpx;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.np-cover-fallback-icon {
+  width: 40%;
+  height: 40%;
+  opacity: 0.5;
+}
+
+/* 中间圆形装饰（唱片效果） */
+.np-cover-disc {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2a2a35 0%, #1a1a22 100%);
+  border: 3rpx solid var(--theme, #4ab8d6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 24rpx
+      rgba(var(--theme-r, 100), var(--theme-g, 180), var(--theme-b, 220), 0.4),
+    inset 0 0 16rpx rgba(0, 0, 0, 0.6);
+}
+
+.np-cover-disc-inner {
+  width: 32rpx;
+  height: 32rpx;
+  border-radius: 50%;
+  background-color: var(--theme, #4ab8d6);
+  box-shadow: 0 0 20rpx
+    rgba(var(--theme-r, 100), var(--theme-g, 180), var(--theme-b, 220), 0.7);
 }
 
 /* 元信息 */
 .np-meta {
-  margin-top: 48rpx;
   text-align: center;
+  margin-bottom: 56rpx;
 }
 
 .np-track-title {
   display: block;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 36rpx;
-  font-weight: 400;
-  font-style: italic;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+  font-size: 40rpx;
+  font-weight: 600;
   color: #ffffff;
-  text-transform: uppercase;
-  margin-bottom: 12rpx;
+  line-height: 1.4;
+  margin-bottom: 16rpx;
 }
 
-.np-track-info {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 12rpx;
-  font-family: 'Courier New', Courier, monospace;
+.np-track-subtitle {
+  display: block;
+  font-family: "Courier New", Courier, monospace;
   font-size: 22rpx;
   font-weight: 400;
-  color: #777777;
+  color: var(--theme, #4ab8d6);
+  letter-spacing: 2rpx;
+  opacity: 0.9;
 }
 
-.np-dot {
-  color: #333333;
+/* 音频波形可视化 */
+.np-visualizer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6rpx;
+  height: 120rpx;
+  margin-bottom: 56rpx;
+  padding: 0 20rpx;
 }
 
-.np-bitrate {
-  padding: 4rpx 16rpx;
-  border: 1px solid #262626;
-}
-
-.np-bitrate text {
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 20rpx;
-  font-weight: 400;
-  color: var(--theme);
-  text-transform: uppercase;
+.np-bar {
+  width: 8rpx;
+  background: linear-gradient(
+    to top,
+    var(--theme, #4ab8d6) 0%,
+    rgba(var(--theme-r, 100), var(--theme-g, 180), var(--theme-b, 220), 0.4)
+      100%
+  );
+  border-radius: 4rpx;
+  min-height: 8rpx;
+  transition: height 0.15s ease;
 }
 
 /* 播放控制 */
 .np-controls {
-  margin-top: 48rpx;
   width: 100%;
-  max-width: 500rpx;
+  max-width: 600rpx;
 }
 
+/* 全屏播放进度条 */
 .np-progress {
+  display: flex;
+  flex-direction: column;
+  padding: 20rpx 0;
+  margin-bottom: 56rpx;
+}
+
+.np-progress-bar {
+  /* flex: 1; */
+  height: 6rpx;
+  background: #333333;
+  border-radius: 3rpx;
   position: relative;
-  width: 100%;
-  height: 4rpx;
-  background-color: #262626;
-  margin-bottom: 16rpx;
+  overflow: visible;
 }
 
 .np-progress-fill {
   height: 100%;
-  background-color: var(--theme);
-  transition: width 0.3s;
+  background: var(--theme, #4ab8d6);
+  border-radius: 3rpx;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  transition: width 0.1s linear;
 }
 
-.np-progress-dot {
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 12rpx;
-  height: 12rpx;
-  background-color: var(--theme);
+.np-progress-thumb {
+  width: 24rpx;
+  height: 24rpx;
   border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.4);
+  position: absolute;
+  right: -12rpx;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
-.np-times {
+.np-progress:active .np-progress-fill {
+  transition: none;
+}
+
+.np-progress:active .np-progress-thumb {
+  opacity: 1;
+}
+
+.np-progress-time-row {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 22rpx;
-  font-weight: 400;
-  color: #555555;
-  margin-bottom: 32rpx;
+  margin-top: 8rpx;
+}
+
+.np-progress-time {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 24rpx;
+  color: var(--theme, #4ab8d6);
+}
+
+.np-progress-time-left {
+  text-align: left;
+}
+
+.np-progress-time-right {
+  text-align: right;
 }
 
 .np-buttons {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: center;
-  gap: 56rpx;
+  justify-content: space-between;
+  gap: 24rpx;
 }
 
 .np-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #ffffff;
-  font-size: 40rpx;
+  font-size: 36rpx;
+  flex-shrink: 0;
 }
 
 .np-btn--play {
   width: 100rpx;
   height: 100rpx;
-  border: 1px solid #262626;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: 28rpx;
+  background: linear-gradient(
+    135deg,
+    var(--theme, #4ab8d6) 0%,
+    rgba(var(--theme-r, 100), var(--theme-g, 180), var(--theme-b, 220), 0.85)
+      100%
+  );
+  box-shadow: 0 8rpx 32rpx
+      rgba(var(--theme-r, 100), var(--theme-g, 180), var(--theme-b, 220), 0.4),
+    0 4rpx 12rpx rgba(0, 0, 0, 0.3);
 }
 
-.np-btn--play text {
-  color: var(--theme);
-  font-size: 40rpx;
+.np-btn--play:active {
+  transform: scale(0.95);
+  opacity: 0.9;
 }
 
-.np-options {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 48rpx;
-  margin-top: 48rpx;
+.np-icon-play {
+  width: 38rpx;
+  height: 38rpx;
+  filter: brightness(0) invert(1);
+}
+
+.np-icon-skip {
+  width: 42rpx;
+  height: 42rpx;
+  filter: brightness(0) invert(1);
+}
+.cloase-np-btn {
+  position: absolute;
+  top: 120rpx;
+  left: 20rpx;
+}
+.np-icon-collapse {
+  width: 32rpx;
+  height: 32rpx;
+  filter: brightness(0) invert(1) opacity(0.6);
+}
+.np-icon-list {
   font-size: 32rpx;
-  color: #555555;
-}
-
-.np-footer {
-  height: 60rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-top: 1px solid #262626;
-}
-
-.np-footer text {
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 18rpx;
-  font-weight: 400;
-  color: #555555;
-  letter-spacing: 4rpx;
-  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* ===== 迷你播放器 ===== */
 .mini-player {
   position: fixed;
-  bottom: 100rpx;
+  bottom: 0;
   left: 0;
   right: 0;
   z-index: 100;
-  height: 100rpx;
-  background: rgba(12,12,12,0.9);
+  background: rgba(12, 12, 12, 0.9);
   border-top: 1px solid #262626;
+}
+
+.mini-player-progress {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 8rpx 32rpx;
+  gap: 16rpx;
+}
+
+.mini-player-progress-bar {
+  flex: 1;
+  height: 4rpx;
+  background: #333333;
+  border-radius: 2rpx;
+  overflow: hidden;
+}
+
+.mini-player-progress-fill {
+  height: 100%;
+  background: var(--theme, #4ab8d6);
+  border-radius: 2rpx;
+  transition: width 0.3s linear;
+}
+
+.mini-player-progress-text {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 18rpx;
+  color: #666666;
+  flex-shrink: 0;
+  min-width: 100rpx;
+  text-align: right;
+}
+
+.mini-player-body {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  padding: 0 32rpx;
+  padding: 0 32rpx 16rpx;
 }
 
 .mini-player-left {
@@ -519,13 +672,31 @@
   flex-shrink: 0;
 }
 
+/* 无封面时的黑色占位 + 默认 icon */
+.mini-player-img-fallback {
+  width: 64rpx;
+  height: 64rpx;
+  border: 1px solid #262626;
+  flex-shrink: 0;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mini-player-img-fallback-icon {
+  width: 32rpx;
+  height: 32rpx;
+  opacity: 0.5;
+}
+
 .mini-player-info {
   min-width: 0;
 }
 
 .mini-player-title {
   display: block;
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: Georgia, "Times New Roman", serif;
   font-size: 22rpx;
   font-weight: 400;
   color: #ffffff;
@@ -537,7 +708,7 @@
 }
 
 .mini-player-author {
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   font-size: 18rpx;
   font-weight: 400;
   color: #666666;
@@ -554,8 +725,15 @@
 }
 
 .mini-player-btn {
-  color: #666666;
-  font-size: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mini-player-icon {
+  width: 40rpx;
+  height: 40rpx;
+  filter: brightness(0) invert(1);
 }
 
 .bottom-placeholder {
@@ -648,4 +826,13 @@
   font-size: 26rpx;
   color: #aaaaaa;
   background-color: #000000;
+}
+
+.empty-text {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 22rpx;
+  font-weight: 400;
+  color: #555555;
+  letter-spacing: 4rpx;
+  text-transform: uppercase;
 }

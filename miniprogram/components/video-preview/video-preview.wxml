@@ -2,24 +2,24 @@
   <!-- 内容区，阻止冒泡 -->
   <view class="vp-body" catch:tap="onStopPropagation">
     <!-- 关闭按钮 -->
-    <view class="vp-close" style="top: {{statusBarHeight + 44 + 24}}px;" bind:tap="onClose">
+    <view class="vp-close" style="top: {{statusBarHeight + 22 - 24}}px;" bind:tap="onClose">
       <text class="vp-close-icon">✕</text>
     </view>
 
     <!-- 标题 -->
-    <view class="vp-title" wx:if="{{title}}">
+    <!-- <view class="vp-title" wx:if="{{title}}">
       <text class="vp-title-text">{{title}}</text>
-    </view>
+    </view> -->
 
     <!-- 视频播放器 -->
-    <view class="vp-video-wrap">
+    <view class="vp-video-wrap" bind:tap="onTogglePlay">
       <video
         id="vp-video"
         class="vp-video"
         src="{{videoUrl}}"
         poster="{{poster}}"
         object-fit="contain"
-        show-center-play-btn="{{!isPlaying}}"
+        show-center-play-btn="{{false}}"
         show-play-btn="{{false}}"
         enable-progress-gesture="{{false}}"
         controls="{{false}}"
@@ -29,8 +29,8 @@
         bind:timeupdate="onTimeUpdate"
       />
 
-      <!-- 自定义播放/暂停按钮（覆盖在视频上） -->
-      <view class="vp-play-overlay" wx:if="{{!isPlaying}}" bind:tap="onTogglePlay">
+      <!-- 暂停时显示中央播放按钮 -->
+      <view class="vp-play-overlay" wx:if="{{!isPlaying}}">
         <view class="vp-play-btn">
           <text class="vp-play-icon">▶</text>
         </view>
@@ -38,9 +38,12 @@
     </view>
 
     <!-- 底部工具栏 -->
-    <view class="vp-toolbar">
-      <!-- 进度条 -->
+    <view class="vp-toolbar" catch:tap="onStopPropagation">
+      <!-- 播放/暂停 + 进度条 -->
       <view class="vp-progress-section">
+        <view class="vp-play-toggle" bind:tap="onTogglePlay">
+          <text class="vp-toggle-icon">{{isPlaying ? '❚❚' : '▶'}}</text>
+        </view>
         <text class="vp-time">{{currentTimeText}}</text>
         <slider
           class="vp-slider"
@@ -55,18 +58,6 @@
           bind:changing="onProgressChange"
         />
         <text class="vp-time">{{durationText}}</text>
-      </view>
-
-      <!-- 操作按钮 -->
-      <view class="vp-actions">
-        <view class="vp-action-btn" bind:tap="onDownload">
-          <text class="vp-action-icon">↓</text>
-          <text class="vp-action-text">下载</text>
-        </view>
-        <view class="vp-action-btn" bind:tap="onShare">
-          <text class="vp-action-icon">↗</text>
-          <text class="vp-action-text">分享</text>
-        </view>
       </view>
     </view>
   </view>

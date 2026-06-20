@@ -4,9 +4,9 @@
 <view class="custom-nav" style="padding-top: {{statusBarHeight}}px;">
   <view class="custom-nav-inner">
     <view class="custom-nav-left" bind:tap="onGoBack">
-      <text class="nav-back-icon">‹</text>
+      <image class="nav-back-icon" src="/assets/icons/arrow_right.svg" mode="aspectFit" />
     </view>
-    <text class="custom-nav-title">图片馆</text>
+    <text class="custom-nav-title">Photos</text>
     <view class="custom-nav-right" />
   </view>
 </view>
@@ -27,11 +27,11 @@
     <view class="count-actions">
       <image
         class="filter-icon"
-        src="../assets/icons/check.svg"
+        src="/assets/icons/check.svg"
         bind:tap="onToggleCheckboxMode" />
       <image
         class="filter-icon"
-        src="../assets/icons/filter.svg"
+        src="/assets/icons/filter.svg"
         bind:tap="onTogglfilterPicker" />
     </view>
   </view>
@@ -108,7 +108,7 @@
                 <!-- 真实图片 -->
                 <image
                   class="photo-img {{photo.loaded ? 'photo-img--visible' : ''}}"
-                  src="{{photo.thumbUrl || photo.url}}"
+                  src="{{photo.thumbUrl}}"
                   mode="aspectFill"
                   lazy-load
                   webp
@@ -152,6 +152,11 @@
     </view>
   </view>
   <view class="bottom-placeholder">
+    <!-- 游客限制底部引导 -->
+    <guest-limit-footer
+      show="{{_guestLimit && !isLoggedIn}}"
+      bind:login="onGuestFooterLogin"
+    />
     <view wx:if="{{allLoaded && groupedPhotos.length > 0}}" class="end-tip">
       <text class="end-tip-text">— END OF ARCHIVE —</text>
     </view>
@@ -167,14 +172,14 @@
     <block wx:if="{{!isDragExpanded}}">
       <image
         class="drag-btn-icon"
-        src="../assets/icons/drag.svg"
+        src="/assets/icons/drag.svg"
         mode="aspectFit" />
     </block>
     <block wx:else>
       <text class="drag-btn-date">{{currentDragDate}}</text>
       <image
         class="drag-btn-icon"
-        src="../assets/icons/drag.svg"
+        src="/assets/icons/drag.svg"
         mode="aspectFit" />
     </block>
   </view>
@@ -198,7 +203,11 @@
   catchtouchmove="preventMove"
   style="--theme: {{themeColor}}; --theme-r: {{themeR}}; --theme-g: {{themeG}}; --theme-b: {{themeB}};"
 >
-  <view class="filter-dropdown {{showFilter ? 'filter-dropdown--show' : ''}}" catch:tap="preventBubble" style="padding-top: {{statusBarHeight}}px;">
+  <view
+    class="filter-dropdown {{showFilter ? 'filter-dropdown--show' : ''}}"
+    catch:tap="preventBubble"
+    style="padding-top: {{statusBarHeight}}px;"
+  >
     <view class="filter-panel">
       <view class="filter-row">
         <text class="filter-label">类型</text>
@@ -263,48 +272,35 @@
           </view>
         </view>
       </view>
-    <!-- 底部操作按钮 -->
-    <view class="filter-actions">
-      <view class="filter-btn filter-btn--reset" bind:tap="onResetFilterAll">
-        <text>重置</text>
-      </view>
-      <view class="filter-btn filter-btn--confirm" bind:tap="onConfirmFilter">
-        <text>筛选</text>
-      </view>
-    </view>
-    </view>
-  </view>
-</view>
-<!-- 全屏预览 -->
-<view
-  wx:if="{{previewPhoto}}"
-  class="preview-mask"
-  catchtouchmove="noop"
->
-  <view class="preview-body">
-    <!-- 左上角关闭按钮 -->
-    <view class="preview-close" style="top: {{statusBarHeight + 44 + 24}}px;" bind:tap="onClosePreview">
-      <text>✕</text>
-    </view>
-    <view class="preview-nav preview-nav--left" bind:tap="onPrevPreview">
-      <text>‹</text>
-    </view>
-    <image
-      class="preview-img"
-      src="{{previewPhoto.rawUrl || previewPhoto.url}}"
-      mode="widthFix"
-    />
-    <view class="preview-nav preview-nav--right" bind:tap="onNextPreview">
-      <text>›</text>
-    </view>
-    <!-- 底部叠加层：查看原图 + 计数器 -->
-    <view class="preview-overlay-bottom">
-      <view class="preview-view-original" bind:tap="onViewOriginal">
-        <text>查看原图</text>
-      </view>
-      <view class="preview-counter">
-        <text>{{previewIndex + 1}} / {{filteredPhotos.length}}</text>
+      <!-- 底部操作按钮 -->
+      <view class="filter-actions">
+        <view class="filter-btn filter-btn--reset" bind:tap="onResetFilterAll">
+          <text>重置</text>
+        </view>
+        <view class="filter-btn filter-btn--confirm" bind:tap="onConfirmFilter">
+          <text>筛选</text>
+        </view>
       </view>
     </view>
   </view>
 </view>
+<!-- 登录弹窗（列表页级别） -->
+<login-popup
+  show="{{showLoginPopup}}"
+  title="需要登录"
+  description="登录后可查看更多图片并下载高清原图"
+  bind:loginSuccess="onLoginSuccess"
+  bind:cancel="onLoginCancel"
+/>
+<!-- 全屏预览组件 -->
+<photo-preview
+  photo="{{previewPhoto}}"
+  index="{{previewIndex}}"
+  total="{{filteredPhotos.length}}"
+  photos="{{filteredPhotos}}"
+  statusBarHeight="{{statusBarHeight}}"
+  bind:close="onClosePreview"
+  bind:swiperchange="onPreviewSwiperChange"
+  bind:vieworiginal="onViewOriginal"
+  bind:download="onPreviewDownload"
+  bind:favorite="onPreviewFavorite" />

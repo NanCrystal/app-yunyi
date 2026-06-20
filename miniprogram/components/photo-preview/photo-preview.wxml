@@ -1,0 +1,53 @@
+<view wx:if="{{photo}}" class="preview-mask">
+  <!-- 全屏 swiper -->
+  <swiper
+    class="preview-swiper"
+    current="{{index}}"
+    bindchange="onSwiperChange"
+    circular="{{false}}"
+    duration="200"
+  >
+    <swiper-item
+      wx:for="{{photos.length > 0 ? photos : [photo]}}"
+      wx:key="id"
+      class="preview-swiper-item"
+    >
+      <image
+        class="preview-img"
+        src="{{originalMap[item.id] ? item.rawUrl : item.url}}"
+        mode="aspectFit"
+        bindtap="onClose" />
+    </swiper-item>
+  </swiper>
+
+  <!-- 操作悬浮层 -->
+  <view class="preview-overlay" catch:tap="noop">
+    <!-- 居中：查看原图 + 文件大小 -->
+    <view
+      wx:if="{{!((photos[index] && originalMap[photos[index].id]) || (photo && originalMap[photo.id]))}}"
+      class="preview-info-center {{(loggedIn && profileComplete) ? '' : 'preview-info-center--locked'}}"
+      bind:tap="onViewOriginal"
+    >
+      <image wx:if="{{!(loggedIn && profileComplete)}}" class="lock-icon" src="/assets/icons/lock1.svg" mode="aspectFit" />
+      <text class="preview-original-text">{{(loggedIn && profileComplete) ? '查看原图' : (loggedIn ? '完善资料查看' : '需登录查看')}}</text>
+      <text wx:if="{{(photos[index] && photos[index]._sizeText) || photo._sizeText}}" class="preview-size-text">{{(photos[index] && photos[index]._sizeText) || photo._sizeText}}</text>
+    </view>
+    <view class="preview-actions">
+      <view class="preview-action-btn {{(loggedIn && profileComplete) ? '' : 'preview-action-btn--disabled'}}" bind:tap="onDownload">
+        <image
+          class="download-icon"
+          src="/assets/icons/download.svg"
+          mode="aspectFit" />
+        <text>下载</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 登录弹窗（自动推断模式：未登录→register，已登录缺资料→complete） -->
+  <login-popup
+    show="{{showLoginPopup}}"
+    mode="{{loginMode}}"
+    bind:loginSuccess="onLoginSuccess"
+    bind:cancel="onLoginCancel"
+  />
+</view>

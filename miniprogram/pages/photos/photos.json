@@ -1,8 +1,11 @@
 {
   "usingComponents": {
-    "bottom-tab-bar": "/components/bottom-tab-bar/bottom-tab-bar",
-    "photo-skeleton": "/components/photo-skeleton/photo-skeleton"
+    "photo-preview": "/components/photo-preview/photo-preview",
+    "photo-skeleton": "/components/photo-skeleton/photo-skeleton",
+    "guest-limit-footer": "/components/guest-limit-footer/guest-limit-footer",
+    "login-popup": "/components/login-popup/login-popup"
   },
   "navigationStyle": "custom",
-  "navigationBarTitleText": "相册"
+  "navigationBarTitleText": "相册",
+  "enablePullDownRefresh": true
 }

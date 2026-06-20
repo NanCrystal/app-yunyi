@@ -4,7 +4,7 @@
     <view class="custom-nav-left" bind:tap="onGoIndex">
       <image
         class="nav-home-icon"
-        src="/pages/assets/icons/home.svg"
+        src="/assets/icons/home.svg"
         mode="aspectFit" />
     </view>
     <text class="custom-nav-title">{{navTitle}}</text>
@@ -13,30 +13,41 @@
 </view>
 <scroll-view
   class="page"
-  scroll-y
+  scroll-y="{{!disableScroll}}"
   enhanced
   show-scrollbar="{{false}}"
   scroll-top="{{scrollTop}}"
   bindscroll="onHomeScroll"
   style="padding-top: {{statusBarHeight + 44}}px; --theme: {{themeColor}}; --theme-r: {{themeR}}; --theme-g: {{themeG}}; --theme-b: {{themeB}};"
 >
-  <!-- ===== Hero 轮播区 ===== -->
-  <view class="hero">
+  <!-- ===== Hero 轮播区（仅在 modules 包含 banner 时显示） ===== -->
+  <view class="hero" wx:if="{{hasBannerModule}}">
     <!-- Hero 骨架屏 -->
     <view class="skeleton-hero" wx:if="{{loadingStates.hero}}">
       <view class="skeleton-hero-img skeleton-shimmer">
       </view>
     </view>
+    <!-- Banner 空状态 -->
+    <block wx:elif="{{!loadingStates.hero && heroImages.length === 0}}">
+      <view class="hero-empty-container">
+        <image
+          class="hero-empty-image"
+          src="/assets/images/banner.png"
+          mode="aspectFit"
+        />
+        <text class="hero-empty-text">NO MATCHING RECORDS FOUND</text>
+      </view>
+    </block>
     <!-- Hero 正常内容 -->
     <block wx:else>
       <swiper
         class="hero-swiper"
-        current="{{currentSlide}}"
         autoplay
         interval="5000"
         duration="1500"
         circular
         indicator-dots="{{false}}"
+        bindchange="onSwiperChange"
       >
         <swiper-item wx:for="{{heroImages}}" wx:key="index">
           <image
@@ -70,398 +81,347 @@
   </view>
   <!-- ===== 顶部状态栏 ===== -->
   <!-- <view class="status-bar"> <text class="status-text">NODE STATE: ONLINE</text> <text class="status-text">{{currentTime}} UTC</text> </view> -->
-  <!-- ===== 模块1: 最新动态 ===== -->
-  <view class="section" wx:if="{{latestPost || loadingStates.post || errorStates.post}}">
-    <section-header
-      title="最新动态"
-      showMore="{{true}}"
-      moreKey="sync"
-      bind:more="onSectionMore" />
-    <!-- 最新动态骨架屏 -->
-    <view class="card post-card" wx:if="{{loadingStates.post}}">
-      <view class="skeleton-post">
-        <view class="skeleton-post-header">
-          <view class="skeleton-avatar skeleton-shimmer">
-          </view>
-          <view class="skeleton-post-info">
-            <view class="skeleton-line skeleton-shimmer" style="width: 120rpx; height: 28rpx;">
-            </view>
-            <view class="skeleton-line skeleton-shimmer" style="width: 80rpx; height: 18rpx; margin-top: 12rpx;">
-            </view>
-          </view>
-        </view>
-        <view class="skeleton-line skeleton-shimmer" style="width: 100%; height: 28rpx; margin-bottom: 16rpx;">
-        </view>
-        <view class="skeleton-line skeleton-shimmer" style="width: 85%; height: 28rpx; margin-bottom: 16rpx;">
-        </view>
-        <view class="skeleton-line skeleton-shimmer" style="width: 60%; height: 28rpx; margin-bottom: 24rpx;">
-        </view>
-        <view class="skeleton-images">
-          <view class="skeleton-img skeleton-shimmer">
-          </view>
-          <view class="skeleton-img skeleton-shimmer">
-          </view>
-        </view>
-      </view>
-    </view>
-    <!-- 最新动态错误状态 -->
-    <view class="card error-card" wx:elif="{{errorStates.post && !loadingStates.post && !latestPost}}">
-      <text class="error-text">加载失败</text>
-      <view class="error-retry-btn" bind:tap="onRetryLoad">
-        <text>点击重试</text>
-      </view>
-    </view>
-    <!-- 最新动态正常内容 -->
-    <block wx:else>
-      <view class="card post-card">
-        <view class="post-header">
-          <image
-            class="post-avatar"
-            src="{{latestPost.authorAvatar}}"
-            mode="aspectFill" />
-          <view class="post-header-info">
-            <text class="post-author">{{latestPost.authorName}}</text>
-            <text class="post-time">POSTED {{latestPost.date}}</text>
-          </view>
-          <view class="post-badge">
-            <image
-              class="post-badge-icon"
-              src="{{latestPost.platformIcon}}"
-              mode="aspectFit" />
-          </view>
-        </view>
-        <text class="post-content">{{latestPost.title}}</text>
-        <view class="post-images">
-          <block wx:for="{{latestPost.mediaList}}" wx:key="index">
-            <image
-              wx:if="{{item.type === 'PHOTO'}}"
-              class="post-img"
-              src="{{item.url}}"
-              mode="aspectFill"
-              lazy-load
-              data-index="{{index}}"
-              data-media-list="{{latestPost.mediaList}}"
-              bind:tap="onPreviewImage" />
-            <video
-              wx:else
-              class="post-video"
-              src="{{item.url}}"
-              controls
-              show-play-btn="{{true}}"
-              show-center-play-btn="{{true}}"
-              object-fit="cover"
-              enable-progress-gesture="{{false}}" />
-          </block>
-        </view>
-      </view>
-    </block>
-  </view>
-  <!-- ===== 模块2: 近期行程 ===== -->
-  <view class="section">
-    <section-header
-      title="近期行程"
-      showMore="{{true}}"
-      moreKey="schedule"
-      bind:more="onSectionMore" />
-    <!-- 近期行程骨架屏 -->
-    <view class="card schedule-card" wx:if="{{loadingStates.schedule}}">
-      <view class="skeleton-schedule">
-        <view
-          class="skeleton-schedule-item"
-          wx:for="{{[1,2]}}"
-          wx:key="*this"
-        >
-          <view class="skeleton-schedule-left">
-            <view class="skeleton-line skeleton-shimmer" style="width: 60rpx; height: 44rpx;">
-            </view>
-            <view class="skeleton-line skeleton-shimmer" style="width: 140rpx; height: 32rpx; margin-top: 16rpx;">
-            </view>
-            <view class="skeleton-line skeleton-shimmer" style="width: 100rpx; height: 20rpx; margin-top: 12rpx;">
+  <!-- ===== 动态模块（按 sortOrder 排序） ===== -->
+  <block wx:for="{{sortedModuleList}}" wx:key="key">
+    <template is="tmpl-{{item.key}}" data="{{ module: item, loadingStates, errorStates, latestPost, postExpanded, upcomingEvents, featuredPhotos, featuredVideo, photocards, birthdayTrack }}" />
+  </block>
+
+  <!-- ═════════ 模板定义：最新动态 (posts) ═════════ -->
+  <template name="tmpl-posts">
+    <view class="section">
+      <section-header
+        title="{{module.name}}"
+        showMore="{{true}}"
+        moreKey="sync"
+        themeColor="{{themeColor}}"
+        disabled="{{!loadingStates[module.key] && !errorStates[module.key] && !latestPost}}"
+        bind:more="onSectionMore" />
+      <!-- 骨架屏 -->
+      <view class="card post-card" wx:if="{{loadingStates[module.key]}}">
+        <view class="skeleton-post">
+          <view class="skeleton-post-header">
+            <view class="skeleton-avatar skeleton-shimmer"></view>
+            <view class="skeleton-post-info">
+              <view class="skeleton-line skeleton-shimmer" style="width: 120rpx; height: 28rpx;"></view>
+              <view class="skeleton-line skeleton-shimmer" style="width: 80rpx; height: 18rpx; margin-top: 12rpx;"></view>
             </view>
           </view>
-          <view class="skeleton-poster-img skeleton-shimmer" >
+          <view class="skeleton-line skeleton-shimmer" style="width: 100%; height: 28rpx; margin-bottom: 16rpx;"></view>
+          <view class="skeleton-line skeleton-shimmer" style="width: 85%; height: 28rpx; margin-bottom: 16rpx;"></view>
+          <view class="skeleton-line skeleton-shimmer" style="width: 60%; height: 28rpx; margin-bottom: 24rpx;"></view>
+          <view class="skeleton-images">
+            <view class="skeleton-img skeleton-shimmer"></view>
+            <view class="skeleton-img skeleton-shimmer"></view>
           </view>
         </view>
       </view>
-    </view>
-    <!-- 近期行程错误状态 -->
-    <view class="card error-card" wx:elif="{{errorStates.schedule && !loadingStates.schedule && upcomingEvents.length === 0}}">
-      <text class="error-text">加载失败</text>
-      <view class="error-retry-btn" bind:tap="onRetryLoad">
-        <text>点击重试</text>
+      <!-- 错误状态 -->
+      <view class="card error-card" wx:elif="{{errorStates[module.key] && !loadingStates[module.key] && !latestPost}}">
+        <text class="error-text">加载失败</text>
+        <view class="error-retry-btn" bind:tap="onRetryLoad"><text>点击重试</text></view>
       </view>
-    </view>
-    <!-- 近期行程正常内容 -->
-    <block wx:else>
-      <view class="card schedule-card">
-        <!-- <view class="schedule-badge"> <text class="schedule-badge-text">LIVE EVENT</text> </view> -->
-        <view
-          wx:for="{{upcomingEvents}}"
-          wx:key="id"
-          class="schedule-item"
-        >
-          <view class="schedule-item-inner">
-            <view class="schedule-date">{{item.date }}</view>
-            <view class="schedule-info">
-              <text class="schedule-title">{{item.title}}</text>
-              <text class="schedule-location">{{item.location}}</text>
+      <!-- 空状态 -->
+      <empty-state wx:elif="{{!loadingStates[module.key] && !errorStates[module.key] && !latestPost}}" />
+      <!-- 正常内容 -->
+      <block wx:else>
+        <view class="card post-card">
+          <view class="post-header">
+            <image class="post-avatar" src="{{latestPost.authorAvatar}}" mode="aspectFill" />
+            <view class="post-header-info">
+              <text class="post-author">{{latestPost.authorName}}</text>
+              <text class="post-time">POSTED {{latestPost.date}}</text>
+            </view>
+            <view class="post-badge">
+              <image class="post-badge-icon" src="{{latestPost.platformIcon}}" mode="aspectFit" />
             </view>
           </view>
-          <view class="schedule-poster" bind:tap="onPreviewScheduleImage" data-url="{{item.imageUrl}}">
-            <image
-              class="schedule-poster-img"
-              src="{{item.imageUrl}}"
-              mode="aspectFill" />
+          <view class="post-content-wrap">
+            <text class="post-content {{!postExpanded ? 'post-content--collapsed' : ''}}">{{latestPost.title}}</text>
+            <view class="post-expand-btn" bind:tap="onTogglePostExpand" wx:if="{{latestPost.title.length > 50}}">
+              <text>{{postExpanded ? '收起' : '展开'}}</text>
+            </view>
           </view>
-          <!-- <view class="schedule-status"> <text class="schedule-status-text">{{item.status}}</text> </view> -->
-        </view>
-      </view>
-    </block>
-  </view>
-  <!-- ===== 模块3: 图片档案馆 ===== -->
-  <view class="section">
-    <section-header
-      title="图片档案馆"
-      showMore="{{true}}"
-      moreKey="photos"
-      bind:more="onSectionMore" />
-    <!-- 图片档案馆骨架屏 -->
-    <view class="photo-grid" wx:if="{{loadingStates.photos}}">
-      <view
-        class="photo-grid-item skeleton-photo-item"
-        wx:for="{{[1,2,3]}}"
-        wx:key="*this"
-      >
-        <view class="skeleton-photo-img skeleton-shimmer">
-        </view>
-      </view>
-    </view>
-    <!-- 图片档案馆错误状态 -->
-    <view class="card error-card error-card--small" wx:elif="{{errorStates.photos && !loadingStates.photos && featuredPhotos.length === 0}}">
-      <text class="error-text">加载失败</text>
-      <view class="error-retry-btn" bind:tap="onRetryLoad">
-        <text>点击重试</text>
-      </view>
-    </view>
-    <!-- 图片档案馆正常内容 -->
-    <block wx:else>
-      <view class="photo-grid">
-        <view
-          wx:for="{{featuredPhotos}}"
-          wx:key="id"
-          class="photo-grid-item"
-          bind:tap="onPreviewPhotoImage"
-          data-url="{{item.url}}"
-          data-index="{{index}}"
-        >
-          <image
-            class="photo-grid-img"
-            src="{{item.url}}"
-            mode="aspectFill"
-            lazy-load />
-          <view class="photo-grid-overlay">
-            <text class="photo-grid-label">{{item.type === 'RAW' ? 'RAW' : item.type}}</text>
-          </view>
-        </view>
-      </view>
-    </block>
-  </view>
-  <!-- ===== 模块4: 视频档案馆 ===== -->
-  <view class="section" wx:if="{{featuredVideo || loadingStates.video || errorStates.video}}">
-    <section-header
-      title="视频档案馆"
-      showMore="{{true}}"
-      moreKey="videos"
-      bind:more="onSectionMore" />
-    <!-- 视频档案馆骨架屏 -->
-    <view class="video-feature skeleton-video" wx:if="{{loadingStates.video}}">
-      <view class="skeleton-video-img skeleton-shimmer">
-      </view>
-      <view class="skeleton-video-info">
-        <view class="skeleton-line skeleton-shimmer" style="width: 120rpx; height: 20rpx; margin-bottom: 12rpx;">
-        </view>
-        <view class="skeleton-line skeleton-shimmer" style="width: 80%; height: 28rpx;">
-        </view>
-      </view>
-    </view>
-    <!-- 视频档案馆错误状态 -->
-    <view class="card error-card error-card--small" wx:elif="{{errorStates.video && !loadingStates.video && !featuredVideo}}">
-      <text class="error-text">加载失败</text>
-      <view class="error-retry-btn" bind:tap="onRetryLoad">
-        <text>点击重试</text>
-      </view>
-    </view>
-    <!-- 视频档案馆正常内容 -->
-    <block wx:else>
-      <view
-        class="video-feature"
-        bind:tap="onNavigateTo"
-        data-key="videos"
-      >
-        <image
-          class="video-feature-img"
-          src="{{featuredVideo.thumbnail}}"
-          mode="aspectFill"
-          lazy-load />
-        <view class="video-play-btn">
-          <text class="video-play-icon">▶</text>
-        </view>
-        <view class="video-feature-info">
-          <text class="video-feature-label">FEATURED ARCHIVE</text>
-          <text class="video-feature-title">{{featuredVideo.title}} ({{featuredVideo.platform || '4K HDR'}})</text>
-        </view>
-      </view>
-    </block>
-  </view>
-  <!-- ===== 模块5: 小卡档案馆 ===== -->
-  <view class="section">
-    <section-header
-      title="小卡档案馆"
-      showMore="{{true}}"
-      moreKey="cards"
-      bind:more="onSectionMore" />
-    <!-- 小卡档案馆骨架屏 -->
-    <scroll-view
-      class="card-scroll"
-      scroll-x
-      enhanced
-      show-scrollbar="{{false}}"
-      wx:if="{{loadingStates.photocards}}"
-    >
-      <view class="card-scroll-inner">
-        <view
-          class="photocard-item skeleton-photocard"
-          wx:for="{{[1,2,3]}}"
-          wx:key="*this"
-        >
-          <view class="skeleton-photocard-img skeleton-shimmer">
-          </view>
-          <view class="skeleton-line skeleton-shimmer" style="width: 80rpx; height: 18rpx; margin-top: 12rpx;">
-          </view>
-          <view class="skeleton-line skeleton-shimmer" style="width: 100rpx; height: 20rpx; margin-top: 8rpx;">
-          </view>
-        </view>
-      </view>
-    </scroll-view>
-    <!-- 小卡档案馆错误状态 -->
-    <view class="card error-card error-card--small" wx:elif="{{errorStates.photocards && !loadingStates.photocards && photocards.length === 0}}">
-      <text class="error-text">加载失败</text>
-      <view class="error-retry-btn" bind:tap="onRetryLoad">
-        <text>点击重试</text>
-      </view>
-    </view>
-    <!-- 小卡档案馆正常内容 -->
-    <block wx:else>
-      <scroll-view
-        class="card-scroll"
-        scroll-x
-        enhanced
-        show-scrollbar="{{false}}"
-      >
-        <view class="card-scroll-inner">
-          <view
-            wx:for="{{photocards}}"
-            wx:key="id"
-            class="photocard-item" 
-          >
-            <view class="photocard-image-wrap" bind:tap="onPreviewPhotocardImage" data-url="{{item.imageUrl}}" data-index="{{index}}">
+          <view class="post-images">
+            <block wx:for="{{latestPost.mediaList}}" wx:key="index" wx:for-item="media">
               <image
-                class="photocard-image"
-                src="{{item.imageUrl}}"
+                wx:if="{{media.type === 'PHOTO'}}"
+                class="post-img"
+                src="{{media.url}}"
                 mode="aspectFill"
-                lazy-load />
+                lazy-load
+                data-index="{{index}}"
+                data-media-list="{{latestPost.mediaList}}"
+                bind:tap="onPreviewPostMedia" />
+              <view
+                wx:else
+                class="post-video-wrap"
+                data-index="{{index}}"
+                data-media-list="{{latestPost.mediaList}}"
+                bind:tap="onPreviewPostMedia">
+                <image
+                  wx:if="{{media.coverUrl}}"
+                  class="post-video-cover"
+                  src="{{media.coverUrl}}"
+                  mode="aspectFill"
+                  lazy-load />
+                <view wx:else class="post-video-cover post-video-cover--empty"></view>
+                <image class="post-video-play" src="/assets/icons/video_default.svg" mode="aspectFit" />
+              </view>
+            </block>
+          </view>
+        </view>
+      </block>
+    </view>
+  </template>
+
+  <!-- ═════════ 模板定义：近期行程 (itineraries) ═════════ -->
+  <template name="tmpl-itineraries">
+    <view class="section">
+      <section-header
+        title="{{module.name}}"
+        showMore="{{true}}"
+        moreKey="schedule"
+        themeColor="{{themeColor}}"
+        disabled="{{!loadingStates[module.key] && !errorStates[module.key] && upcomingEvents.length === 0}}"
+        bind:more="onSectionMore" />
+      <!-- 骨架屏 -->
+      <view class="card schedule-card" wx:if="{{loadingStates[module.key]}}">
+        <view class="skeleton-schedule">
+          <view class="skeleton-schedule-item" wx:for="{{[1,2]}}" wx:key="*this">
+            <view class="skeleton-schedule-left">
+              <view class="skeleton-line skeleton-shimmer" style="width: 60rpx; height: 44rpx;"></view>
+              <view class="skeleton-line skeleton-shimmer" style="width: 140rpx; height: 32rpx; margin-top: 16rpx;"></view>
+              <view class="skeleton-line skeleton-shimmer" style="width: 100rpx; height: 20rpx; margin-top: 12rpx;"></view>
             </view>
-            <text class="photocard-date">{{item.date}}</text>
-            <text class="photocard-title">{{item.title}}</text>
-            <view wx:if="{{item.specialEdition}}" class="photocard-special">
-              <text>SPECIAL</text>
+            <view class="skeleton-poster-img skeleton-shimmer"></view>
+          </view>
+        </view>
+      </view>
+      <!-- 错误状态 -->
+      <view class="card error-card" wx:elif="{{errorStates[module.key] && !loadingStates[module.key] && upcomingEvents.length === 0}}">
+        <text class="error-text">加载失败</text>
+        <view class="error-retry-btn" bind:tap="onRetryLoad"><text>点击重试</text></view>
+      </view>
+      <!-- 空状态 -->
+      <empty-state wx:elif="{{!loadingStates[module.key] && !errorStates[module.key] && upcomingEvents.length === 0}}" />
+      <!-- 正常内容 -->
+      <block wx:else>
+        <view class="card schedule-card">
+          <view wx:for="{{upcomingEvents}}" wx:key="id" class="schedule-item">
+            <view class="schedule-item-inner">
+              <view class="schedule-date">{{item.date}}</view>
+              <view class="schedule-info">
+                <text class="schedule-title">{{item.title}}</text>
+                <text class="schedule-location">{{item.location}}</text>
+              </view>
             </view>
+            <view wx:if="{{item.imageUrl}}" class="schedule-poster" bind:tap="onPreviewScheduleImage" data-url="{{item.imageUrl}}">
+              <image class="schedule-poster-img" src="{{item.imageUrl}}" mode="aspectFill" />
+            </view>
+          </view>
+        </view>
+      </block>
+    </view>
+  </template>
+
+  <!-- ═════════ 模板定义：照片馆 (photos) ═════════ -->
+  <template name="tmpl-photos">
+    <view class="section">
+      <section-header
+        title="{{module.name}}"
+        showMore="{{true}}"
+        moreKey="photos"
+        themeColor="{{themeColor}}"
+        disabled="{{!loadingStates[module.key] && !errorStates[module.key] && featuredPhotos.length === 0}}"
+        bind:more="onSectionMore" />
+      <!-- 骨架屏 -->
+      <view class="photo-grid" wx:if="{{loadingStates[module.key]}}">
+        <view class="photo-grid-item skeleton-photo-item" wx:for="{{[1,2,3]}}" wx:key="*this">
+          <view class="skeleton-photo-img skeleton-shimmer"></view>
+        </view>
+      </view>
+      <!-- 错误状态 -->
+      <view class="card error-card error-card--small" wx:elif="{{errorStates[module.key] && !loadingStates[module.key] && featuredPhotos.length === 0}}">
+        <text class="error-text">加载失败</text>
+        <view class="error-retry-btn" bind:tap="onRetryLoad"><text>点击重试</text></view>
+      </view>
+      <!-- 空状态 -->
+      <empty-state wx:elif="{{!loadingStates[module.key] && !errorStates[module.key] && featuredPhotos.length === 0}}" />
+      <!-- 正常内容 -->
+      <block wx:else>
+        <view class="photo-grid">
+          <view
+            wx:for="{{featuredPhotos}}"
+            wx:key="id"
+            wx:for-item="photo"
+            class="photo-grid-item"
+            bind:tap="onPreviewPhotoImage"
+            data-url="{{photo}}"
+            data-index="{{index}}"
+          >
+            <image class="photo-grid-img" src="{{photo.url}}" mode="aspectFill" lazy-load />
+            <view class="photo-grid-overlay">
+              <text class="photo-grid-label">{{photo.type === 'RAW' ? 'RAW' : photo.type}}</text>
+            </view>
+          </view>
+        </view>
+      </block>
+    </view>
+  </template>
+
+  <!-- ═════════ 模板定义：视频馆 (videos) ═════════ -->
+  <template name="tmpl-videos">
+    <view class="section">
+      <section-header
+        title="{{module.name}}"
+        showMore="{{true}}"
+        moreKey="videos"
+        themeColor="{{themeColor}}"
+        disabled="{{!loadingStates[module.key] && !errorStates[module.key] && !featuredVideo}}"
+        bind:more="onSectionMore" />
+      <!-- 骨架屏 -->
+      <view class="video-feature skeleton-video" wx:if="{{loadingStates[module.key]}}">
+        <view class="skeleton-video-img skeleton-shimmer"></view>
+        <view class="skeleton-video-info">
+          <view class="skeleton-line skeleton-shimmer" style="width: 120rpx; height: 20rpx; margin-bottom: 12rpx;"></view>
+          <view class="skeleton-line skeleton-shimmer" style="width: 80%; height: 28rpx;"></view>
+        </view>
+      </view>
+      <!-- 错误状态 -->
+      <view class="card error-card error-card--small" wx:elif="{{errorStates[module.key] && !loadingStates[module.key] && !featuredVideo}}">
+        <text class="error-text">加载失败</text>
+        <view class="error-retry-btn" bind:tap="onRetryLoad"><text>点击重试</text></view>
+      </view>
+      <!-- 空状态 -->
+      <empty-state wx:elif="{{!loadingStates[module.key] && !errorStates[module.key] && !featuredVideo}}" />
+      <!-- 正常内容 -->
+      <block wx:else>
+        <view class="video-feature" bind:tap="onNavigateTo" data-key="videos">
+          <image class="video-feature-img" src="{{featuredVideo.thumbnail}}" mode="aspectFill" lazy-load />
+          <view class="video-play-btn" catch:tap="onPreviewFeaturedVideo">
+            <text class="video-play-icon">▶</text>
+          </view>
+          <view class="video-feature-info">
+            <text class="video-feature-label">{{featuredVideo.date}}</text>
+            <text class="video-feature-title">{{featuredVideo.description}}</text>
+          </view>
+        </view>
+      </block>
+    </view>
+  </template>
+
+  <!-- ═════════ 模板定义：小卡馆 (photoCards) ═════════ -->
+  <template name="tmpl-photoCards">
+    <view class="section">
+      <section-header
+        title="{{module.name}}"
+        showMore="{{true}}"
+        moreKey="cards"
+        themeColor="{{themeColor}}"
+        disabled="{{!loadingStates[module.key] && !errorStates[module.key] && photocards.length === 0}}"
+        bind:more="onSectionMore" />
+      <!-- 骨架屏 -->
+      <scroll-view class="card-scroll" scroll-x enhanced show-scrollbar="{{false}}" wx:if="{{loadingStates[module.key]}}">
+        <view class="card-scroll-inner">
+          <view class="photocard-item skeleton-photocard" wx:for="{{[1,2,3]}}" wx:key="*this">
+            <view class="skeleton-photocard-img skeleton-shimmer"></view>
+            <view class="skeleton-line skeleton-shimmer" style="width: 80rpx; height: 18rpx; margin-top: 12rpx;"></view>
+            <view class="skeleton-line skeleton-shimmer" style="width: 100rpx; height: 20rpx; margin-top: 8rpx;"></view>
           </view>
         </view>
       </scroll-view>
-    </block>
-  </view>
-  <!-- ===== 模块6: 语音馆 ===== -->
-  <view
-    class="section"
-    data-key="audio"
-    bind:tap="onNavigateTo"
-    wx:if="{{birthdayTrack || loadingStates.audio || errorStates.audio}}"
-  >
-    <!-- 语音馆骨架屏 -->
-    <view class="voice-card card skeleton-voice" wx:if="{{loadingStates.audio}}">
-      <view class="skeleton-voice-title skeleton-shimmer" style="width: 120rpx; height: 40rpx;">
+      <!-- 错误状态 -->
+      <view class="card error-card error-card--small" wx:elif="{{errorStates[module.key] && !loadingStates[module.key] && photocards.length === 0}}">
+        <text class="error-text">加载失败</text>
+        <view class="error-retry-btn" bind:tap="onRetryLoad"><text>点击重试</text></view>
       </view>
-      <view class="skeleton-voice-desc skeleton-shimmer" style="width: 280rpx; height: 24rpx; margin-top: 16rpx;">
-      </view>
-      <view class="skeleton-voice-disc skeleton-shimmer">
-      </view>
-      <view class="skeleton-line skeleton-shimmer" style="width: 160rpx; height: 28rpx; margin-top: 32rpx;">
-      </view>
-      <view class="skeleton-line skeleton-shimmer" style="width: 100rpx; height: 20rpx; margin-top: 12rpx;">
-      </view>
-    </view>
-    <!-- 语音馆错误状态 -->
-    <view class="card error-card error-card--small" wx:elif="{{errorStates.audio && !loadingStates.audio && !birthdayTrack}}">
-      <text class="error-text">加载失败</text>
-      <view class="error-retry-btn" bind:tap="onRetryLoad">
-        <text>点击重试</text>
-      </view>
-    </view>
-    <!-- 语音馆正常内容 -->
-    <block wx:else>
-      <view class="voice-card card">
-        <view class="voice-corners">
-          <view class="voice-corner voice-corner--tl">
-          </view>
-          <view class="voice-corner voice-corner--tr">
-          </view>
-          <view class="voice-corner voice-corner--bl">
-          </view>
-          <view class="voice-corner voice-corner--br">
-          </view>
-        </view>
-        <text class="voice-title">语音馆</text>
-        <text class="voice-desc">"在每个静谧的时刻，与你的耳朵私语"</text>
-        <!-- 旋转唱片 -->
-        <view class="voice-disc {{isPlayingAudio ? 'voice-disc--spinning' : ''}}">
-          <image
-            class="voice-disc-img"
-            src="{{birthdayTrack.coverUrl || '../assets/images/1 (43).jpg'}}"
-            mode="aspectFill" />
-          <view class="voice-disc-center">
-            <view class="voice-disc-center-dot">
+      <!-- 空状态 -->
+      <empty-state wx:elif="{{!loadingStates[module.key] && !errorStates[module.key] && photocards.length === 0}}" />
+      <!-- 正常内容 -->
+      <block wx:else>
+        <scroll-view class="card-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+          <view class="card-scroll-inner">
+            <view wx:for="{{photocards}}" wx:key="id" class="photocard-item">
+              <view class="photocard-image-wrap" bind:tap="onPreviewPhotocardImage" data-url="{{item.reviewImageUrl}}" data-index="{{index}}">
+                <image class="photocard-image" src="{{item.imageUrl}}" mode="aspectFill" lazy-load />
+              </view>
+              <text class="photocard-date">{{item.date}}</text>
+              <text class="photocard-title">{{item.title}}</text>
+              <view wx:if="{{item.specialEdition}}" class="photocard-special"><text>SPECIAL</text></view>
             </view>
           </view>
-        </view>
-        <text class="voice-track-title">{{birthdayTrack.title}}</text>
-        <text class="voice-track-sub">{{birthdayTrack.author}}</text>
-        <!-- 播放控制 -->
-        <view class="voice-controls">
-          <text class="voice-time">01:24</text>
-          <view class="voice-play-btn" bind:tap="onPlayAudio">
-            <text class="voice-play-icon">{{isPlayingAudio ? '⏸' : '▶'}}</text>
-          </view>
-          <text class="voice-time">03:45</text>
-        </view>
-        <!-- 进度条 -->
-        <view class="voice-progress">
-          <view class="voice-progress-fill" style="width: {{isPlayingAudio ? '36%' : '1%'}};">
-          </view>
-        </view>
-        <!-- 波形动画 -->
-        <view class="voice-waveform">
-          <view
-            wx:for="{{[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]}}"
-            wx:key="*this"
-            class="voice-wavebar"
-            style="opacity: {{isPlayingAudio ? 0.6 : 0.2}}; animation-delay: {{item * 0.05}}s;"
-          >
-          </view>
-        </view>
+        </scroll-view>
+      </block>
+    </view>
+  </template>
+
+  <!-- ═════════ 模板定义：音频馆 (audios) ═════════ -->
+  <template name="tmpl-audios">
+    <view class="section" data-key="audio">
+      <section-header
+        title="{{module.name}}"
+        showMore="{{true}}"
+        moreKey="audio"
+        themeColor="{{themeColor}}"
+        disabled="{{!loadingStates[module.key] && !errorStates[module.key] && !birthdayTrack}}"
+        bind:more="onSectionMore" />
+      <!-- 骨架屏 -->
+      <view class="voice-card card skeleton-voice" wx:if="{{loadingStates[module.key]}}">
+        <view class="skeleton-voice-title skeleton-shimmer" style="width: 120rpx; height: 40rpx;"></view>
+        <view class="skeleton-voice-desc skeleton-shimmer" style="width: 280rpx; height: 24rpx; margin-top: 16rpx;"></view>
+        <view class="skeleton-voice-disc skeleton-shimmer"></view>
+        <view class="skeleton-line skeleton-shimmer" style="width: 160rpx; height: 28rpx; margin-top: 32rpx;"></view>
+        <view class="skeleton-line skeleton-shimmer" style="width: 100rpx; height: 20rpx; margin-top: 12rpx;"></view>
       </view>
-    </block>
-  </view>
+      <!-- 错误状态 -->
+      <view class="card error-card error-card--small" wx:elif="{{errorStates[module.key] && !loadingStates[module.key] && !birthdayTrack}}">
+        <text class="error-text">加载失败</text>
+        <view class="error-retry-btn" bind:tap="onRetryLoad"><text>点击重试</text></view>
+      </view>
+      <!-- 空状态 -->
+      <empty-state wx:elif="{{!loadingStates[module.key] && !errorStates[module.key] && !birthdayTrack}}" />
+      <!-- 正常内容 -->
+      <block wx:else>
+        <view class="voice-card card">
+          <view class="voice-corners">
+            <view class="voice-corner voice-corner--tl"></view>
+            <view class="voice-corner voice-corner--tr"></view>
+            <view class="voice-corner voice-corner--bl"></view>
+            <view class="voice-corner voice-corner--br"></view>
+          </view>
+          <text class="voice-title">{{module.name}}</text>
+          <text class="voice-desc">"在每个静谧的时刻，与你的耳朵私语"</text>
+          <view class="voice-disc voice-disc--spinning">
+            <block wx:if="{{birthdayTrack.coverUrl}}">
+              <image class="voice-disc-img" src="{{birthdayTrack.coverUrl}}" mode="aspectFill" />
+            </block>
+            <view wx:else class="voice-disc-img-fallback">
+              <image class="voice-disc-img-fallback-icon" src="/assets/icons/audio_default.svg" mode="aspectFit" />
+            </view>
+            <view class="voice-disc-center"><view class="voice-disc-center-dot"></view></view>
+          </view>
+          <text class="voice-track-title">{{birthdayTrack.title}}</text>
+          <text class="voice-track-sub">{{birthdayTrack.author}}</text>
+          <view class="voice-controls">
+            <view class="voice-play-btn {{!birthdayTrack ? 'voice-play-btn--disabled' : ''}}" bind:tap="{{birthdayTrack ? 'onPlayAudio' : ''}}">
+              <image class="voice-play-icon" src="{{'/assets/icons/audioplay.svg'}}" mode="aspectFit" />
+            </view>
+          </view>
+          <view class="voice-progress">
+            <view class="voice-progress-fill" style="width: {{ '36%' }}"></view>
+          </view>
+          <view class="voice-waveform">
+            <view
+              wx:for="{{[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]}}"
+              wx:key="*this"
+              class="voice-wavebar"
+              style="opacity: {{  0.6  }}; animation-delay: {{item * 0.05}}s;"
+            ></view>
+          </view>
+        </view>
+      </block>
+    </view>
+  </template>
   <!-- ===== 角色切换 ===== -->
   <view class="section char-switch">
     <text class="char-switch-label">SWITCH ACTIVE PRESENTATION</text>
@@ -484,8 +444,7 @@
     </view>
   </view>
   <!-- 底部占位 -->
-  <view class="bottom-placeholder">
-  </view>
+  <view class="bottom-placeholder"></view>
 </scroll-view>
 <!-- 图片预览 -->
 <image-preview
@@ -504,5 +463,23 @@
   statusBarHeight="{{statusBarHeight}}"
   bind:close="onCloseVideoPreview"
   bind:share="onPreviewShare" />
+<!-- 角色切换弹窗 -->
+<view wx:if="{{showSwitchDialog}}" class="switch-dialog-mask">
+  <view class="switch-dialog">
+    <image
+      class="switch-dialog-avatar"
+      src="{{switchCharAvatar}}"
+      mode="aspectFill" />
+    <text class="switch-dialog-text">正在为您切换到</text>
+    <text class="switch-dialog-name" style="color: {{switchCharColor}};">{{switchCharName}}</text>
+    <text class="switch-dialog-hint">请稍等</text>
+    <view class="switch-dialog-progress-wrap">
+      <view
+        class="switch-dialog-progress-bar"
+        style="width: {{switchProgress * 100}}%; background-color: {{switchCharColor}};" />
+    </view>
+    <text class="switch-dialog-percent" style="color: {{switchCharColor}};">{{switchProgressText}}</text>
+  </view>
+</view>
 <!-- 底部导航 -->
 <bottom-tab-bar current="home" tabs="{{tabTabs}}" />

@@ -26,8 +26,12 @@
 }
 
 .tab-icon {
-  font-size: 36rpx;
   line-height: 1;
+}
+
+.tab-icon-img {
+  width: 40rpx;
+  height: 40rpx;
 }
 
 .tab-label {

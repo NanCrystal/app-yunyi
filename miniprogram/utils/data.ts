@@ -25,131 +25,19 @@ export const initialPhotos: PhotoItem[] = [];
 export const initialCards: Photocard[] = [];
 
 // ==================== 音频 ====================
-export const initialAudio: AudioItem[] = [
-  {
-    id: "a1",
-    title: "Atmospheric_Resonance_Site_04.wav",
-    duration: "04:22",
-    durationSec: 262,
-    thumbnail: "/pages/assets/images/1.jpg",
-    coverUrl: "/pages/assets/images/1.jpg",
-    author: "Hao Yiran",
-    date: "2026.06.12",
-    bitRate: "320kbps",
-  },
-  {
-    id: "a2",
-    title: "Deep_Field_Recording_Nocturnal.flac",
-    duration: "12:45",
-    durationSec: 765,
-    thumbnail: "/pages/assets/images/1.jpg",
-    coverUrl: "/pages/assets/images/1.jpg",
-    author: "Yunyi Space",
-    date: "2026.06.12",
-    bitRate: "LOSSLESS",
-  },
-  {
-    id: "a3",
-    title: "Urban_Static_Analysis_Log_002.mp3",
-    duration: "01:15",
-    durationSec: 75,
-    thumbnail: "/pages/assets/images/1.jpg",
-    coverUrl: "/pages/assets/images/1.jpg",
-    author: "Yunqi Curation",
-    date: "2026.06.12",
-    bitRate: "320kbps",
-  },
-  {
-    id: "a4",
-    title: "Modular_Synthesis_Drift_A.wav",
-    duration: "08:30",
-    durationSec: 510,
-    thumbnail: "/pages/assets/images/1.jpg",
-    coverUrl: "/pages/assets/images/1.jpg",
-    author: "StarView Lab",
-    date: "2026.05.24",
-    bitRate: "320kbps",
-  },
-];
+export const initialAudio: AudioItem[] = [];
 
 // ==================== 轮播图 ====================
-export const heroSliderImages: string[] = [
-  "/pages/assets/images/1.jpg",
-  "/pages/assets/images/1.jpg",
-  "/pages/assets/images/1.jpg",
-  "/pages/assets/images/1.jpg",
-];
+export const heroSliderImages: string[] = [];
 
 // ==================== 角色 ====================
 export const characters: Character[] = [
-  {
-    id: "char1",
-    artistId: "yunyi",
-    name: "云熠",
-    avatar: "/pages/assets/images/1 (3).jpg",
-    role: "DUO HARMONY",
-    accentColor: "rgb(86, 164, 173)",
-  },
-  {
-    id: "char2",
-    artistId: "haoyiran",
-    name: "郝熠然",
-    avatar: "/pages/assets/images/1 (46).jpg",
-    role: "VOCALIST / ART DIRECTORY",
-    accentColor: "#aa0a27",
-  },
-  {
-    id: "char3",
-    artistId: "yunqi",
-    name: "云旗",
-    avatar: "/pages/assets/images/1 (40).jpg",
-    role: "PERFORMER / COMPOSER",
-    accentColor: "rgb(254, 168, 53)",
-  },
-];
-// ==================== 平台 ====================
-export const systemPlantforms: PlatformResType[] = [
-  {
-    id: 1,
-    name: "微博",
-    uuid: "weibo",
-    sortOrder: 1,
-    createdAt: "2026-06-03T21:20:41.632Z",
-    updatedAt: "2026-06-04T17:16:50.578Z",
-  },
-  {
-    id: 2,
-    name: "小红书",
-    uuid: "xiaohongshu",
-    sortOrder: 2,
-    createdAt: "2026-06-03T21:20:48.623Z",
-    updatedAt: "2026-06-04T17:16:59.947Z",
-  },
-  {
-    id: 3,
-    name: "Instagram",
-    uuid: "instagram",
-    sortOrder: 3,
-    createdAt: "2026-06-03T21:21:06.377Z",
-    updatedAt: "2026-06-04T17:17:41.891Z",
-  },
-  {
-    id: 4,
-    name: "抖音",
-    uuid: "douyin",
-    sortOrder: 4,
-    createdAt: "2026-06-03T21:21:15.372Z",
-    updatedAt: "2026-06-04T17:17:49.309Z",
-  },
-];
-// ==================== 平台角色 ====================
-export const systemArtist: AritistResType[] = [
   {
     id: 4,
     name: "云熠",
     artistId: "yunyi",
     avatar: "/uploads/1780595655393-763524.webp",
-    bio: null,
+    bio: undefined,
     weiboId: null,
     weiboNickname: null,
     weiboAvatar: null,
@@ -177,7 +65,7 @@ export const systemArtist: AritistResType[] = [
     name: "云旗",
     artistId: "yunqi",
     avatar: "/uploads/1780521591404-109038.jpg",
-    bio: null,
+    bio: undefined,
     weiboId: "7997469042",
     weiboNickname: "云旗Yunqi",
     weiboAvatar: "/uploads/1780569703782-748349.jpg",
@@ -206,7 +94,7 @@ export const systemArtist: AritistResType[] = [
     name: "郝熠然",
     artistId: "haoyiran",
     avatar: "/uploads/1780521491823-715722.jpg",
-    bio: null,
+    bio: undefined,
     weiboId: "6372221076",
     weiboNickname: "郝熠然",
     weiboAvatar: "/uploads/1780570240319-53145.jpg",
@@ -230,3 +118,7 @@ export const systemArtist: AritistResType[] = [
     updatedAt: "2026-06-04T16:37:51.237Z",
   },
 ];
+// ==================== 平台 ====================
+export const systemPlantforms: PlatformResType[] = [];
+// ==================== 平台角色 ====================
+export const systemArtist: AritistResType[] = [];

@@ -1,8 +1,4 @@
-import { themeBehavior } from '../../behaviors/theme';
-
 Component({
-  behaviors: [themeBehavior],
-
   properties: {
     title: {
       type: String,
@@ -20,10 +16,20 @@ Component({
       type: String,
       value: '',
     },
+    themeColor: {
+      type: String,
+      value: '#aa0a27',
+    },
+    disabled: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   methods: {
     onMoreTap() {
+      if (this.properties.disabled) return;
+      console.log('[section-header] tap fired');
       this.triggerEvent('more', { key: this.properties.moreKey });
     },
   },

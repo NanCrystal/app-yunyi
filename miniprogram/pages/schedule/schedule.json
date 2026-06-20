@@ -1,7 +1,7 @@
 {
   "usingComponents": {
-    "bottom-tab-bar": "/components/bottom-tab-bar/bottom-tab-bar",
-    "filter-tags": "/components/filter-tags/filter-tags"
+    "filter-tags": "/components/filter-tags/filter-tags",
+    "empty-state": "/components/empty-state/empty-state"
   },
   "navigationStyle": "custom"
 }

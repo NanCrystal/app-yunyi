@@ -1,6 +1,141 @@
 <!--pages/mine.wxml-->
-<view class="mine-page" style="--theme: {{themeColor}}; --theme-r: {{themeR}}; --theme-g: {{themeG}}; --theme-b: {{themeB}};">
-  <text class="mine-title">我的</text>
+<!-- 自定义导航栏 -->
+<view class="custom-nav" style="padding-top: {{statusBarHeight}}px;">
+  <view class="custom-nav-inner">
+    <view class="custom-nav-left" />
+    <text class="custom-nav-title">ACCOUNT</text>
+    <view class="custom-nav-right" />
+  </view>
 </view>
-
-<bottom-tab-bar current="mine" tabs="{{tabTabs}}" />
+<view class="mine-page">
+  <!-- 用户信息区域 -->
+  <view class="user-section">
+    <!-- 头像（始终只读展示，编辑在弹窗中进行） -->
+    <view class="avatar-wrapper">
+      <image
+        class="avatar-icon"
+        src="{{avatarUrl}}"
+        mode="aspectFill" />
+    </view>
+    <!-- 昵称（始终只读展示） -->
+    <text class="user-name">{{nickName}}</text>
+    <!-- 三态欢迎语 -->
+    <text class="welcome-text" wx:if="{{!loggedIn}}">Welcome to the StarView archive.</text>
+    <text class="welcome-text welcome-hint" wx:elif="{{!isProfileComplete}}">完善资料解锁全部功能</text>
+    <text class="welcome-text" wx:else>Welcome back, {{nickName}}.</text>
+    <!-- 三态按钮区 -->
+    <view
+      wx:if="{{!loggedIn || !isProfileComplete}}"
+      class="profile-btn"
+      bindtap="onShowPopup"
+    >
+      <text class="profile-btn-text">{{!loggedIn ? 'LOGIN / REGISTER' : 'COMPLETE PROFILE'}}</text>
+    </view>
+    <view
+      wx:else
+      class="logout-btn"
+      bindtap="onLogoutTap"
+    >
+      <text class="logout-btn-text">SIGN OUT</text>
+    </view>
+  </view>
+  <!-- 菜单列表 -->
+  <view class="menu-list">
+    <view class="menu-item" bindtap="onCommentsTap">
+      <view class="menu-item-left">
+        <image
+          class="menu-icon"
+          src="/assets/icons/msg.svg"
+          mode="aspectFit" />
+        <text class="menu-text">{{menuObj.comments.title}}</text>
+      </view>
+      <image
+        class="menu-arrow-icon"
+        src="{{menuObj.comments.icon}}"
+        mode="aspectFit" />
+    </view>
+    <!-- <view class="menu-item" bindtap="onHistoryTap"> <view class="menu-item-left"> <image class="menu-icon" src="/assets/icons/history.svg" mode="aspectFit" /> <text class="menu-text">HISTORY</text> </view> <image class="menu-arrow-icon" src="{{menuObj.comments.icon}}" mode="aspectFit" /> </view> -->
+    <view class="menu-item" bindtap="onHelpTap">
+      <view class="menu-item-left">
+        <image
+          class="menu-icon"
+          src="/assets/icons/help.svg"
+          mode="aspectFit" />
+        <text class="menu-text">{{menuObj.help.title}}</text>
+      </view>
+      <image
+        class="menu-arrow-icon"
+        src="{{menuObj.help.icon}}"
+        mode="aspectFit" />
+    </view>
+  </view>
+  <!-- 底部导航栏 -->
+  <bottom-tab-bar current="mine" tabs="{{tabTabs}}" />
+  <!-- 统一登录/完善资料弹窗 -->
+  <login-popup
+    show="{{showLoginPopup}}"
+    mode="{{loginMode}}"
+    bind:loginSuccess="onLoginSuccess"
+    bind:cancel="onLoginCancel" />
+  <!-- 帮助与支持弹窗 -->
+  <view
+    wx:if="{{showHelpPopup}}"
+    class="help-popup-mask"
+    bindtap="onCloseHelpPopup"
+  >
+    <view class="help-popup-card" catchtap="noop">
+      <!-- 关闭按钮 -->
+      <view class="popup-close-btn" catchtap="onCloseHelpPopup">
+        <text>✕</text>
+      </view>
+      <!-- 标题 -->
+      <text class="help-popup-title">HELP & SUPPORT</text>
+      <view class="help-popup-line">
+      </view>
+      <!-- 联系客服按钮 -->
+      <view class="help-menu-item" bindtap="onContactServiceTap">
+        <text class="help-menu-text">联系客服</text>
+        <image
+          class="help-arrow-icon"
+          src="/assets/icons/arrow_right.svg"
+          mode="aspectFit" />
+      </view>
+      <!-- 直接反馈按钮（虚线边框） -->
+      <view class="help-menu-item" bindtap="onFeedbackTap">
+        <text class="help-menu-text">直接反馈</text>
+        <image
+          class="help-arrow-icon"
+          src="/assets/icons/arrow_right.svg"
+          mode="aspectFit" />
+      </view>
+    </view>
+  </view>
+  <!-- 联系客服弹窗（二维码） -->
+  <view wx:if="{{showContactPopup}}" class="contact-popup-mask">
+    <view class="contact-popup-card" catchtap="noop">
+      <!-- 关闭按钮 -->
+      <view class="popup-close-btn" catchtap="onCloseContactPopup">
+        <text>✕</text>
+      </view>
+      <!-- 标题 -->
+      <text class="contact-popup-title">CONTACT SUPPORT</text>
+      <view class="contact-popup-line">
+      </view>
+      <!-- 二维码图片 -->
+      <image
+        class="qrcode-image"
+        src="/assets/images/help.png"
+        mode="aspectFit" />
+      <!-- 提示文字 -->
+      <text class="contact-hint-text">请扫码联系客服</text>
+      <!-- 返回按钮 -->
+      <view class="contact-back-btn" bindtap="onCloseContactPopup">
+        <image
+          class="back-icon"
+          src="/assets/icons/arrow-left.svg"
+          mode="aspectFit" />
+        <text class="back-text">返回</text>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,15 +1,404 @@
 /* pages/mine.wxss */
+
+/* ===== 自定义导航栏 ===== */
+.custom-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+  background-color: #000000;
+}
+
+.custom-nav-inner {
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32rpx;
+}
+
+.custom-nav-left,
+.custom-nav-right {
+  width: 64rpx;
+  display: flex;
+  align-items: center;
+}
+
+.custom-nav-title {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 36rpx;
+  font-weight: 400;
+  letter-spacing: 24rpx;
+  color: #ffffff;
+  flex: 1;
+  text-align: center;
+  text-transform: uppercase;
+}
+
 .mine-page {
   min-height: 100vh;
   background-color: #000000;
+  padding: calc(80rpx + var(--nav-total-height, 132rpx)) 48rpx 0;
+  box-sizing: border-box;
+}
+
+/* ===== 用户信息区域 ===== */
+.user-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60rpx 0 80rpx;
+}
+
+.avatar-wrapper {
+  width: 180rpx;
+  height: 180rpx;
+  border-radius: 50%;
+  background-color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 40rpx;
+  overflow: hidden;
+  border: 2rpx solid rgba(255, 255, 255, 0.08);
+}
+
+.avatar-icon {
+  width: 180rpx;
+  height: 180rpx;
+}
+
+.user-name {
+  color: #ffffff;
+  font-size: 44rpx;
+  font-weight: 600;
+  letter-spacing: 6rpx;
+  margin-bottom: 20rpx;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.welcome-text {
+  color: #666666;
+  font-size: 28rpx;
+  font-style: italic;
+  margin-bottom: 50rpx;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+.welcome-hint {
+  color: #e0a854;
+}
+
+/* ===== 登录按钮 ===== */
+.login-btn {
+  width: 520rpx;
+  height: 96rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.3);
+  border-radius: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.login-btn:active {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.login-btn-text {
+  color: #ffffff;
+  font-size: 30rpx;
+  letter-spacing: 4rpx;
+  font-weight: 500;
+}
+
+/* ===== 完善资料按钮（基础用户）===== */
+.profile-btn {
+  width: 520rpx;
+  height: 96rpx;
+  border: 2rpx solid #e0a854;
+  border-radius: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(224, 168, 84, 0.08);
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.profile-btn:active {
+  background-color: rgba(224, 168, 84, 0.18);
+  border-color: #f0c070;
+}
+
+.profile-btn-text {
+  color: #e0a854;
+  font-size: 30rpx;
+  letter-spacing: 4rpx;
+  font-weight: 500;
+}
+
+/* ===== 退出按钮 ===== */
+.logout-btn {
+  padding: 16rpx 40rpx;
+  transition: opacity 0.2s;
+}
+
+.logout-btn:active {
+  opacity: 0.5;
+}
+
+.logout-btn-text {
+  color: #666666;
+  font-size: 26rpx;
+  letter-spacing: 3rpx;
+}
+
+/* ===== 菜单列表 ===== */
+.menu-list {
+  margin-top: 40rpx;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 36rpx 16rpx;
+  border-bottom: 1rpx solid #1a1a1a;
+}
+
+.menu-item-left {
+  display: flex;
+  align-items: center;
+}
+
+.menu-icon {
+  width: 40rpx;
+  height: 40rpx;
+  margin-right: 24rpx;
+}
+
+.menu-text {
+  color: #ffffff;
+  font-size: 28rpx;
+  letter-spacing: 3rpx;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.menu-arrow-icon {
+  width: 32rpx;
+  height: 32rpx;
+  opacity: 0.5;
+}
+
+/* ===== 新版资料编辑样式 ===== */
+
+.avatar-picker-btn-mine {
+  width: 180rpx;
+  height: 180rpx;
+  border-radius: 50%;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: 4rpx solid #6C63FF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.avatar-picker-btn-mine::after {
+  border: none;
+}
+
+.avatar-picker-btn-mine .avatar-icon {
+  border-radius: 50%;
+  border: none;
+}
+
+.nickname-input-inline {
+  color: #ffffff;
+  font-size: 44rpx;
+  font-weight: 600;
+  letter-spacing: 6px;
+  text-align: center;
+  background: transparent;
+  border-bottom: 2rpx solid rgba(108, 99, 255, 0.5);
+  padding: 8rpx 20rpx;
+  margin-bottom: 8rpx;
+}
+
+.cancel-btn {
+  width: 520rpx;
+  height: 80rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.15);
+  border-radius: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 16rpx;
+}
+
+.cancel-btn:active {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.cancel-btn-text {
+  color: #888888;
+  font-size: 26rpx;
+  letter-spacing: 3px;
+}
+
+/* ===== 帮助与支持弹窗 ===== */
+.help-popup-mask,
+.contact-popup-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.help-popup-card,
+.contact-popup-card {
+  width: 600rpx;
+  padding: 60rpx 48rpx 56rpx;
+  background-color: #000000;
+  border-radius: 8rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  animation: scaleIn 0.3s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 关闭按钮 */
+.popup-close-btn {
+  position: absolute;
+  top: 32rpx;
+  right: 32rpx;
+  width: 44rpx;
+  height: 44rpx;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.mine-title {
+.popup-close-btn text {
+  color: #888888;
+  font-size: 32rpx;
+}
+
+.popup-close-btn:active text {
   color: #ffffff;
+}
+
+/* 标题 */
+.help-popup-title,
+.contact-popup-title {
+  font-family: "Courier New", Courier, monospace;
   font-size: 36rpx;
-  font-family: 'Courier New', Courier, monospace;
-  letter-spacing: 8rpx;
+  font-weight: 400;
+  letter-spacing: 6rpx;
+  color: #ffffff;
+  margin-bottom: 24rpx;
+}
+
+/* 装饰线 */
+.help-popup-line,
+.contact-popup-line {
+  width: 100%;
+  height: 1rpx;
+  background-color: rgba(255, 255, 255, 0.15);
+  margin-bottom: 40rpx;
+}
+
+/* 菜单项 */
+.help-menu-item {
+  width: 100%;
+  padding: 28rpx 32rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.12);
+  border-radius: 4rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+  transition: all 0.2s ease;
+}
+
+.help-menu-item--dashed {
+  border-style: dashed;
+  border-color: rgba(108, 99, 255, 0.5);
+  margin-bottom: 0;
+}
+
+.help-menu-item:active {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.help-menu-text {
+  color: #ffffff;
+  font-size: 28rpx;
+  letter-spacing: 3rpx;
+}
+
+.help-arrow-icon,
+.back-icon {
+  width: 28rpx;
+  height: 28rpx;
+  opacity: 0.4;
+}
+
+/* ===== 联系客服弹窗（二维码）===== */
+.qrcode-image {
+  width: 400rpx;
+  height: 400rpx;
+  margin-top: 16rpx;
+  margin-bottom: 32rpx;
+}
+
+.contact-hint-text {
+  color: #999999;
+  font-size: 26rpx;
+  letter-spacing: 2rpx;
+  margin-bottom: 40rpx;
+}
+
+.contact-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 16rpx 32rpx;
+}
+
+.contact-back-btn:active .back-text {
+  color: #ffffff;
+}
+
+.back-text {
+  color: #666666;
+  font-size: 26rpx;
+  letter-spacing: 2rpx;
 }

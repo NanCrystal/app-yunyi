@@ -1,4 +1,4 @@
-<view class="tab-bar safe-area-bottom" style="--theme: {{themeColor}}; --theme-r: {{themeR}}; --theme-g: {{themeG}}; --theme-b: {{themeB}};">
+<view class="tab-bar safe-area-bottom">
   <view
     wx:for="{{tabs}}"
     wx:key="key"
@@ -7,7 +7,7 @@
     bind:tap="onTabTap"
   >
     <view class="tab-icon" wx:if="{{item.icon}}">
-      <text>{{item.icon}}</text>
+      <image src="{{item.icon}}" mode="aspectFit" class="tab-icon-img" />
     </view>
     <text class="tab-label">{{item.label}}</text>
     <view wx:if="{{current === item.key}}" class="tab-indicator"></view>

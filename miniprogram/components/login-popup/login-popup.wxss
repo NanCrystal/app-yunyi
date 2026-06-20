@@ -1,0 +1,265 @@
+/* ===== 遮罩层 ===== */
+.popup-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ===== 弹窗卡片 ===== */
+.popup-card {
+  width: 600rpx;
+  padding: 60rpx 48rpx 48rpx;
+  background-color: #1a1a2e;
+  border-radius: 32rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow:
+    0 20rpx 80rpx rgba(0, 0, 0, 0.6),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.05);
+  animation: scaleIn 0.3s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 装饰线 */
+.popup-card__line {
+  width: 48rpx;
+  height: 4rpx;
+  background-color: var(--theme, #56A4AD);
+  border-radius: 2rpx;
+  margin-bottom: 32rpx;
+}
+
+/* 标题 */
+.popup-card__title {
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: 4rpx;
+  margin-bottom: 16rpx;
+}
+
+/* 说明文字 */
+.popup-card__desc {
+  font-size: 26rpx;
+  color: #888888;
+  text-align: center;
+  line-height: 1.6;
+  margin-bottom: 48rpx;
+}
+
+/* ============================================================
+   注册/完善资料模式：头像 + 昵称表单
+   ============================================================ */
+
+/* 头像选择按钮 */
+.avatar-picker-btn {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  /* border: 4rpx solid rgba(108, 99, 255, 0.4); */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: border-color 0.25s ease;
+}
+
+.avatar-picker-btn::after {
+  border: none;
+}
+
+.avatar-picker-btn:active {
+  border-color: #6C63FF;
+}
+
+.avatar-img {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: 50%;
+  background: #222233;
+}
+
+.avatar-hint {
+  position: absolute;
+  bottom: -36rpx;
+  font-size: 20rpx;
+  color: #6C63FF;
+  white-space: nowrap;
+}
+
+/* 昵称输入框 */
+.nickname-input-wrap {
+  margin-top: 56rpx;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 20rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  transition: border-color 0.25s ease;
+}
+
+.nickname-input-wrap:focus-within {
+  border-color: rgba(108, 99, 255, 0.4);
+}
+
+.nickname-input {
+  width: 100%;
+  height: 88rpx;
+  line-height: 88rpx;
+  font-size: 28rpx;
+  color: #ffffff;
+  padding: 0 28rpx;
+  box-sizing: border-box;
+  background: transparent;
+}
+
+.nickname-placeholder {
+  color: #666666;
+  font-size: 28rpx;
+}
+
+/* 表单双按钮区域 */
+.form-actions {
+  display: flex;
+  gap: 24rpx;
+  margin-top: 52rpx;
+  width: 100%;
+}
+
+.form-cancel-btn,
+.form-confirm-btn {
+  flex: 1;
+  height: 84rpx;
+  border-radius: 42rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.form-cancel-btn text,
+.form-confirm-btn text {
+  font-size: 28rpx;
+  font-weight: 500;
+  letter-spacing: 1px;
+}
+
+.form-cancel-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 2rpx solid rgba(255, 255, 255, 0.12);
+}
+
+.form-cancel-btn text {
+  color: #999999;
+}
+
+.form-cancel-btn:active {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.form-confirm-btn {
+  background: linear-gradient(135deg, #6C63FF 0%, #00D4FF 100%);
+  border: none;
+}
+
+.form-confirm-btn text {
+  color: #ffffff;
+}
+
+.form-confirm-btn:active:not(.disabled) {
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+
+.form-confirm-btn.disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* ============================================================
+   纯登录模式（向后兼容）：微信一键登录
+   ============================================================ */
+
+.popup-card__btn {
+  width: 100%;
+  height: 96rpx;
+  border-radius: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  transition: opacity 0.2s, background-color 0.2s;
+}
+
+.popup-card__btn--primary {
+  background-color: #07C160;
+}
+
+.popup-card__btn--primary:active {
+  background-color: #06ad56;
+}
+
+.popup-card__btn-icon {
+  width: 36rpx;
+  height: 36rpx;
+}
+
+.popup-card__btn-text {
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #ffffff;
+  letter-spacing: 2rpx;
+}
+
+/* 加载动画 */
+.popup-card__loading {
+  width: 36rpx;
+  height: 36rpx;
+  border: 3rpx solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 取消链接 */
+.popup-card__cancel {
+  font-size: 26rpx;
+  color: #666666;
+  margin-top: 28rpx;
+  padding: 12rpx 24rpx;
+}
+
+.popup-card__cancel:active {
+  color: #999999;
+}

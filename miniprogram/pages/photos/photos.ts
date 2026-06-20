@@ -7,8 +7,10 @@ import {
   fetchPhotoPlatforms,
 } from "../../services/api";
 import type { PhotoItem } from "../../utils/types";
-import { themeBehavior } from "../../behaviors/theme";
-import { getThumbUrl, buildThumbUrl, getImageUrl } from "../../utils/util";
+import { withTheme } from "../../behaviors/theme";
+import { getThumbFullUrl, buildThumbUrl, getImageUrl } from "../../utils/util";
+import { isLoggedIn } from "../../utils/auth";
+import { safeNavigateBack } from "../../utils/nav";
 
 const app = getApp<IAppOption>();
 
@@ -26,6 +28,7 @@ interface EnhancedPhotoItem extends PhotoItem {
   rawUrl: string; // 原图 URL（用于预览）
   thumbUrl: string; // 高质量缩略图 URL
   loaded: boolean; // 是否加载完成
+  size?: number; // 文件大小（字节），用于预览中显示
 }
 
 interface PhotosData {
@@ -60,6 +63,11 @@ interface PhotosData {
 
   // 自定义导航栏
   statusBarHeight: number;
+
+  // 登录状态
+  isLoggedIn: boolean;
+  showLoginPopup: boolean;
+  _guestLimit: boolean;
 }
 
 // 扩展组件实例类型以支持自定义属性
@@ -74,9 +82,7 @@ interface PhotosInstance {
   _contentHeight?: number; // 内容总高度（用于计算滚动条比例）
 }
 
-Component({
-  behaviors: [themeBehavior],
-
+Page(withTheme({
   data: {
     selectedType: [] as number[],
     selectedRegion: [] as number[],
@@ -98,6 +104,7 @@ Component({
     // 拖拽按钮（模拟滚动条）
     showDragBtn: false,
     isDragExpanded: false,
+    currentDragDate: "",
     _scrollbarTransform: "translateY(0)",
 
     // 加载状态
@@ -113,66 +120,92 @@ Component({
 
     // 自定义导航栏
     statusBarHeight: 0,
+
+    // 登录状态
+    isLoggedIn: isLoggedIn(),
+    showLoginPopup: false,
+    _guestLimit: false,
   } as PhotosData,
 
-  lifetimes: {
-    async attached() {
-      // 获取系统状态栏高度（用于自定义导航栏）
-      const { statusBarHeight } = wx.getSystemInfoSync();
-      this.setData({ statusBarHeight });
+  /** 页面加载：初始化所有数据和组件实例 */
+  async onLoad() {
+    // 同步登录状态
+    this.setData({ isLoggedIn: isLoggedIn() });
+    // 获取系统状态栏高度（用于自定义导航栏）
+    const { statusBarHeight } = wx.getWindowInfo();
+    this.setData({ statusBarHeight });
 
-      // 计算网格单元格尺寸（用于骨架屏）
-      this._calcGridCellSize();
+    // 计算网格单元格尺寸（用于骨架屏）
+    this._calcGridCellSize();
 
-      // 获取 scroll-view 实例（用于拖拽时控制滚动）
-      const self = this as unknown as PhotosInstance;
-      setTimeout(() => {
-        self._scrollView = wx
-          .createSelectorQuery()
-          .in(this)
-          .select("#photoScrollView")
-          .node()
-          .exec((res: any) => {
-            if (res && res[0] && res[0].node) {
-              self._scrollView = res[0].node;
-            }
-          });
-      }, 100);
+    // 获取 scroll-view 实例（用于拖拽时控制滚动）
+    const self = this as unknown as PhotosInstance;
+    setTimeout(() => {
+      self._scrollView = wx
+        .createSelectorQuery()
+        .in(this)
+        .select("#photoScrollView")
+        .node()
+        .exec((res: any) => {
+          if (res && res[0] && res[0].node) {
+            self._scrollView = res[0].node;
+          }
+        });
+    }, 100);
 
-      // 从全局状态获取当前选中的艺人 ID
-      const artistId = (app.globalData.selectedCharId || "") as string;
-      this.setData({
-        currentArtistId: artistId,
-        isLoading: true,
-      });
+    // 从全局状态获取当前选中的艺人 ID
+    const artistId = (app.globalData.selectedCharId || "") as string;
+    this.setData({
+      currentArtistId: artistId,
+      isLoading: true,
+    });
 
-      // 加载筛选选项
-      await this.loadFilterOptions();
+    // 加载筛选选项
+    await this.loadFilterOptions();
 
-      // 调用后端接口加载照片数据
-      await this.loadPhotosFromServer(artistId);
+    // 调用后端接口加载照片数据
+    await this.loadPhotosFromServer(artistId);
 
-      this.setData({ isLoading: false });
-    },
-    detached() {
-      // 清理工作（如需要）
-    },
+    this.setData({ isLoading: false });
   },
 
-  methods: {
-    /** 返回上一页 */
-    onGoBack() {
-      const pages = getCurrentPages();
-      if (pages.length > 1) {
-        wx.navigateBack();
-      } else {
-        wx.reLaunch({ url: '/pages/home/home' });
+  /** 页面卸载：清理资源 */
+  onUnload() {
+    // 清理工作（如需要）
+  },
+
+  /** 返回上一页（DevTools 兼容） */
+  onGoBack() {
+    safeNavigateBack();
+  },
+
+    /** 重置所有缓存状态，强制下次访问时重新拉取数据（用于 reprocess 后刷新） */
+    resetCache() {
+      const self = this as unknown as PhotosInstance;
+      self._allTimelineItems = undefined;
+      self._loadingMonths = new Set();
+      // 重置已加载月份的标记，触发重新请求
+      const groups = this.data.groupedPhotos;
+      if (groups && groups.length > 0) {
+        const resetGroups = groups.map((g) => ({ ...g, loaded: false, loading: false, days: [] }));
+        this.setData({ groupedPhotos: resetGroups });
       }
+      this.setData({ filteredPhotos: [] });
+    },
+
+    /** 下拉刷新处理：重置缓存并重新加载数据 */
+    async onPullDownRefresh() {
+      const artistId = (app.globalData.selectedCharId || "") as string;
+      this.resetCache();
+      this.setData({ isLoading: true, currentArtistId: artistId });
+      await this.loadPhotosFromServer(artistId);
+      this.setData({ isLoading: false });
+      wx.stopPullDownRefresh();
     },
 
     /** 计算网格单元格尺寸（逻辑像素） */
     _calcGridCellSize() {
-      const { windowWidth } = wx.getSystemInfoSync();
+      const { windowWidth } = wx.getWindowInfo();
       const padding = 48;
       const gutter = 4;
       const col = 4;
@@ -238,8 +271,8 @@ Component({
 
         // ====== 第二步：构建骨架屏分组（立即渲染，用户秒见标题）======
         const { gridCellSize } = this.data;
-        const { pixelRatio } = wx.getSystemInfoSync();
-        const physicalSize = Math.round(gridCellSize * pixelRatio);
+        const { pixelRatio } = wx.getWindowInfo();
+        const physicalSize = Math.round(gridCellSize * pixelRatio) || 200;
 
         const skeletonGroups: GroupedPhotos[] = timelineItems.map((t) => ({
           month: this._formatYearMonth(t.yearMonth),
@@ -255,7 +288,8 @@ Component({
           filteredPhotos: [],
         });
 
-        // ====== 第三步：预加载最近的 1 个月份（首屏可见）======
+        // ====== 第三步：预加载最近月份 → 自动链式填充视口 ======
+        // loadMonth 成功后会自动调用 _fillViewport() 填充更多月份到当前视口
         if (timelineItems.length > 0) {
           await this.loadMonth(
             timelineItems[0].yearMonth,
@@ -326,7 +360,7 @@ Component({
           const rawUrl = getImageUrl(p.url);
           return {
             id: String(p.id),
-            url: getThumbUrl(p.url),
+            url: getThumbFullUrl(p.url),
             rawUrl,
             thumbUrl: buildThumbUrl(rawUrl, physicalSize),
             loaded: false,
@@ -359,6 +393,7 @@ Component({
             type: p.photoType?.name || "Portrait",
             region: p.photoLocation?.name || ("Shanghai" as any),
             system: p.photoPlatform?.name || ("Phase One" as any),
+            size: p.size,
             _shootDate: p.shootDate,
           };
         });
@@ -409,6 +444,9 @@ Component({
 
         // 检查是否所有月份都已加载完毕
         this._checkAllLoaded();
+
+        // 链式视口填充：当月加载完成后，自动尝试加载下一个可见月份
+        this._fillViewport();
       } catch (err) {
         console.error(`[photos] 加载月份 ${yearMonth} 失败:`, err);
         this.setData({
@@ -678,8 +716,8 @@ Component({
 
       // 增强照片数据（添加加载状态字段）
       const { gridCellSize } = this.data;
-      const { pixelRatio } = wx.getSystemInfoSync();
-      const physicalSize = Math.round(gridCellSize * pixelRatio);
+      const { pixelRatio } = wx.getWindowInfo();
+      const physicalSize = Math.round(gridCellSize * pixelRatio) || 200;
 
       const enhancedFiltered: EnhancedPhotoItem[] = filtered.map(
         (p: PhotoItem) => ({
@@ -726,6 +764,7 @@ Component({
       const index = filtered.findIndex(
         (p: EnhancedPhotoItem) => p.id === photoId
       );
+
       if (index >= 0) {
         this.setData({ previewPhoto: filtered[index], previewIndex: index });
       }
@@ -746,33 +785,50 @@ Component({
     },
 
     onViewOriginal() {
-      const { previewPhoto } = this.data;
-      if (!previewPhoto) return;
-      const url = previewPhoto.rawUrl || previewPhoto.url;
-      wx.previewImage({
-        current: url,
-        urls: [url],
+      // 组件内部已处理图片切换为原图，无需额外操作
+    },
+
+    /** 预览中下载当前图片 */
+    onPreviewDownload(e: WechatMiniprogram.CustomEvent) {
+      const photo = e.detail?.photo || this.data.previewPhoto;
+      if (!photo) return;
+      const url = photo.rawUrl || photo.url;
+      wx.downloadFile({
+        url,
+        success: (res) => {
+          if (res.statusCode === 200) {
+            wx.saveImageToPhotosAlbum({
+              filePath: res.tempFilePath,
+              success: () => {
+                wx.showToast({ title: "已保存", icon: "success" });
+              },
+              fail: () => {
+                wx.showToast({ title: "保存失败", icon: "none" });
+              },
+            });
+          }
+        },
+        fail: () => {
+          wx.showToast({ title: "下载失败", icon: "none" });
+        },
       });
     },
 
-    onPrevPreview() {
-      const { previewIndex, filteredPhotos } = this.data;
-      const newIndex =
-        previewIndex > 0 ? previewIndex - 1 : filteredPhotos.length - 1;
-      this.setData({
-        previewPhoto: filteredPhotos[newIndex],
-        previewIndex: newIndex,
-      });
+    /** 预览中收藏当前图片（占位） */
+    onPreviewFavorite() {
+      wx.showToast({ title: "已收藏", icon: "success" });
     },
 
-    onNextPreview() {
-      const { previewIndex, filteredPhotos } = this.data;
-      const newIndex =
-        previewIndex < filteredPhotos.length - 1 ? previewIndex + 1 : 0;
-      this.setData({
-        previewPhoto: filteredPhotos[newIndex],
-        previewIndex: newIndex,
-      });
+    /** 预览中 swiper 滑动切换 */
+    onPreviewSwiperChange(e: WechatMiniprogram.CustomEvent) {
+      const current = e.detail.current as number;
+      const photo = this.data.filteredPhotos[current];
+      if (photo) {
+        this.setData({
+          previewPhoto: photo,
+          previewIndex: current,
+        });
+      }
     },
 
     // ========== 拆拽按钮相关方法 ==========
@@ -809,7 +865,7 @@ Component({
      * 使用 transform: translateY() 代替 top:，GPU 合成不触发 layout
      */
     _updateScrollbarPosition(scrollTop: number) {
-      const { windowHeight } = wx.getSystemInfoSync();
+      const { windowHeight } = wx.getWindowInfo();
       const self = this as unknown as PhotosInstance;
       const contentHeight = self._contentHeight || 10000;
       const maxScroll = Math.max(1, contentHeight - windowHeight);
@@ -843,6 +899,67 @@ Component({
     },
 
     /**
+     * 链式视口填充：当月加载完成后自动检查并加载后续月份
+     * 无需等待用户滚动，逐月链式加载直到填满当前视口
+     */
+    async _fillViewport() {
+      const { groupedPhotos, currentArtistId } = this.data;
+      if (!groupedPhotos || groupedPhotos.length === 0) return;
+
+      const { windowHeight } = wx.getWindowInfo();
+      const itemH = this.data.gridCellSize;
+
+      // 计算每个月份（含骨架态）的当前位置
+      let accumulatedHeight = 0;
+      let nextUnloadedIdx = -1;
+
+      for (let i = 0; i < groupedPhotos.length; i++) {
+        const group = groupedPhotos[i];
+        let height = 72; // 月标题区高度
+
+        if (group.loaded && group.days.length > 0) {
+          // 已加载：使用精确高度
+          group.days.forEach((d) => {
+            height += 44 + Math.ceil(d.items.length / 4) * itemH + 20;
+          });
+        } else {
+          // 骨架态：估算高度（与实际加载后一致）
+          const estDays = Math.max(1, Math.ceil(group.count / 10));
+          const gridRows = Math.ceil(group.count / 4);
+          height += estDays * 44 + gridRows * itemH + estDays * 20;
+        }
+
+        const top = accumulatedHeight;
+        accumulatedHeight += height;
+
+        // 找到第一个视口内未加载的月份
+        if (
+          nextUnloadedIdx < 0 &&
+          !group.loaded &&
+          !group.loading &&
+          top < windowHeight
+        ) {
+          nextUnloadedIdx = i;
+        }
+      }
+
+      // 加载视口内下一个月，完成后继续链式填充
+      if (nextUnloadedIdx >= 0) {
+        const { pixelRatio } = wx.getWindowInfo();
+        const physicalSize =
+          Math.round(this.data.gridCellSize * pixelRatio) || 200;
+        await this.loadMonth(
+          groupedPhotos[nextUnloadedIdx].yearMonth,
+          nextUnloadedIdx,
+          currentArtistId,
+          physicalSize
+        );
+        // 继续检查是否还有更多月份需要填充
+        this._fillViewport();
+      }
+    },
+
+    /**
      * 懒加载：精确触发策略
      * 核心原则：只有当【下个月份的顶部】真正进入视口时才触发请求
      * - 不基于固定像素范围（不同月份高度差异大）
@@ -852,7 +969,7 @@ Component({
       const { groupedPhotos, currentArtistId } = this.data;
       if (!groupedPhotos || groupedPhotos.length === 0) return;
 
-      const { windowHeight } = wx.getSystemInfoSync();
+      const { windowHeight } = wx.getWindowInfo();
       const itemH = this.data.gridCellSize;
 
       // ====== 第一步：计算每个月份的精确位置区间 ======
@@ -870,7 +987,8 @@ Component({
           });
         } else {
           const estDays = Math.max(1, Math.ceil(group.count / 10));
-          height += estDays * (44 + itemH) + Math.ceil(group.count / 4) * itemH;
+          const gridRows = Math.ceil(group.count / 4);
+          height += estDays * 44 + gridRows * itemH + estDays * 20;
         }
 
         positions.push({ index: i, top, bottom: accumulatedHeight + height });
@@ -896,8 +1014,9 @@ Component({
 
         // === 场景A：视口内有未加载月份 → 立即加载 ===
         if (!group.loaded && !group.loading) {
-          const { pixelRatio } = wx.getSystemInfoSync();
-          const physicalSize = Math.round(this.data.gridCellSize * pixelRatio);
+          const { pixelRatio } = wx.getWindowInfo();
+          const physicalSize =
+            Math.round(this.data.gridCellSize * pixelRatio) || 200;
           this.loadMonth(
             group.yearMonth,
             pos.index,
@@ -928,8 +1047,9 @@ Component({
           nextPos.top >= triggerThreshold &&
           nextPos.top <= visBottom
         ) {
-          const { pixelRatio } = wx.getSystemInfoSync();
-          const physicalSize = Math.round(this.data.gridCellSize * pixelRatio);
+          const { pixelRatio } = wx.getWindowInfo();
+          const physicalSize =
+            Math.round(this.data.gridCellSize * pixelRatio) || 200;
           this.loadMonth(
             nextGroup.yearMonth,
             nextPos.index,
@@ -963,8 +1083,8 @@ Component({
       if (!groupedPhotos || groupedPhotos.length === 0) return;
 
       // 获取系统信息用于计算尺寸
-      const systemInfo = wx.getSystemInfoSync();
-      const itemHeight = (systemInfo.windowWidth - 96) / 4; // 每张图片高度（4列布局，减去padding）
+      const { windowWidth } = wx.getWindowInfo();
+      const itemHeight = (windowWidth - 96) / 4; // 每张图片高度（4列布局，减去padding）
       const monthHeaderHeight = 56; // 月标题高度
       const dayTitleHeight = 36; // 日标题高度
       let accumulatedHeight = 0;
@@ -1049,7 +1169,7 @@ Component({
       if (!self._isDragging || self._dragStartScrollTop == null) return;
 
       const deltaY = e.touches[0].clientY - (self._dragStartClientY || 0);
-      const { windowHeight } = wx.getSystemInfoSync();
+      const { windowHeight } = wx.getWindowInfo();
       const contentHeight = self._contentHeight || 10000;
 
       // 将手指移动距离按比例转换为滚动距离
@@ -1096,5 +1216,30 @@ Component({
         this.setData({ allLoaded });
       }
     },
-  },
-});
+
+    // ========== 登录相关方法 ==========
+    
+    /** 底部引导点击 → 打开登录弹窗 */
+    onGuestFooterLogin() {
+      this.setData({ showLoginPopup: true });
+    },
+
+    /** 登录弹窗回调：登录成功 */
+    async onLoginSuccess() {
+      this.setData({
+        isLoggedIn: true,
+        showLoginPopup: false,
+        _guestLimit: false,
+      });
+      // 登录后重新加载数据以获取完整列表
+      const artistId = this.data.currentArtistId;
+      this.setData({ isLoading: true });
+      await this.loadPhotosFromServer(artistId);
+      this.setData({ isLoading: false });
+    },
+
+    /** 登录弹窗回调：取消 */
+    onLoginCancel() {
+      this.setData({ showLoginPopup: false });
+    },
+}));

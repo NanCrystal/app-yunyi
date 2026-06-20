@@ -25,6 +25,7 @@ export interface VideoItem {
   description: string;
   publishedTime?: string;
   platform?: string;
+  reviewImageUrl?: string;
   associatedPosts?: string[];
 }
 
@@ -40,6 +41,10 @@ export type PlatformType =
 export interface PostMedia {
   type: "PHOTO" | "VIDEO";
   url: string;
+  /** 视频封面图（仅 VIDEO 类型） */
+  coverUrl?: string;
+  /** 视频高清播放地址（仅 VIDEO 类型，用于 wx.previewMedia 播放） */
+  hdUrl?: string;
 }
 
 /** 社交动态 */
@@ -69,6 +74,7 @@ export interface PhotoItem {
   title: string;
   file_name: string;
   location: string;
+  reviewImageUrl?: string;
   tags: string[];
   type: "RAW" | "Video" | "Portrait";
   region: "Tokyo" | "Shanghai" | "Berlin" | "New York";
@@ -81,6 +87,7 @@ export interface Photocard {
   title: string;
   date: string;
   imageUrl: string;
+  reviewImageUrl?: string;
   specialEdition?: boolean;
 }
 
@@ -95,14 +102,14 @@ export interface AudioItem {
   date: string;
   bitRate: string;
   coverUrl: string;
- 
+  audioUrl: string;
 }
 /** 音频条目 */
 export interface AudioItem2 {
- id: number;
-  fileName:string;
-  title:string;
-  artistId:string;
+  id: number;
+  fileName: string;
+  title: string;
+  artistId: string;
   qiniuKey: string;
   originalUrl: string;
   coverUrl: string;
@@ -127,17 +134,42 @@ export interface AudioItem2 {
   tagLocation: any;
   tagPlatform: any;
   itinerary: any;
- 
 }
 
 /** 角色 */
 export interface Character {
-  id: string;
+  id: number;
   artistId: string;
   name: string;
   avatar: string;
-  role: string;
-  accentColor: string;
+  role?: string;
+  accentColor?: string;
+  bio?: string;
+  weiboId?: string | null;
+  weiboNickname?: string | null;
+  weiboAvatar?: string | null;
+  weiboPlatformId?: number | null;
+  douyinSecUid?: string | null;
+  douyinNickname?: string | null;
+  douyinAvatar?: string | null;
+  douyinPlatformId?: number | null;
+  xhsId?: string | null;
+  xhsNickname?: string | null;
+  xhsAvatar?: string | null;
+  xhsPlatformId?: number | null;
+  igId?: string | null;
+  igToken?: string | null;
+  igNickname?: string | null;
+  igAvatar?: string | null;
+  igPlatformId?: number | null;
+  syncEnabled?: boolean;
+  syncWeibo?: boolean;
+  syncDouyin?: boolean;
+  syncXiaohongshu?: boolean;
+  syncInstagram?: boolean;
+  fullSynced?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 /** 角色 */
 export interface ArtistItem {
@@ -163,6 +195,10 @@ export interface ArtistItem {
   igAvatar?: string;
   igPlatformId?: number;
   syncEnabled?: boolean;
+  syncWeibo?: boolean;
+  syncDouyin?: boolean;
+  syncXiaohongshu?: boolean;
+  syncInstagram?: boolean;
 }
 export interface PlatformResType {
   id: number;

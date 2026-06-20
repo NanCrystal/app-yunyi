@@ -1,0 +1,116 @@
+/* pages/welcome.wxss */
+.container {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.bg-img {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 1;
+}
+
+/* 有欢迎图片时隐藏遮罩，让图片完整展示 */
+.container.has-welcome-image .overlay {
+  display: none;
+}
+
+ 
+
+/* ========== 居中容器（flex） ========== */
+.center-wrap {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ========== 文字基础样式 ========== */
+.text {
+  width: 80%;
+  font-size: 36rpx;
+  font-weight: 300;
+  line-height: 1.6;
+  letter-spacing: 2rpx;
+  font-family: "PingFang SC", -apple-system, sans-serif;
+  color: #fff;
+}
+ 
+
+/* ================================ */
+/*  镜头4：最终定格 — 逐字出现        */
+/* ================================ */
+ 
+.typewriter {
+  text-align: center;
+}
+
+.text-line {
+  margin-bottom: 8rpx;
+}
+
+.char {
+  display: inline;
+  opacity: 0;
+  animation: popIn 0.35s ease forwards;
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ========== 跳过按钮 ========== */
+.skip-btn {
+  position: absolute;
+  right: 40rpx;
+  bottom: calc(env(safe-area-inset-bottom) + 40rpx);
+  z-index: 3;
+  padding: 12rpx 32rpx;
+  font-size: 28rpx;
+  color: #ffffff;
+  border-radius: 40rpx;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* ========== 通用淡入 ========== */
+/* @keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+} */
+
+/* ========== 欢迎图片轮播 ========== */
+.welcome-swiper {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2;
+}
+
+.welcome-img {
+  width: 100%;
+  height: 100%;
+}
+
+.single-img {
+  position: absolute;
+  top: 0; left: 0;
+  z-index: 2;
+}

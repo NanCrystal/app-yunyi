@@ -1,0 +1,116 @@
+<!--pages/feedback/feedback.wxml-->
+<view class="custom-nav" style="padding-top: {{statusBarHeight}}px;">
+  <view class="custom-nav-inner">
+    <view class="custom-nav-left" bindtap="goBack">
+      <image
+        class="nav-back-icon"
+        src="/assets/icons/arrow_right.svg"
+        mode="aspectFit" />
+    </view>
+    <text class="custom-nav-title">反馈与支持</text>
+    <view class="custom-nav-right" />
+  </view>
+</view>
+<view class="page" style="padding-top: {{navBarHeight}}px;">
+  <!-- 顶部标题 -->
+  <!-- <view class="header"> <text class="header-title">SUPPORT</text> </view> -->
+  <!-- 版本信息 -->
+  <!-- <view class="version-info"> <view class="version-dot"></view> <text class="version-text">REFORGE TERMINAL V1.0</text> </view> -->
+  <!-- 页面标题 -->
+  <!-- <view class="page-title"> <text>反馈与支持</text> </view> -->
+  <!-- 分隔线 -->
+  <view class="divider">
+  </view>
+  <!-- 01 问题类型 -->
+  <view class="form-section">
+    <view class="section-label">
+      <text class="section-number">01/</text>
+      <text class="label-text">问题类型</text>
+      <text class="required">*</text>
+    </view>
+    <view class="checkbox-group">
+      <view
+        class="checkbox-item"
+        wx:for="{{problemTypes}}"
+        wx:key="id"
+        bindtap="toggleProblemType"
+        data-id="{{item.id}}"
+      >
+        <view class="checkbox {{item.checked ? 'checked' : ''}}">
+          <view class="check-icon" wx:if="{{item.checked}}">
+          </view>
+        </view>
+        <text class="checkbox-label">{{item.name}}</text>
+      </view>
+    </view>
+  </view>
+  <!-- 分隔线 -->
+  <view class="divider">
+  </view>
+  <!-- 02 问题描述 -->
+  <view class="form-section">
+    <view class="section-label">
+      <text class="section-number">02/</text>
+      <text class="label-text">问题描述</text>
+      <text class="required">*</text>
+    </view>
+    <textarea
+      class="description-input"
+      placeholder="请输入详细内容"
+      placeholder-class="placeholder"
+      value="{{description}}"
+      bindinput="onDescriptionInput"
+      maxlength="500"
+      auto-height
+    >
+    </textarea>
+  </view>
+  <!-- 分隔线 -->
+  <view class="divider">
+  </view>
+  <!-- 03 上传截图 -->
+  <view class="form-section">
+    <view class="section-label">
+      <text class="section-number">03/</text>
+      <text class="label-text">上传截图</text>
+      <text class="optional">(选填)</text>
+    </view>
+    <view class="upload-area" bindtap="chooseImage">
+      <image
+        wx:if="{{uploadedImage}}"
+        src="{{uploadedImage}}"
+        class="preview-image"
+        mode="aspectFill" />
+      <view wx:else class="upload-placeholder">
+        <view class="camera-icon">
+          <view class="camera-body">
+          </view>
+          <view class="camera-lens">
+          </view>
+        </view>
+        <text class="upload-text">上传图片</text>
+      </view>
+    </view>
+  </view>
+  <!-- 分隔线 -->
+  <view class="divider">
+  </view>
+  <!-- 04 联系方式 -->
+  <view class="form-section">
+    <view class="section-label">
+      <text class="section-number">04/</text>
+      <text class="label-text">联系方式</text>
+      <text class="optional">(选填)</text>
+    </view>
+    <input
+      class="contact-input"
+      placeholder="微信 / QQ / 邮箱"
+      placeholder-class="placeholder"
+      value="{{contactInfo}}"
+      bindinput="onContactInput" />
+  </view>
+  <!-- 提交按钮 -->
+  <view class="submit-wrapper">
+    <button class="submit-btn" bindtap="submitFeedback">提交反馈</button>
+  </view>
+</view>

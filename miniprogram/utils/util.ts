@@ -18,12 +18,21 @@ const formatNumber = (n: number) => {
   return s[1] ? s : "0" + s;
 };
 
+/** 本地资源路径前缀白名单（小程序项目内静态资源） */
+const LOCAL_PREFIXES = ["/assets/", "/pages/", "/components/", "/behaviors/", "/utils/"];
+
+/** 判断是否为小程序本地资源路径 */
+const isLocalPath = (path?: string | null): boolean => {
+  if (!path) return false;
+  return LOCAL_PREFIXES.some((prefix) => path.startsWith(prefix));
+};
+
 /** 根据路径获取完整图片 URL（自动拼接 CDN 前缀） */
 export const getImageUrl = (path?: string): string => {
   if (!path) return "";
   if (path.startsWith("http")) return path;
   // 小程序本地资源，不加 CDN 前缀
-  if (path.startsWith("/pages/")) return path;
+  if (isLocalPath(path)) return path;
   // 上传到七牛的远程资源，拼 CDN 域名
   return `https://cdn.tauol.online${path}`;
 };
@@ -43,10 +52,14 @@ export const formatFileSize = (bytes: number): string => {
  * imageView2/1/w/200/h/200/q/75 缩放至覆盖 200×200 的最小尺寸，再居中裁剪，不变形
  * imageView2/2/w/400/q/80 按比例缩放到宽度 ≤ 400px，高度自适应 度 400px，高度按原比例，可能不到 400px
  *
+ * 注意：仅对自有 CDN 域名的图片附加处理参数，外部第三方 URL 直接原样返回
  */
-export const getThumbFullUrl = (url: string): string => {
+export const getThumbFullUrl = (url?: string | null): string => {
+  if (!url) return "";
   // 本地资源不做缩略处理
-  if (url.startsWith("/pages/")) return url;
+  if (isLocalPath(url)) return url;
+  // 外部第三方 URL（http:// 或 https:// 开头）不做缩略处理，避免 403/超时
+  if (!url.startsWith("/") && !url.startsWith("https://cdn.tauol.online")) return url;
   return `${getImageUrl(url)}?imageView2/2`;
 };
 /** 获取缩略图
@@ -55,13 +68,18 @@ export const getThumbFullUrl = (url: string): string => {
  * imageView2/1/w/200/h/200/q/75 缩放至覆盖 200×200 的最小尺寸，再居中裁剪，不变形
  * imageView2/2/w/400/q/80 按比例缩放到宽度 ≤ 400px，高度自适应 度 400px，高度按原比例，可能不到 400px
  *
+ * 注意：仅对自有 CDN 域名的图片附加处理参数，外部第三方 URL 直接原样返回
  */
-export const getThumbUrl = (url: string): string => {
+export const getThumbUrl = (url?: string | null): string => {
+  if (!url) return "";
   // 本地资源不做缩略处理
-  if (url.startsWith("/pages/")) return url;
+  if (isLocalPath(url)) return url;
+  // 外部第三方 URL（http:// 或 https:// 开头）不做缩略处理，避免 403/超时
+  if (!url.startsWith("/") && !url.startsWith("https://cdn.tauol.online")) return url;
   return `${getImageUrl(url)}?imageView2/1/w/200/h/200/q/75`;
 };
-/** 获取缩略图
+/**
+ * 获取缩略图
  * 七牛云缩略图 URL 工具
  *
  * @param {string} rawUrl  原始图片 URL（不含处理参数）
@@ -76,9 +94,18 @@ export const getThumbUrl = (url: string): string => {
  *   q/75          — 质量 75，缩略图场景肉眼无损
  *   interlace/1   — 渐进加载，弱网下从模糊到清晰显示
  *   ignore-error/1— 原图处理失败时返回原图，防止整批挂掉
+ *
+ * 注意：仅对自有 CDN 域名的图片附加处理参数，外部第三方 URL 直接原样返回
  */
 export const buildThumbUrl = (rawUrl: string, size: number) => {
   if (!rawUrl) return "";
+  // 防止 NaN / 0 / 负数等非法尺寸
+  if (!size || size <= 0 || isNaN(size)) return rawUrl;
+  // 外部第三方 URL（http:// 或 https:// 开头）不做缩略处理，避免 403/超时
+  if ((rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) && 
+      !rawUrl.startsWith("https://cdn.tauol.online")) {
+    return rawUrl;
+  }
   // 避免对已带参数的 URL 重复拼接
   const base = rawUrl.split("?")[0];
   return `${base}?imageView2/1/w/${size}/h/${size}/format/webp/q/75/interlace/1/ignore-error/1`;
@@ -151,4 +178,18 @@ export const formatMonthDayEnUpper = (dateStr: string): string => {
       day: "numeric",
     })
     .toUpperCase();
+};
+//  duration 秒数的格式化字符串
+export const fmtDuration = (duration: number) => {
+  if (duration == null || duration <= 0) return "";
+  const m = Math.floor(duration / 60);
+  const s = Math.floor(duration % 60);
+  return `${m}:${String(s).padStart(2, "0")}`;
+  // 全量带小时 00.00.00
+  // const h = Math.floor(duration / 3600);
+  // const m = Math.floor((duration % 3600) / 60);
+  // const s = Math.floor(duration % 60);
+  // return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s
+  //   .toString()
+  //   .padStart(2, "0")}`;
 };

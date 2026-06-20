@@ -1,0 +1,11 @@
+<view wx:if="{{show}}" class="guest-footer" bindtap="onTap">
+  <view class="guest-footer__lock">
+    <image
+      class="guest-footer__icon"
+      src="/assets/icons/lock.svg"
+      mode="aspectFit"
+    />
+  </view>
+  <text class="guest-footer__text">登录后查看更多内容</text>
+  <text class="guest-footer__arrow">›</text>
+</view>

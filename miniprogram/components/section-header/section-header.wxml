@@ -1,7 +1,7 @@
-<view class="section-header" style="--theme: {{themeColor}}; --theme-r: {{themeR}}; --theme-g: {{themeG}}; --theme-b: {{themeB}};">
+<view class="section-header {{disabled ? 'section-header--disabled' : ''}}" bind:tap="onMoreTap">
   <text class="section-title">{{title}}</text>
-  <view wx:if="{{showMore}}" class="section-more" bind:tap="onMoreTap">
-    <text class="more-text">{{moreText}}</text>
-    <view class="more-arrow"></view>
+  <view wx:if="{{showMore}}" class="section-more {{disabled ? 'section-more--disabled' : ''}}" style="color: {{themeColor}}; border-color: {{themeColor}};">
+    <text class="more-text" style="color: {{themeColor}};">{{moreText}}</text>
+    <view class="more-arrow" style="background-color: {{themeColor}};"></view>
   </view>
 </view>

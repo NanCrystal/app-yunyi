@@ -9,7 +9,7 @@ import type {
   PlatformResType,
   AritistResType,
 } from "../utils/types";
-import { get } from "../services/request";
+import { get, put } from "../services/request";
 import {
   initialEvents,
   initialVideos,
@@ -22,21 +22,36 @@ import {
   systemPlantforms,
   systemArtist,
 } from "../utils/data";
-import {
-  artistList as apiArtistList,
-  banners as apiBanners,
-  recent_sync,
-  recent_itinerary,
-  recent_photos,
-  recent_videos,
-  recent_card,
-  recent_voices,
-} from "../mock/app";
 
-// 艺人 accentColor 映射（从本地 characters 中获取）
+const apiArtistList: any = [];
+const apiBanners: any = [];
+const recent_sync: any = [];
+const recent_itinerary: any = [];
+const recent_photos: any = [];
+const recent_videos: any = [];
+const recent_card: any = [];
+const recent_voices: any = [];
+
+export const colorList: any = [
+  {
+    name: "yunyi",
+    accentColor: "rgb(86, 164, 173)",
+  },
+  {
+    name: "haoyiran",
+    accentColor: "#aa0a27",
+  },
+  {
+    name: "yunqi",
+    accentColor: "rgb(254, 168, 53)",
+  },
+];
+// 艺人 accentColor 映射
 const artistColorMap: Record<string, string> = {};
-characters.forEach((c: Character) => {
-  artistColorMap[c.artistId] = c.accentColor;
+colorList.forEach((c: any) => {
+  if (c.name && c.accentColor) {
+    artistColorMap[c.name] = c.accentColor;
+  }
 });
 
 const defaultAccentColor = "rgb(86, 164, 173)";
@@ -46,9 +61,31 @@ export const getHeroSliderImages = (): string[] => {
   return heroSliderImages;
 };
 
-/** 获取角色列表 */
+/** 调用后端接口获取艺人列表，映射为 Character[] */
+export const fetchArtists = async (): Promise<Character[]> => {
+  const list = await get<any[]>("/artists");
+  return list.map((a: any) => ({
+    ...a,
+    id: a.artistId,
+    artistId: a.artistId,
+    name: a.name,
+    avatar: a.appCover,
+    role: "",
+    accentColor: artistColorMap[a.artistId] || defaultAccentColor,
+  }));
+};
+
+/** 更新艺人配置（含平台同步开关） */
+export const updateArtist = (id: number, data: Partial<Character>) => {
+  return put(`/artists/${id}`, data);
+};
+
+/** 获取角色列表（本地 mock，兼容旧调用） */
 export const getCharacters = (): Character[] => {
-  return characters;
+  return characters.map((c) => ({
+    ...c,
+    accentColor: artistColorMap[c.artistId] || defaultAccentColor,
+  }));
 };
 
 /** 获取日程列表（本地 mock 数据，预留） */
@@ -67,16 +104,16 @@ export const getItineraries = (params: {
 }) => {
   const queryParams: Record<string, any> = {
     artistId: params.artistId,
-    period: params.period || 'year',
+    period: params.period || "year",
     date: params.date,
     page: params.page || 1,
     pageSize: params.pageSize || 20,
   };
   // status 为全部时不传
-  if (params.status && params.status !== 'ALL') {
+  if (params.status && params.status !== "ALL") {
     queryParams.status = params.status;
   }
-  return get<{ list: any[]; total: number }>('/itineraries', queryParams);
+  return get<{ list: any[]; total: number }>("/itineraries", queryParams);
 };
 
 /** 获取视频列表 */
@@ -109,13 +146,16 @@ export const fetchPhotoList = (params: {
     pageSize: params.pageSize || 50,
   };
   if (params.yearMonth) queryParams.yearMonth = params.yearMonth;
-  if (params.artistIds?.length) queryParams.artistIds = params.artistIds.join(',');
-  if (params.typeIds?.length) queryParams.typeIds = params.typeIds.join(',');
-  if (params.locationIds?.length) queryParams.locationIds = params.locationIds.join(',');
-  if (params.platformIds?.length) queryParams.platformIds = params.platformIds.join(',');
+  if (params.artistIds?.length)
+    queryParams.artistIds = params.artistIds.join(",");
+  if (params.typeIds?.length) queryParams.typeIds = params.typeIds.join(",");
+  if (params.locationIds?.length)
+    queryParams.locationIds = params.locationIds.join(",");
+  if (params.platformIds?.length)
+    queryParams.platformIds = params.platformIds.join(",");
 
   return get<{ items: any[]; total: number; page: number; pageSize: number }>(
-    '/photos/by-month',
+    "/photos/by-month",
     queryParams
   );
 };
@@ -128,12 +168,18 @@ export const fetchPhotoTimeline = (params: {
   platformIds?: number[];
 }) => {
   const queryParams: Record<string, any> = {};
-  if (params.artistIds?.length) queryParams.artistIds = params.artistIds.join(',');
-  if (params.typeIds?.length) queryParams.typeIds = params.typeIds.join(',');
-  if (params.locationIds?.length) queryParams.locationIds = params.locationIds.join(',');
-  if (params.platformIds?.length) queryParams.platformIds = params.platformIds.join(',');
+  if (params.artistIds?.length)
+    queryParams.artistIds = params.artistIds.join(",");
+  if (params.typeIds?.length) queryParams.typeIds = params.typeIds.join(",");
+  if (params.locationIds?.length)
+    queryParams.locationIds = params.locationIds.join(",");
+  if (params.platformIds?.length)
+    queryParams.platformIds = params.platformIds.join(",");
 
-  return get<{ yearMonth: string; count: number }[]>('/photos/timeline', queryParams);
+  return get<{ yearMonth: string; count: number }[]>(
+    "/photos/timeline",
+    queryParams
+  );
 };
 
 /** 调用后端接口获取视频列表（按月分页） */
@@ -151,13 +197,16 @@ export const fetchVideoList = (params: {
     pageSize: params.pageSize || 50,
   };
   if (params.yearMonth) queryParams.yearMonth = params.yearMonth;
-  if (params.artistIds?.length) queryParams.artistIds = params.artistIds.join(',');
-  if (params.typeIds?.length) queryParams.typeIds = params.typeIds.join(',');
-  if (params.locationIds?.length) queryParams.locationIds = params.locationIds.join(',');
-  if (params.platformIds?.length) queryParams.platformIds = params.platformIds.join(',');
+  if (params.artistIds?.length)
+    queryParams.artistIds = params.artistIds.join(",");
+  if (params.typeIds?.length) queryParams.typeIds = params.typeIds.join(",");
+  if (params.locationIds?.length)
+    queryParams.locationIds = params.locationIds.join(",");
+  if (params.platformIds?.length)
+    queryParams.platformIds = params.platformIds.join(",");
 
   return get<{ items: any[]; total: number; page: number; pageSize: number }>(
-    '/videos/by-month',
+    "/videos/by-month",
     queryParams
   );
 };
@@ -170,27 +219,33 @@ export const fetchVideoTimeline = (params: {
   platformIds?: number[];
 }) => {
   const queryParams: Record<string, any> = {};
-  if (params.artistIds?.length) queryParams.artistIds = params.artistIds.join(',');
-  if (params.typeIds?.length) queryParams.typeIds = params.typeIds.join(',');
-  if (params.locationIds?.length) queryParams.locationIds = params.locationIds.join(',');
-  if (params.platformIds?.length) queryParams.platformIds = params.platformIds.join(',');
+  if (params.artistIds?.length)
+    queryParams.artistIds = params.artistIds.join(",");
+  if (params.typeIds?.length) queryParams.typeIds = params.typeIds.join(",");
+  if (params.locationIds?.length)
+    queryParams.locationIds = params.locationIds.join(",");
+  if (params.platformIds?.length)
+    queryParams.platformIds = params.platformIds.join(",");
 
-  return get<{ yearMonth: string; count: number }[]>('/videos/timeline', queryParams);
+  return get<{ yearMonth: string; count: number }[]>(
+    "/videos/timeline",
+    queryParams
+  );
 };
 
 /** 获取照片类型列表 */
 export const fetchPhotoTypes = () => {
-  return get<{ id: number; name: string }[]>('/photo-types');
+  return get<{ id: number; name: string }[]>("/photo-types");
 };
 
 /** 获取拍摄地点列表 */
 export const fetchPhotoLocations = () => {
-  return get<{ id: number; name: string }[]>('/photo-locations');
+  return get<{ id: number; name: string }[]>("/photo-locations");
 };
 
 /** 获取发布平台列表 */
 export const fetchPhotoPlatforms = () => {
-  return get<{ id: number; name: string }[]>('/photo-platforms');
+  return get<{ id: number; name: string }[]>("/photo-platforms");
 };
 
 /** 获取小卡列表 */
@@ -198,29 +253,66 @@ export const getCards = (): Photocard[] => {
   return initialCards;
 };
 
-/** 获取小卡分类列表 */
+/** 获取小卡分类树（后端直接返回嵌套树形结构） */
 export const fetchPhotoCardCategories = () => {
-  return get<any[]>('/photo-card-categories');
+  return get<any[]>("/photo-card-categories");
 };
 
 /** 调用后端接口获取小卡列表（支持分页） */
 export const fetchPhotoCards = (params: {
-  categoryIds?: number[];
+  categoryId?: number;
   artistId?: string;
   page?: number;
   pageSize?: number;
 }) => {
   const queryParams: Record<string, any> = {};
-  if (params.categoryIds?.length) queryParams.categoryIds = params.categoryIds.join(',');
+  if (params.categoryId) queryParams.categoryId = params.categoryId;
   if (params.artistId) queryParams.artistId = params.artistId;
   if (params.page) queryParams.page = params.page;
   if (params.pageSize) queryParams.pageSize = params.pageSize;
-  return get<any>('/photo-cards', queryParams);
+  return get<any>("/photo-cards", queryParams);
 };
 
 /** 获取音频列表 */
 export const getAudioList = (): AudioItem[] => {
   return initialAudio;
+};
+
+/** 调用后端接口获取音频列表（按月分页） */
+export const fetchAudioList = (params: {
+  yearMonth?: string;
+  page?: number;
+  pageSize?: number;
+  artistIds?: string[];
+}) => {
+  const queryParams: Record<string, any> = {
+    page: params.page || 1,
+    pageSize: params.pageSize || 50,
+  };
+  if (params.yearMonth) queryParams.yearMonth = params.yearMonth;
+  if (params.artistIds?.length)
+    queryParams.artistIds = params.artistIds.join(",");
+
+  return get<{ items: any[]; total: number; page: number; pageSize: number }>(
+    "/audios/by-month",
+    queryParams
+  );
+};
+
+/** 调用后端接口获取音频时间轴（按月统计） */
+export const fetchAudioTimeline = (params: {
+  year?: number;
+  artistIds?: string[];
+}) => {
+  const queryParams: Record<string, any> = {};
+  if (params.year) queryParams.year = params.year;
+  if (params.artistIds?.length)
+    queryParams.artistIds = params.artistIds.join(",");
+
+  return get<{ yearMonth: string; count: number }[]>(
+    "/audios/timeline",
+    queryParams
+  );
 };
 /** 获取平台列表 */
 export const getSystemPlantforms = (): PlatformResType[] => {
@@ -229,6 +321,11 @@ export const getSystemPlantforms = (): PlatformResType[] => {
 /** 获取艺人列表 */
 export const getSystemArtist = (): AritistResType[] => {
   return systemArtist;
+};
+
+/** 获取首页模块配置（轻量，适合缓存） */
+export const fetchHomeModules = () => {
+  return get<{ modules: { key: string; name: string; sortOrder: number; image?: string }[] }>("/integration/home/modules");
 };
 
 /** 获取首页聚合数据，按 artistId 过滤 */
@@ -256,12 +353,14 @@ export const getHomeData = (artistId?: string) => {
     (b: any) => b.imageUrl || []
   );
 
-  // recent_sync → posts：按 artist.artistId 过滤（顶层 artistId 为数字，过滤条件在嵌套对象中）
+  // recent_sync → posts：按 artist.artistId 过滤（后端返回 Artist 首字母大写）
   const filterPostsByArtist = (arr: any[]): any[] => {
     if (!artistId) return arr;
     console.log("arr", arr);
-    
-    return arr.filter((item) => item.artist?.artistId === artistId);
+
+    return arr.filter(
+      (item) => (item.artist || item.Artist)?.artistId === artistId
+    );
   };
   console.log("filterPostsByArtist", filterPostsByArtist);
 
@@ -270,6 +369,13 @@ export const getHomeData = (artistId?: string) => {
     xiaohongshu: "XIAOHONGSHU",
     weibo: "WEIBO",
     instagram: "INSTAGRAM",
+  };
+
+  const platformIconMap: Record<string, string> = {
+    DOUYIN: "douyin",
+    XIAOHONGSHU: "xhs",
+    WEIBO: "weibo",
+    INSTAGRAM: "instagram",
   };
 
   const mappedPosts: PostItem[] = filterPostsByArtist(recent_sync).map(
@@ -282,19 +388,24 @@ export const getHomeData = (artistId?: string) => {
       images: p.images || [],
       publishedTime: p.publishTime || "",
       platform: platformMap[p.platform] || "WEIBO",
+      platformIcon:
+        platformIconMap[platformMap[p.platform] || "WEIBO"] || "weibo",
       icon: "share",
-      authorName: p.artist?.name || "",
+      authorName: (p.artist || p.Artist)?.name || "",
       authorAvatar: (() => {
         const raw = typeof p.raw === "string" ? JSON.parse(p.raw) : p.raw;
-        return raw?.avatar || "";
+        return (p.artist || p.Artist)?.avatar || raw?.avatar || "";
       })(),
-      mediaList: (p.mediaLinks || []).map((ml: any) => ({
-        type: ml.mediaType as "PHOTO" | "VIDEO",
-        url:
-          ml.mediaType === "PHOTO"
-            ? ml.photo?.url || ""
-            : ml.video?.coverUrl || ml.video?.playUrl || "",
-      })),
+      mediaList: (p.linkedMedia || []).map((ml: any) => {
+        const media = ml.media || {};
+        return {
+          type: ml.mediaType as "PHOTO" | "VIDEO",
+          url:
+            ml.mediaType === "PHOTO"
+              ? media.url || ""
+              : media.playUrl || media.originalUrl || media.coverUrl || "",
+        };
+      }),
     })
   );
 
@@ -404,6 +515,8 @@ export const getHomeData = (artistId?: string) => {
         ? new Date(a.shootDate).toISOString().split("T")[0].replace(/-/g, ".")
         : "",
       bitRate: "",
+      coverUrl: a.coverUrl || "",
+      audioUrl: a.originalUrl || "",
     })
   );
 

@@ -1,6 +1,7 @@
 {
   "usingComponents": {
-    "bottom-tab-bar": "/components/bottom-tab-bar/bottom-tab-bar"
+    "bottom-tab-bar": "/components/bottom-tab-bar/bottom-tab-bar",
+    "login-popup": "/components/login-popup/login-popup"
   },
-  "navigationBarTitleText": "我的"
+  "navigationStyle": "custom"
 }

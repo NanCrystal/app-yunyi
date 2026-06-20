@@ -4,6 +4,7 @@
     "bottom-tab-bar": "/components/bottom-tab-bar/bottom-tab-bar",
     "section-header": "/components/section-header/section-header",
     "image-preview": "/components/image-preview/image-preview",
-    "video-preview": "/components/video-preview/video-preview"
+    "video-preview": "/components/video-preview/video-preview",
+    "empty-state": "/components/empty-state/empty-state"
   }
 }

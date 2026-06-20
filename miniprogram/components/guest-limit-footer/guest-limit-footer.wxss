@@ -1,0 +1,42 @@
+.guest-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  padding: 32rpx 48rpx;
+  margin: 24rpx 0;
+  background-color: rgba(26, 26, 26, 0.8);
+  border: 1rpx solid rgba(255, 255, 255, 0.06);
+  border-radius: 16rpx;
+  transition: background-color 0.2s;
+}
+
+.guest-footer:active {
+  background-color: rgba(40, 40, 40, 0.9);
+}
+
+.guest-footer__lock {
+  width: 40rpx;
+  height: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.guest-footer__icon {
+  width: 28rpx;
+  height: 28rpx;
+  opacity: 0.6;
+}
+
+.guest-footer__text {
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 26rpx;
+  color: #999999;
+  letter-spacing: 2rpx;
+}
+
+.guest-footer__arrow {
+  font-size: 30rpx;
+  color: #555555;
+}

@@ -2,9 +2,9 @@
 <view class="custom-nav" style="padding-top: {{statusBarHeight}}px;">
   <view class="custom-nav-inner">
     <view class="custom-nav-left" bind:tap="onGoBack">
-      <text class="nav-back-icon">‹</text>
+      <image class="nav-back-icon" src="/assets/icons/arrow_right.svg" mode="aspectFit" />
     </view>
-    <text class="custom-nav-title">行程馆</text>
+    <text class="custom-nav-title">Schedules</text>
     <view class="custom-nav-right" />
   </view>
 </view>
@@ -25,7 +25,7 @@
       items="{{filterItems}}"
       current="{{activeFilter}}"
       bind:change="onFilterChange" />
-    <image class="filter-icon" src="../assets/icons/filter.svg" bind:tap="onToggleMonthPicker" />
+    <image class="filter-icon" src="/assets/icons/filter.svg" bind:tap="onToggleMonthPicker" />
   </view>
   <!-- 月份筛选 -->
   <view class="date-picker" wx:if="{{showMonthPicker}}">
@@ -129,7 +129,9 @@
               class="event-attachment-img"
               src="{{item.imageUrl}}"
               mode="aspectFit"
-              lazy-load />
+              lazy-load
+              bindtap="onPreviewImage"
+              data-url="{{item.imageUrl}}" />
             <view class="event-attachment-badge">
               <text>{{item.statusLabel}}</text>
             </view>
@@ -138,9 +140,7 @@
       </view>
     </view>
     <!-- 空状态 -->
-    <view wx:if="{{filteredEvents.length === 0 && !loading}}" class="empty-state">
-      <text class="empty-text">NO CORRESPONDING RECORDS FOUND</text>
-    </view>
+    <empty-state visible="{{filteredEvents.length === 0 && !loading}}" />
   </view>
   <view class="bottom-placeholder">
   </view>

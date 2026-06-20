@@ -1,7 +1,8 @@
 import { getItineraries } from "../../services/api";
 import type { EventItem, EventStatus } from "../../utils/types";
-import { themeBehavior } from "../../behaviors/theme";
+import { withTheme } from "../../behaviors/theme";
 import { getThumbFullUrl } from "../../utils/util";
+import { safeNavigateBack } from "../../utils/nav";
 interface FilterItem {
   label: string;
   value: string;
@@ -24,9 +25,10 @@ interface ScheduleData {
   skeletonVisible: boolean;
 }
 
-Component({
-  behaviors: [themeBehavior],
+/** 页面实例类型，用于方法内 this 注解 */
+type SchedulePageInstance = WechatMiniprogram.Page.Instance<ScheduleData & { statusBarHeight: number; canGoBack: boolean }, Record<string, any>>;
 
+Page(withTheme({
   data: {
     statusBarHeight: 20,
     canGoBack: false,
@@ -52,50 +54,35 @@ Component({
     skeletonVisible: true,
   } as ScheduleData,
 
-  lifetimes: {
-    attached() {
-      const { statusBarHeight } = (wx as any).getWindowInfo
-        ? (wx as any).getWindowInfo()
-        : wx.getSystemInfoSync();
-      const pages = getCurrentPages();
-      // 判断是否有上一页，决定是否显示返回按钮
-      const canGoBack = pages.length > 1;
-      this.setData({ 
-        statusBarHeight,
-        canGoBack 
-      });
-      this.initYearRange();
-      this.fetchItineraries();
-    },
+  /** 页面加载：获取系统信息并初始化数据 */
+  onLoad(this: SchedulePageInstance) {
+    const { statusBarHeight } = (wx as any).getWindowInfo
+      ? (wx as any).getWindowInfo()
+      : wx.getSystemInfoSync();
+    const pages = getCurrentPages();
+    // 判断是否有上一页，决定是否显示返回按钮
+    const canGoBack = pages.length > 1;
+    this.setData({ 
+      statusBarHeight,
+      canGoBack 
+    });
+    this.initYearRange();
+    this.fetchItineraries();
   },
 
-  methods: {
-    /** 返回上一页或首页 */
-    onGoBack() {
-      const pages = getCurrentPages();
-      if (pages.length > 1) {
-        // 有上一页，尝试返回
-        wx.navigateBack({ 
-          delta: 1,
-          fail() {
-            // 返回失败，跳转到首页
-            wx.reLaunch({ url: '/pages/home/home' });
-          }
-        });
-      } else {
-        // 没有上一页，直接跳转首页
-        wx.reLaunch({ url: '/pages/home/home' });
-      }
-    },
+  /** 返回上一页（DevTools 兼容） */
+  onGoBack(this: SchedulePageInstance) {
+    safeNavigateBack();
+  },
 
-    onFilterChange(e: WechatMiniprogram.CustomEvent) {
+    onFilterChange(this: SchedulePageInstance, e: WechatMiniprogram.CustomEvent) {
       const value = e.detail.value as string;
       this.setData({ activeFilter: value });
       this.fetchItineraries();
     },
 
     /** 获取日程列表 */
-    async fetchItineraries() {
+    async fetchItineraries(this: SchedulePageInstance) {
       const app = getApp<IAppOption>();
       const artistId = app.globalData.selectedCharId;
       const { activeFilter, currentYear, currentMonth, showMonthPicker } =
@@ -129,7 +116,7 @@ Component({
     },
 
     /** 将后端数据转换为前端格式 */
-    transformItineraries(list: any[]): EventItem[] {
+    transformItineraries(this: SchedulePageInstance, list: any[]): EventItem[] {
       return list.map((item) => {
         const startDate = item.startTime ? new Date(item.startTime) : null;
         const dateStr = startDate
@@ -157,9 +144,8 @@ Component({
     },
 
     /** 按日期分组并设置数据 */
-    groupAndSetEvents(events: EventItem[]) {
+    groupAndSetEvents(this: SchedulePageInstance, events: EventItem[]) {
       const dateMap: Record<string, EventItem[]> = {};
-      console.log("events", events);
 
       events.forEach((evt) => {
         if (!dateMap[evt.date]) dateMap[evt.date] = [];
@@ -169,13 +155,11 @@ Component({
       const groupedByDate = Object.keys(dateMap)
         .sort((a, b) => b.localeCompare(a))
         .map((date) => ({ date, items: dateMap[date] }));
-console.log("groupedByDate", groupedByDate);
-console.log("events", events);
 
       this.setData({ filteredEvents: events, groupedByDate });
     },
 
-    getStatusClass(status: EventStatus): string {
+    getStatusClass(this: SchedulePageInstance, status: EventStatus): string {
       const map: Record<EventStatus, string> = {
         ongoing: "status--ongoing",
         completed: "status--completed",
@@ -185,7 +169,7 @@ console.log("events", events);
       return map[status] || "";
     },
 
-    getStatusLabel(status: EventStatus): string {
+    getStatusLabel(this: SchedulePageInstance, status: EventStatus): string {
       const map: Record<EventStatus, string> = {
         ongoing: "进行中",
         completed: "已完成",
@@ -196,7 +180,7 @@ console.log("events", events);
     },
 
     /** 初始化年份范围（当前年份前后5年） */
-    initYearRange() {
+    initYearRange(this: SchedulePageInstance) {
       const currentYear = new Date().getFullYear();
       const yearRange: number[] = [];
       for (let y = currentYear - 5; y <= currentYear + 5; y++) {
@@ -207,7 +191,7 @@ console.log("events", events);
     },
 
     /** 打开/关闭年份弹窗 */
-    onToggleYearPicker() {
+    onToggleYearPicker(this: SchedulePageInstance) {
       const { showYearPicker, currentYear, yearRange } = this.data;
       if (!showYearPicker) {
         const idx = yearRange.indexOf(currentYear);
@@ -221,19 +205,19 @@ console.log("events", events);
       }
     },
 
-    onCloseYearPicker() {
+    onCloseYearPicker(this: SchedulePageInstance) {
       this.setData({ showYearPicker: false });
     },
 
     /** 滚动年份 */
-    onYearScroll(e: WechatMiniprogram.CustomEvent) {
+    onYearScroll(this: SchedulePageInstance, e: WechatMiniprogram.CustomEvent) {
       const val = e.detail.value as number[];
       const { yearRange } = this.data;
       this.setData({ yearIndex: val[0], tempYear: yearRange[val[0]] });
     },
 
     /** 确认年份 */
-    onConfirmYear() {
+    onConfirmYear(this: SchedulePageInstance) {
       const { tempYear, currentYear } = this.data;
       this.setData({ currentYear: tempYear, showYearPicker: false });
       if (tempYear !== currentYear) {
@@ -242,7 +226,7 @@ console.log("events", events);
     },
 
     /** 切换月份选择器显隐 */
-    onToggleMonthPicker() {
+    onToggleMonthPicker(this: SchedulePageInstance) {
       const newVal = !this.data.showMonthPicker;
       this.setData({ showMonthPicker: newVal }, () => {
         this.fetchItineraries();
@@ -250,7 +234,7 @@ console.log("events", events);
     },
 
     /** 选择月份 */
-    onSelectMonth(e: WechatMiniprogram.CustomEvent) {
+    onSelectMonth(this: SchedulePageInstance, e: WechatMiniprogram.CustomEvent) {
       const month = e.currentTarget.dataset.month as number;
       const { currentMonth } = this.data;
       this.setData({ currentMonth: month });
@@ -258,5 +242,14 @@ console.log("events", events);
         this.fetchItineraries();
       }
     },
-  },
-});
+
+    /** 预览图片 */
+    onPreviewImage(this: SchedulePageInstance, e: WechatMiniprogram.CustomEvent) {
+      const url = e.currentTarget.dataset.url as string;
+      if (!url) return;
+      wx.previewImage({
+        current: url,
+        urls: [url],
+      });
+    },
+}));

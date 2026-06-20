@@ -1,6 +1,5 @@
 {
-  "usingComponents": {
-    "bottom-tab-bar": "/components/bottom-tab-bar/bottom-tab-bar",
+  "usingComponents": { 
     "photo-skeleton": "/components/photo-skeleton/photo-skeleton",
     "video-preview": "/components/video-preview/video-preview"
   },

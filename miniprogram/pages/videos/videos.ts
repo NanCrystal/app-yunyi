@@ -5,8 +5,9 @@ import {
   fetchPhotoLocations,
   fetchPhotoPlatforms,
 } from "../../services/api";
-import { themeBehavior } from "../../behaviors/theme";
+import { withTheme } from "../../behaviors/theme";
 import { getImageUrl, getThumbFullUrl } from "../../utils/util";
+import { safeNavigateBack } from "../../utils/nav";
 
 const app = getApp<IAppOption>();
 
@@ -80,9 +81,7 @@ interface VideosInstance {
   _contentHeight?: number;
 }
 
-Component({
-  behaviors: [themeBehavior],
-
+Page(withTheme({
   data: {
     selectedType: [] as number[],
     selectedRegion: [] as number[],
@@ -111,55 +110,53 @@ Component({
     statusBarHeight: 0,
   } as VideosData,
 
-  lifetimes: {
-    async attached() {
-      const { statusBarHeight } = wx.getSystemInfoSync();
-      this.setData({ statusBarHeight });
+  /** 页面加载：初始化所有数据和组件实例 */
+  async onLoad() {
+    const { statusBarHeight } = wx.getWindowInfo();
+    this.setData({ statusBarHeight });
 
-      this._calcGridCellSize();
+    this._calcGridCellSize();
 
-      const self = this as unknown as VideosInstance;
-      setTimeout(() => {
-        self._scrollView = wx
-          .createSelectorQuery()
-          .in(this)
-          .select("#videoScrollView")
-          .node()
-          .exec((res: any) => {
-            if (res && res[0] && res[0].node) {
-              self._scrollView = res[0].node;
-            }
-          });
-      }, 100);
+    const self = this as unknown as VideosInstance;
+    setTimeout(() => {
+      self._scrollView = wx
+        .createSelectorQuery()
+        .in(this)
+        .select("#videoScrollView")
+        .node()
+        .exec((res: any) => {
+          if (res && res[0] && res[0].node) {
+            self._scrollView = res[0].node;
+          }
+        });
+    }, 100);
 
-      const artistId = (app.globalData.selectedCharId || "") as string;
-      this.setData({
-        currentArtistId: artistId,
-        isLoading: true,
-      });
+    const artistId = (app.globalData.selectedCharId || "") as string;
+    this.setData({
+      currentArtistId: artistId,
+      isLoading: true,
+    });
 
-      // 加载筛选选项
-      await this.loadFilterOptions();
+    // 加载筛选选项
+    await this.loadFilterOptions();
 
-      await this.loadVideosFromServer(artistId);
+    await this.loadVideosFromServer(artistId);
 
-      this.setData({ isLoading: false });
-    },
-    detached() {},
+    this._lazyLoadVisibleMonths(0);
+
+    this.setData({ isLoading: false });
   },
 
-  methods: {
-    onGoBack() {
-      const pages = getCurrentPages();
-      if (pages.length > 1) {
-        wx.navigateBack();
-      } else {
-        wx.reLaunch({ url: "/pages/home/home" });
-      }
-    },
+  /** 页面卸载：清理资源 */
+  onUnload() {},
+
+  /** 返回上一页（DevTools 兼容） */
+  onGoBack() {
+    safeNavigateBack();
+  },
 
     _calcGridCellSize() {
-      const { windowWidth } = wx.getSystemInfoSync();
+      const { windowWidth } = wx.getWindowInfo();
       const padding = 48;
       const gutter = 4;
       const col = 4;
@@ -593,7 +590,6 @@ Component({
       const index = filtered.findIndex(
         (v: EnhancedVideoItem) => v.id === videoId
       );
-      console.log("onVideoTap", videoId, filtered, index);
       if (index >= 0) {
         this.setData({ previewVideo: filtered[index], previewIndex: index });
       }
@@ -655,7 +651,7 @@ Component({
     },
 
     _updateScrollbarPosition(scrollTop: number) {
-      const { windowHeight } = wx.getSystemInfoSync();
+      const { windowHeight } = wx.getWindowInfo();
       const self = this as unknown as VideosInstance;
       const contentHeight = self._contentHeight || 10000;
       const maxScroll = Math.max(1, contentHeight - windowHeight);
@@ -690,7 +686,7 @@ Component({
       const { groupedVideos, currentArtistId } = this.data;
       if (!groupedVideos || groupedVideos.length === 0) return;
 
-      const { windowHeight } = wx.getSystemInfoSync();
+      const { windowHeight } = wx.getWindowInfo();
       const itemH = this.data.gridCellSize;
 
       let accumulatedHeight = 0;
@@ -775,8 +771,8 @@ Component({
       const { groupedVideos } = this.data;
       if (!groupedVideos || groupedVideos.length === 0) return;
 
-      const systemInfo = wx.getWindowInfo();
-      const itemHeight = (systemInfo.windowWidth - 96) / 4;
+      const { windowWidth } = wx.getWindowInfo();
+      const itemHeight = (windowWidth - 96) / 4;
       const monthHeaderHeight = 56;
       const dayTitleHeight = 36;
       let accumulatedHeight = 0;
@@ -893,5 +889,4 @@ Component({
         this.setData({ allLoaded });
       }
     },
-  },
-});
+}));

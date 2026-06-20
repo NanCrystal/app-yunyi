@@ -1,0 +1,77 @@
+<!-- pages/detail/detail.wxml -->
+<view class="custom-nav" style="padding-top: {{statusBarHeight}}px;">
+  <view class="custom-nav-inner">
+    <view class="custom-nav-left" bindtap="goBack">
+      <image class="nav-back-icon" src="/assets/icons/arrow_right.svg" mode="aspectFit" />
+    </view>
+    <text class="custom-nav-title">DETAIL</text>
+    <view class="custom-nav-right" />
+  </view>
+</view>
+
+<view class="page" style="padding-top: {{statusBarHeight}}px;">
+  <!-- ── AppBar ── -->
+  <!-- ── Main Content ── -->
+  <scroll-view class="main" scroll-y>
+    <!-- ── Flip Card ── -->
+    <view
+      class="card-wrap {{ card.orientation === 'landscape' ? 'card-wrap--landscape' : 'card-wrap--portrait' }}"
+      bind:tap="onCardTap"
+      bind:touchstart="onTouchStart"
+      bind:touchend="onTouchEnd"
+    >
+      <!-- 真 3D 翻转：perspective 容器 + 正反面 rotateY 错开 180° -->
+      <view class="card {{ card.orientation === 'landscape' ? 'card--landscape' : 'card--portrait' }} {{ isFlipped ? 'card--flipped' : '' }}">
+        <!-- 正面 -->
+        <view class="card__face card__front">
+          <image
+            class="card__img"
+            src="{{ card.frontImageUrl }}"
+            mode="aspectFill"
+            lazy-load />
+        </view>
+        <!-- 背面：单图时不渲染 -->
+        <view wx:if="{{ hasBack }}" class="card__face card__back">
+          <image
+            class="card__img"
+            src="{{ card.backImageUrl }}"
+            mode="aspectFill"
+            lazy-load />
+        </view>
+      </view>
+      <!-- 指示点：单图只显示一个 -->
+      <view class="dots">
+        <view class="dot {{ !isFlipped ? 'dot--active' : '' }}" />
+        <view wx:if="{{ hasBack }}" class="dot {{ isFlipped ? 'dot--active' : '' }}" />
+      </view>
+    </view>
+    <!-- ── Metadata ── -->
+    <view class="meta">
+      <view class="meta-row">
+        <text class="meta-row__label">NAME</text>
+        <text class="meta-row__value">{{ card.name }}</text>
+      </view>
+      <view class="meta-row">
+        <text class="meta-row__label">CATEGORY</text>
+        <text class="meta-row__value">{{ card.category }}</text>
+      </view>
+      <view class="meta-row">
+        <text class="meta-row__label">ARTIST</text>
+        <text class="meta-row__value">{{ card.artist }}</text>
+      </view>
+      <view class="meta-row">
+        <text class="meta-row__label">RELEASE DATE</text>
+        <text class="meta-row__value meta-row__value--mono">{{ card.releaseDate }}</text>
+      </view>
+      <view class="meta-row meta-row--last" wx:if="{{card.coverImage}}">
+        <text class="meta-row__label">COVERIMAGE</text>
+        <image
+          class="cover__img"
+          src="{{ card.coverImage }}"
+          mode="aspectFill"
+          lazy-load
+          bind:tap="onCoverTap" />
+      </view>
+    </view>
+  </scroll-view>
+</view>

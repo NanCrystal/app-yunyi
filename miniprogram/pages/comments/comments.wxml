@@ -1,0 +1,74 @@
+<!--pages/comments/comments.wxml-->
+<view class="comment-page">
+  <!-- 顶部返回按钮（top = 状态栏高度 + 导航栏高度44px） -->
+  <view
+    class="back-btn"
+    style="top: {{statusBarHeight}}px;"
+    bindtap="goBack"
+    hover-class="back-btn-hover"
+  >
+    <image
+      class="back-icon"
+      src="/assets/icons/arrow_right.svg"
+      mode="aspectFit" />
+  </view>
+  <!-- 区块1: 漂浮气泡层 -->
+  <view class="bubbles-layer">
+    <view
+      wx:for="{{bubbles}}"
+      wx:key="index"
+      class="bubble"
+      style="left: {{item.left}}vw; --start-y: {{item.startY}}vh; --end-y: {{item.endY}}vh; animation-delay: {{item.delay}}s; animation-duration: {{item.duration}}s; font-size: {{item.fontSize}}px;"
+    >
+      <text class="bubble-text" style="color: {{item.color}};">{{item.content}}</text>
+    </view>
+  </view>
+  <!-- 区块4: 聚光灯层（用户发送新留言后的高亮展示，3秒后消失） -->
+  <view wx:if="{{spotlightComment}}" class="spotlight-layer">
+    <text class="spotlight-text">{{spotlightComment.content}}</text>
+  </view>
+  <!-- 区块2: 悬浮消息按钮 (固定在右下角) -->
+  <view
+    class="msg-btn"
+    bindtap="openInputPanel"
+    hover-class="msg-btn-hover"
+  >
+    <image
+      class="msg-icon"
+      src="/assets/icons/msg.svg"
+      mode="aspectFit" />
+  </view>
+  <!-- 区块3: 输入面板 (从右侧滑入) -->
+  <view
+    wx:if="{{showInputPanel}}"
+    class="input-panel-mask"
+    bindtap="closeInputPanel"
+  >
+    <view class="input-panel" catchtap="preventClose">
+      <input
+        class="input-field"
+        type="text"
+        placeholder="说点什么吧..."
+        placeholder-class="input-placeholder"
+        value="{{inputValue}}"
+        bindinput="onInputChange"
+        confirm-type="send"
+        bindconfirm="submitComment"
+        maxlength="100"
+        focus="{{showInputPanel}}" />
+      <view
+        class="send-btn {{submitting || !inputValue ? 'disabled' : ''}}"
+        bindtap="submitComment"
+        hover-class="send-btn-hover"
+      >
+        <text class="send-icon">▶</text>
+      </view>
+    </view>
+  </view>
+  <!-- 登录弹窗（统一组件，自动处理选头像+填昵称） -->
+  <login-popup
+    show="{{showLoginPopup}}"
+    mode="register"
+    bind:loginSuccess="onLoginSuccess"
+    bind:cancel="onLoginCancel" />
+</view>

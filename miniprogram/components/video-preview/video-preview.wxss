@@ -64,7 +64,7 @@
   max-width: 100%;
 }
 
-/* 视频容器 */
+/* 视频容器：按视频原始比例展示，不拉伸不缩放 */
 .vp-video-wrap {
   flex: 1;
   display: flex;
@@ -75,6 +75,7 @@
 }
 
 .vp-video {
+  /* video组件必须撑满容器，通过 object-fit=contain 保持比例不拉伸 */
   width: 100%;
   height: 100%;
 }
@@ -87,6 +88,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  opacity: 0;
 }
 
 .vp-play-btn {
@@ -118,13 +120,28 @@
   background: linear-gradient(to top, rgba(0, 0, 0, 0.85), transparent);
 }
 
+/* 播放/暂停按钮 */
+.vp-play-toggle {
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.vp-toggle-icon {
+  font-size: 32rpx;
+  color: #ffffff;
+  opacity: 0.9;
+}
+
 /* 进度条区域 */
 .vp-progress-section {
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 16rpx;
-  margin-bottom: 24rpx;
 }
 
 .vp-time {

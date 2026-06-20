@@ -1,5 +1,7 @@
 {
   "navigationStyle": "custom",
-  "component": true,
-  "usingComponents": {}
+  "usingComponents": {
+    "guest-limit-footer": "/components/guest-limit-footer/guest-limit-footer",
+    "login-popup": "/components/login-popup/login-popup"
+  }
 }
