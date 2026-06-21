@@ -368,11 +368,27 @@ Page(
       }
       // 兜底：images 字段
       if (mediaList.length === 0 && post.images && post.images.length > 0) {
-        for (const img of post.images) {
+        // 抖音/微博等视频动态：raw 里携带 videoUrl 时，识别为 VIDEO 媒体
+        let raw: any = post.raw;
+        if (typeof raw === "string") {
+          try { raw = JSON.parse(raw); } catch { raw = null; }
+        }
+        const videoUrl = raw?.videoUrl;
+        if (videoUrl) {
           mediaList.push({
-            type: "PHOTO",
-            url: getImageUrl(img),
+            type: "VIDEO",
+            url: getImageUrl(videoUrl),
+            poster: getImageUrl(raw.coverUrl || post.images[0] || ""),
+            width: raw.width,
+            height: raw.height,
           });
+        } else {
+          for (const img of post.images) {
+            mediaList.push({
+              type: "PHOTO",
+              url: getImageUrl(img),
+            });
+          }
         }
       }
 
