@@ -69,7 +69,6 @@ export const fetchArtists = async (): Promise<Character[]> => {
     id: a.artistId,
     artistId: a.artistId,
     name: a.name,
-    avatar: a.appCover,
     role: "",
     accentColor: artistColorMap[a.artistId] || defaultAccentColor,
   }));
@@ -325,7 +324,9 @@ export const getSystemArtist = (): AritistResType[] => {
 
 /** 获取首页模块配置（轻量，适合缓存） */
 export const fetchHomeModules = () => {
-  return get<{ modules: { key: string; name: string; sortOrder: number; image?: string }[] }>("/integration/home/modules");
+  return get<{
+    modules: { key: string; name: string; sortOrder: number; image?: string }[];
+  }>("/integration/home/modules");
 };
 
 /** 获取首页聚合数据，按 artistId 过滤 */

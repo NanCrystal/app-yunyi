@@ -22,22 +22,14 @@ import {
   formatMonthAbbrUpper,
   formatMonthDayNum,
 } from "../../utils/util";
-import { characters as localCharacters } from "../../utils/data";
-import { colorList } from "../../services/api";
 import { createNavigator, type INavigator } from "../../utils/navigator/index";
 
 const app = getApp<IAppOption>();
 
-/** 艺人 accentColor 映射 */
-const colorMap: Record<string, string> = {};
-localCharacters.forEach((c) => {
-  const colorItem = colorList.find(
-    (cl: { name: string; accentColor: string }) => cl.name === c.artistId
-  );
-  if (colorItem?.accentColor) {
-    colorMap[c.artistId] = colorItem.accentColor;
-  }
-});
+/** 从本地缓存读取艺人列表 */
+const getCachedArtists = (): Character[] => {
+  return wx.getStorageSync("cached_artists") || [];
+};
 
 /** 平台名映射 */
 const platformLabel: Record<string, string> = {
@@ -415,10 +407,11 @@ Page(
           }
         }
 
-        // Characters（本地数据）
+        // Characters（从本地缓存读取）
+        const cachedCharacters = getCachedArtists();
         const activeChar =
-          localCharacters.find((c) => c.artistId === selectedCharId) ||
-          localCharacters[0];
+          cachedCharacters.find((c) => c.artistId === selectedCharId) ||
+          cachedCharacters[0];
 
         // 构建完成状态的 loadingStates
         const doneLoadingStates: Record<string, boolean> = { hero: false };
@@ -428,7 +421,7 @@ Page(
 
         this.setData({
           ...setDataObj,
-          characters: localCharacters.map((c) => ({
+          characters: cachedCharacters.map((c) => ({
             ...c,
             avatar: getThumbUrl(c.avatar),
           })),
@@ -449,9 +442,10 @@ Page(
         console.error("首页数据加载失败:", err);
 
         // 兜底：确保角色列表可用
+        const fallbackCachedChars = getCachedArtists();
         const fallbackChar =
-          localCharacters.find((c) => c.artistId === selectedCharId) ||
-          localCharacters[0];
+          fallbackCachedChars.find((c) => c.artistId === selectedCharId) ||
+          fallbackCachedChars[0];
 
         // 构建错误状态的 loading/error states
         const errLoadingStates: Record<string, boolean> = { hero: false };
@@ -462,7 +456,7 @@ Page(
         }
 
         this.setData({
-          characters: localCharacters.map((c) => ({
+          characters: fallbackCachedChars.map((c) => ({
             ...c,
             avatar: getThumbUrl(c.avatar),
           })),
@@ -676,7 +670,7 @@ Page(
         switchCharAvatar: targetChar.avatar,
         switchCharName: targetChar.name,
         switchCharColor:
-          colorMap[artistId] || targetChar.accentColor || "rgb(86, 164, 173)",
+          targetChar.accentColor || "rgb(86, 164, 173)",
         switchProgress: 0,
         switchProgressText: "0.0%",
       });
@@ -700,7 +694,7 @@ Page(
       // 3秒后执行切换并关闭弹窗
       setTimeout(() => {
         clearInterval(timer);
-        const targetColor = colorMap[artistId] || "rgb(86, 164, 173)";
+        const targetColor = targetChar.accentColor || "rgb(86, 164, 173)";
         const rgb = parseColorToRgb(targetColor);
 
         // 更新全局状态（必须在 initData 前完成）

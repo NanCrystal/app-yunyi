@@ -18,7 +18,7 @@
     >
       <!-- 卡片背景图 -->
       <view class="char-card-bg">
-        <image class="char-card-img" src="{{item.avatar}}" mode="aspectFill" lazy-load="{{index > 0}}" />
+        <image class="char-card-img" src="{{item.appCover}}" mode="aspectFill" lazy-load="{{index > 0}}" />
         <view class="char-card-gradient" style="background: {{item._gradient}};"></view>
       </view>
 

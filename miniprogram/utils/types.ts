@@ -142,6 +142,7 @@ export interface Character {
   artistId: string;
   name: string;
   avatar: string;
+  appCover: string;
   role?: string;
   accentColor?: string;
   bio?: string;

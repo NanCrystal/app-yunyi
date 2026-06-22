@@ -37,6 +37,7 @@ Page({
       const items = characters.map((c) => ({
         ...c,
         avatar: getThumbFullUrl(c.avatar),
+        appCover: getThumbFullUrl(c.appCover),
         _gradient: getGradient(c),
       }));
       this.setData({ characters: items });
@@ -47,6 +48,7 @@ Page({
           const items = list.map((c) => ({
             ...c,
             avatar: getThumbFullUrl(c.avatar),
+            appCover: getThumbFullUrl(c.appCover),
             _gradient: getGradient(c),
           }));
           this.setData({ characters: items });
