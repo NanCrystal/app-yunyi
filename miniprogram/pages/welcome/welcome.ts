@@ -1,5 +1,5 @@
 import { fetchArtists, fetchHomeModules } from "../../services/api";
-import { getImageUrl } from "../../utils/util";
+import { getImageUrl, getVideoUrl } from "../../utils/util";
 
 const STORAGE_KEYS = {
   artists: "cached_artists",
@@ -20,6 +20,10 @@ Page({
     showWelcomeImages: false,
     /** 欢迎图片列表 */
     welcomeImages: [] as string[],
+    /** 是否有欢迎视频 */
+    showWelcomeVideo: false,
+    /** 欢迎视频地址 */
+    welcomeVideo: "",
     /** 当前倒计时秒数 */
     countdown: COUNTDOWN_SECONDS,
     /** swiper 轮播间隔(ms) */
@@ -52,8 +56,33 @@ Page({
       wx.setStorageSync(STORAGE_KEYS.artists, artists);
       wx.setStorageSync(STORAGE_KEYS.modules, modulesRes.modules);
 
-      // 查找 welcome 模块，提取图片
+      // 查找 welcome 模块，提取视频或图片
       const welcomeModule = modulesRes.modules.find((m) => m.key === "welcome");
+      
+      // 优先处理 video
+      if (welcomeModule?.video) {
+        let videos: string[] = [];
+        try {
+          videos = typeof welcomeModule.video === "string"
+            ? JSON.parse(welcomeModule.video)
+            : welcomeModule.video;
+          if (!Array.isArray(videos)) videos = [];
+          videos = videos.filter((v: any) => typeof v === "string" && v.trim());
+        } catch (e) {
+          console.warn("[welcome] 解析 video 失败", e);
+        }
+        if (videos.length > 0) {
+          const videoUrl = getVideoUrl(videos[0]);
+          this.setData({
+            showWelcomeVideo: true,
+            welcomeVideo: videoUrl,
+          });
+          this.startCountdown(COUNTDOWN_SECONDS);
+          return;
+        }
+      }
+
+      // 处理 image
       if (welcomeModule?.image) {
         let images: string[] = [];
         try {
@@ -82,6 +111,12 @@ Page({
     }
     this.setData({ loading: false });
     this.startCountdown();
+  },
+
+  /** 视频播放出错时降级处理 */
+  onVideoError(e: any) {
+    console.error("[welcome] 视频播放失败", e.detail);
+    this.setData({ showWelcomeVideo: false });
   },
 
   /** 启动倒计时 + 定时跳转 */

@@ -1,9 +1,26 @@
-<view class="container {{showWelcomeImages ? 'has-welcome-image' : ''}}">
+<view class="container {{showWelcomeImages || showWelcomeVideo ? 'has-welcome-image' : ''}}">
   <image class="bg-img" src="/assets/images/bg-default.jpg" mode="aspectFill"></image>
   <view class="overlay"></view>
 
+  <!-- 有欢迎视频时：展示视频 -->
+  <block wx:if="{{showWelcomeVideo}}">
+    <video
+      class="welcome-video"
+      src="{{welcomeVideo}}"
+      autoplay
+      loop
+      muted
+      object-fit="cover"
+      show-center-play-btn="{{false}}"
+      show-play-btn="{{false}}"
+      controls="{{false}}"
+      enable-progress-gesture="{{false}}"
+      binderror="onVideoError"
+    ></video>
+  </block>
+
   <!-- 有欢迎图片时：展示图片轮播 / 单图 -->
-  <block wx:if="{{showWelcomeImages}}">
+  <block wx:elif="{{showWelcomeImages}}">
     <!-- 多张图：swiper 轮播，1秒切换 -->
     <swiper
       wx:if="{{welcomeImages.length > 1}}"
@@ -25,7 +42,7 @@
     <image wx:else class="welcome-img single-img" src="{{welcomeImages[0]}}" mode="aspectFill"></image>
   </block>
 
-  <!-- 无欢迎图片时：显示原打字机文字 -->
+  <!-- 无欢迎图片/视频时：显示原打字机文字 -->
   <block wx:else>
     <view class="center-wrap">
       <view class="text typewriter">

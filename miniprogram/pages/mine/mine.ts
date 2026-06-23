@@ -152,5 +152,60 @@ Page(
       this.setData({ showHelpPopup: false });
       wx.navigateTo({ url: "/pages/feedback/feedback" });
     },
+
+    /** 长按二维码 - 弹出操作菜单 */
+    onQrcodeLongPress() {
+      wx.showActionSheet({
+        itemList: ['保存图片到相册'],
+        success: (res) => {
+          if (res.tapIndex === 0) {
+            this.handleSaveQrcode();
+          }
+        }
+      });
+    },
+
+    /** 保存二维码到相册 */
+    handleSaveQrcode() {
+      const imageUrl = '/assets/images/help.png';
+
+      // 获取图片信息并保存到相册
+      wx.saveImageToPhotosAlbum({
+        filePath: imageUrl,
+        success: () => {
+          this.showSaveSuccessGuide();
+        },
+        fail: (err) => {
+          // 处理权限拒绝的情况
+          if (err.errMsg.includes('auth deny') || err.errMsg.includes('authorize')) {
+            wx.showModal({
+              title: '需要相册权限',
+              content: '请允许访问您的相册以保存图片',
+              confirmText: '去设置',
+              success: (res) => {
+                if (res.confirm) {
+                  wx.openSetting();
+                }
+              }
+            });
+          } else {
+            wx.showToast({
+              title: '保存失败，请重试',
+              icon: 'none'
+            });
+          }
+        }
+      });
+    },
+
+    /** 保存成功后的引导弹窗 */
+    showSaveSuccessGuide() {
+      wx.showModal({
+        title: '✓ 图片已保存',
+        content: '接下来请：\n1. 打开微信「扫一扫」\n2. 点击右上角「从相册选取」\n3. 选择刚保存的图片\n4. 即可自动识别并添加好友',
+        showCancel: false,
+        confirmText: '我知道了'
+      });
+    },
   })
 );

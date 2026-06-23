@@ -114,3 +114,12 @@
   top: 0; left: 0;
   z-index: 2;
 }
+
+/* ========== 欢迎视频 ========== */
+.welcome-video {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2;
+}

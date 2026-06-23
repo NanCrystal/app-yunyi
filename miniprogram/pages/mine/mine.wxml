@@ -121,11 +121,15 @@
       <text class="contact-popup-title">CONTACT SUPPORT</text>
       <view class="contact-popup-line">
       </view>
-      <!-- 二维码图片 -->
-      <image
-        class="qrcode-image"
-        src="/assets/images/help.png"
-        mode="aspectFit" />
+      <!-- 二维码图片（支持长按保存） -->
+      <view class="qrcode-wrapper">
+        <image
+          class="qrcode-image"
+          src="/assets/images/help.png"
+          mode="aspectFit"
+          bindlongpress="onQrcodeLongPress" />
+        <view class="qrcode-hint">长按保存图片</view>
+      </view>
       <!-- 提示文字 -->
       <text class="contact-hint-text">请扫码联系客服</text>
       <!-- 返回按钮 -->

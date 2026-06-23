@@ -107,6 +107,11 @@ Page({
       return;
     }
 
+    if (!this.data.contactInfo.trim()) {
+      wx.showToast({ title: "请输入联系方式", icon: "none" });
+      return;
+    }
+
     this.setData({ submitting: true });
 
     try {
@@ -124,17 +129,17 @@ Page({
         type: selectedTypes[0].name,
         description: this.data.description,
         image: imageUrl || undefined,
-        contact: this.data.contactInfo || undefined,
+        contact: this.data.contactInfo,
       });
       wx.hideLoading();
 
-      wx.showToast({
-        title: "感谢您的反馈",
-        icon: "success",
+      wx.showModal({
+        title: '反馈提交成功',
+        content: '感谢您的反馈，处理完成后回复将发送至预留邮箱',
+        showCancel: false,
+        confirmText: '我知道了',
         success: () => {
-          setTimeout(() => {
-            wx.navigateBack();
-          }, 1500);
+          wx.navigateBack();
         },
       });
     } catch (err) {

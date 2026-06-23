@@ -1,6 +1,6 @@
 /** 后端 API 基础地址 */
-// const BASE_URL = 'http://192.168.10.37:3000'; // 本地环境
-const BASE_URL = 'https://api.tauol.online'; // 线上环境
+const BASE_URL = 'http://192.168.10.37:3000'; // 本地环境
+// const BASE_URL = 'https://api.tauol.online'; // 线上环境
 
 /** 从 auth 工具获取 token（循环引用安全方式） */
 function getAuthToken(): string {

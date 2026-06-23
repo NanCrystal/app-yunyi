@@ -37,6 +37,16 @@ export const getImageUrl = (path?: string): string => {
   return `https://cdn.tauol.online${path}`;
 };
 
+/** 根据路径获取完整视频 URL（自动拼接 CDN 前缀） */
+export const getVideoUrl = (path?: string): string => {
+  if (!path) return "";
+  if (path.startsWith("http")) return path;
+  // 小程序本地资源，不加 CDN 前缀
+  if (isLocalPath(path)) return path;
+  // 上传到服务器的远程资源，拼 CDN 域名
+  return `https://cdn.tauol.online${path}`;
+};
+
 /** 格式化文件大小为可读字符串（B/KB/MB/GB） */
 export const formatFileSize = (bytes: number): string => {
   if (bytes < 1024) return `${bytes} B`;

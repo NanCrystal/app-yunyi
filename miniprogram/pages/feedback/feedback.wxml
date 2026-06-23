@@ -100,11 +100,11 @@
     <view class="section-label">
       <text class="section-number">04/</text>
       <text class="label-text">联系方式</text>
-      <text class="optional">(选填)</text>
+      <text class="required">*</text>
     </view>
     <input
       class="contact-input"
-      placeholder="微信 / QQ / 邮箱"
+      placeholder="邮箱"
       placeholder-class="placeholder"
       value="{{contactInfo}}"
       bindinput="onContactInput" />
