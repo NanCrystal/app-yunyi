@@ -62,6 +62,10 @@ interface AudioInstance {
   _loadingMonths?: Set<string>;
   _visualizerTimer?: number | null;
   _innerAudioContext?: WechatMiniprogram.InnerAudioContext;
+  /** 连续播放错误计数（防死循环） */
+  _consecutiveErrors?: number;
+  /** 上次出错的 trackId */
+  _lastErrorTrackId?: string | null;
 }
 
 Page(withTheme({
@@ -385,6 +389,9 @@ Page(withTheme({
 
       // 播放结束（自动下一首）
       ctx.onEnded(() => {
+        // 如果是因为错误导致的 ended（isPlayingAudio 已被 onError 置为 false），不要自动切歌
+        if (!this.data.isPlayingAudio) return;
+
         app.globalData.isPlayingAudio = false;
         this.setData({ isPlayingAudio: false });
         this.stopVisualizer();
@@ -405,9 +412,35 @@ Page(withTheme({
         }
       });
 
-      // 错误处理
+      // 错误处理（带防死循环保护）
       ctx.onError((err: any) => {
         console.error("[audio] onError:", err);
+        const self = this as unknown as AudioInstance;
+        const currentTrack = this.data.currentTrack;
+
+        // 防止同一首曲子无限重试导致死循环
+        if (self._lastErrorTrackId === currentTrack?.id) {
+          self._consecutiveErrors = (self._consecutiveErrors || 0) + 1;
+          console.warn(`[audio] 连续播放失败 ${self._consecutiveErrors} 次, trackId=${currentTrack?.id}`);
+          
+          if (self._consecutiveErrors >= 3) {
+            console.warn("[audio] 连续播放失败3次，停止自动切歌，等待用户手动操作");
+            app.globalData.isPlayingAudio = false;
+            this.setData({
+              isPlayingAudio: false,
+              audioCurrentTime: "0:00",
+            });
+            this.stopVisualizer();
+            wx.showToast({ title: "播放异常，请稍后重试", icon: "none" });
+            return; // 不再触发任何自动操作
+          }
+        } else {
+          // 切换了新曲目，重置计数器
+          self._consecutiveErrors = 1;
+          self._lastErrorTrackId = currentTrack?.id || null;
+        }
+
+        // 原有错误处理
         app.globalData.isPlayingAudio = false;
         this.setData({
           isPlayingAudio: false,
@@ -449,6 +482,19 @@ Page(withTheme({
       const ctx = (this as unknown as AudioInstance)._innerAudioContext;
       if (!ctx || !track.audioUrl) {
         console.warn("[audio] 无法播放，缺少音频上下文或 URL", { hasCtx: !!ctx, url: track.audioUrl });
+        return;
+      }
+
+      const self = this as unknown as AudioInstance;
+
+      // 只有切换到不同曲目时才重置错误计数器（防止同一曲目的死循环）
+      if (self._lastErrorTrackId !== track.id) {
+        self._consecutiveErrors = 0;
+        self._lastErrorTrackId = null;
+      } else if ((self._consecutiveErrors || 0) >= 3) {
+        // 同一曲目已经失败 3 次，拒绝再次播放
+        console.warn("[audio] 该曲目已连续失败3次，拒绝再次播放, trackId=", track.id);
+        wx.showToast({ title: "播放异常，请稍后重试", icon: "none" });
         return;
       }
 

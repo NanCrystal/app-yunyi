@@ -16,7 +16,13 @@ const app = getApp<IAppOption>();
 
 /** 根据 globalData 计算主题数据 */
 function computeTheme() {
-  const characters: Character[] = getCharacters();
+  // 优先从 storage 读取缓存艺人列表（与 home 页 initData 数据源一致）
+  let characters: Character[] =
+    wx.getStorageSync("cached_artists") || [];
+  // fallback：如果 storage 无数据，尝试 getCharacters()
+  if (!characters || characters.length === 0) {
+    characters = getCharacters();
+  }
   const id = app.globalData.selectedCharId || 'char1';
   const char = characters.find((c) => c.artistId === id) || characters[0];
   // 防御性检查：确保 char 和 accentColor 有效
