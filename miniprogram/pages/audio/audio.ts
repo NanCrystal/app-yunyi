@@ -60,6 +60,7 @@ interface AudioData {
 interface AudioInstance {
   _allTimelineItems?: { yearMonth: string; count: number }[];
   _loadingMonths?: Set<string>;
+  _failedMonths?: Map<string, number>; // 失败月份及重试次数
   _visualizerTimer?: number | null;
   _innerAudioContext?: WechatMiniprogram.InnerAudioContext;
   /** 连续播放错误计数（防死循环） */
@@ -215,11 +216,19 @@ Page(withTheme({
     async loadMonth(this: AudioPageInstance, yearMonth: string, index: number, artistId: string) {
       const self = this as unknown as AudioInstance;
 
+      // 检查是否已失败超过最大重试次数（默认3次）
+      const MAX_RETRIES = 3;
+      if ((self._failedMonths?.get(yearMonth) ?? 0) >= MAX_RETRIES) {
+        console.warn(`[audio] 月份 ${yearMonth} 已失败 ${MAX_RETRIES} 次，停止重试`);
+        return;
+      }
+
       if (self._loadingMonths?.has(yearMonth)) return;
       const group = this.data.groupedAudios[index];
       if (!group || group.loaded || group.loading) return;
 
       if (!self._loadingMonths) self._loadingMonths = new Set();
+      if (!self._failedMonths) self._failedMonths = new Map();
 
       self._loadingMonths.add(yearMonth);
       this.setData({
@@ -269,11 +278,24 @@ Page(withTheme({
           [`groupedAudios[${index}].loaded`]: true,
           [`groupedAudios[${index}].loading`]: false,
         });
+
+        // 成功后清除失败记录
+        self._failedMonths.delete(yearMonth);
       } catch (err) {
         console.error(`[audio] 加载月份 ${yearMonth} 失败:`, err);
         this.setData({
           [`groupedAudios[${index}].loading`]: false,
         });
+
+        // 记录失败次数
+        const failCount = (self._failedMonths.get(yearMonth) || 0) + 1;
+        self._failedMonths.set(yearMonth, failCount);
+        console.warn(`[audio] 月份 ${yearMonth} 第 ${failCount} 次失败`);
+        
+        // 如果达到最大重试次数，提示用户
+        if (failCount >= MAX_RETRIES) {
+          wx.showToast({ title: "数据加载失败，请稍后重试", icon: "none" });
+        }
       } finally {
         self._loadingMonths?.delete(yearMonth);
       }
