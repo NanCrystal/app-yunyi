@@ -1,0 +1,45 @@
+<view class="page">
+  <!-- 顶部品牌标题区 -->
+  <view class="header">
+    <view class="header-line"></view>
+    <text class="header-brand">STARVIEW</text>
+    <!-- <text class="header-sub">ARCHIVE</text> -->
+    <view class="header-line"></view>
+  </view>
+
+  <!-- 角色卡片列表 -->
+  <view class="card-list">
+    <view
+      wx:for="{{characters}}"
+      wx:key="id"
+      class="char-card"
+      bind:tap="onCharSelect"
+      data-id="{{item.artistId}}"
+    >
+      <!-- 卡片背景图 -->
+      <view class="char-card-bg">
+        <image class="char-card-img" src="{{item.appCover}}" mode="aspectFill" lazy-load="{{index > 0}}" />
+        <view class="char-card-gradient" style="background: {{item._gradient}};"></view>
+      </view>
+
+      <!-- 卡片文字覆盖层 -->
+      <view class="char-card-content">
+        <!-- 角色英文名 -->
+        <text class="char-en-name" style="color: {{item.accentColor}};">
+          {{item.artistId === 'yunyi' ? 'YUNYI' : item.artistId === 'haoyiran' ? 'HAO YIRAN' : 'YUNQI'}}
+        </text>
+        <!-- 角色中文名 -->
+        <text class="char-cn-name">{{item.name}}</text>
+        <!-- 角色定位 -->
+        <!-- <view class="char-role-row">
+          <view class="char-role-dot" style="background-color: {{item.accentColor}};"></view>
+          <text class="char-role-text">{{item.role}}</text>
+        </view> -->
+        <!-- 进入箭头 -->
+        <!-- <view class="char-arrow" style="border-color: {{item.accentColor}};">
+          <text class="char-arrow-icon" style="color: {{item.accentColor}};">→</text>
+        </view> -->
+      </view>
+    </view>
+  </view>
+</view>

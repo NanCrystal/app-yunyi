@@ -725,7 +725,7 @@ Page(
     },
 
     onGoIndex(this: HomePageInstance) {
-      wx.reLaunch({ url: "/pages/index/index" });
+      wx.reLaunch({ url: "/pages/frontpage/frontpage" });
     },
 
     /** 记录滚动位置 */

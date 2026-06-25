@@ -121,8 +121,14 @@ Page({
       this._currentPage = totalPages;
       this.refreshBubbles();
       console.log(`[Comments] 加载 ${this._allComments.length} 条留言（共 ${this._totalComments} 条）`);
+
+      // 空状态提示：如果数据库中确实没有留言数据
+      if (this._totalComments === 0) {
+        console.log('[Comments] 当前暂无留言，成为第一个留下足迹的人吧 ✨');
+      }
     } catch (err) {
       console.error('[Comments] 获取留言失败', err);
+      wx.showToast({ title: '加载失败，请重试', icon: 'none' });
     }
   },
 

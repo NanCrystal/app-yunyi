@@ -35,6 +35,8 @@ Component({
     _btnText: '',
     // 当前有效模式（自动推断后）
     _effectiveMode: '' as string,
+    // 头像选择锁（防止 chooseAvatar 并发冲突）
+    _avatarChoosing: false,
   },
 
   observers: {
@@ -112,6 +114,23 @@ Component({
     /** 空操作，用于 catch:tap 阻止事件冒泡 */
     noop() {},
 
+    /**
+     * 安全获取头像 URL（处理 HTTP 协议兼容问题）
+     * 微信开发者工具 Windows 环境下临时文件路径为 http://tmp/xxx
+     * 真机上使用 wxfile:// 或 https:// 协议，不会有此问题
+     */
+    getSafeAvatarUrl(url: string): string {
+      if (!url) return '';
+      // 临时文件路径在开发者工具中可能以 http://tmp/ 开头
+      // 这种情况下直接返回（开发者工具特有问题，真机正常）
+      // 如果是其他非 HTTPS 的远程地址则返回空字符串避免警告
+      if (url.startsWith('http://') && !url.startsWith('http://tmp/')) {
+        console.warn('[LoginPopup] 检测到非 HTTPS 远程图片链接:', url);
+        return '';
+      }
+      return url;
+    },
+
     /** 遮罩点击 - 不关闭（强制操作） */
     onMaskTap() {
       // 故意不关闭，引导用户必须做选择
@@ -121,9 +140,27 @@ Component({
 
     /** 选择头像回调 */
     onChooseAvatar(e: WechatMiniprogram.TouchEvent) {
+      // 防抖锁：如果正在选择中，忽略本次点击（避免 chooseAvatar 并发冲突）
+      if (this.data._avatarChoosing) return;
+      this.setData({ _avatarChoosing: true });
+
       const avatarUrl = e.detail.avatarUrl || '';
       console.log('[LoginPopup] 用户选择头像:', avatarUrl);
-      this.setData({ tempAvatarUrl: avatarUrl });
+      
+      // 处理临时文件路径的 HTTP 协议兼容问题
+      // 微信开发者工具 Windows 环境下临时路径为 http://tmp/xxx
+      // 这种路径在真机上不会出现（使用 wxfile:// 协议）
+      let safeUrl = avatarUrl;
+      if (avatarUrl.startsWith('http://') && !avatarUrl.startsWith('http://tmp/')) {
+        console.warn('[LoginPopup] 检测到非 HTTPS 远程图片链接:', avatarUrl);
+        safeUrl = '';
+      }
+      this.setData({ tempAvatarUrl: safeUrl });
+
+      // 延迟释放锁（500ms 防止快速重复点击）
+      setTimeout(() => {
+        this.setData({ _avatarChoosing: false });
+      }, 500);
     },
 
     /** 输入昵称回调 */

@@ -469,7 +469,7 @@ Page(withTheme({
           audioCurrentTime: "0:00",
         });
         this.stopVisualizer();
-        wx.showToast({ title: "播放失败", icon: "none" });
+        // wx.showToast({ title: "播放失败", icon: "none" });
       });
 
       // 等待可播放（缓冲）

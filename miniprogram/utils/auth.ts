@@ -22,7 +22,7 @@ const DEV_MODE = false;
 import { request } from '../services/request';
 
 /** 后端 API 基础地址（与 request.ts 保持一致） */
-const BASE_URL = 'http://192.168.10.37:3000';
+const BASE_URL = 'https://api.tauol.online';
 
 /** 七牛云 CDN 域名 */
 const QINIU_CDN = 'https://cdn.tauol.online';

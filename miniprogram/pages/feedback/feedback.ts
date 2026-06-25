@@ -9,7 +9,7 @@ interface ProblemType {
 }
 
 /** 后端 API 基础地址（与 services/request.ts 保持一致） */
-const BASE_URL = 'http://192.168.10.37:3000';
+const BASE_URL = 'https://api.tauol.online';
 
 Page({
   data: {

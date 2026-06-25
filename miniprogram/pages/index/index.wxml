@@ -1,45 +1,73 @@
-<view class="page">
-  <!-- 顶部品牌标题区 -->
-  <view class="header">
-    <view class="header-line"></view>
-    <text class="header-brand">STARVIEW</text>
-    <!-- <text class="header-sub">ARCHIVE</text> -->
-    <view class="header-line"></view>
-  </view>
+<view class="container {{showWelcomeImages || showWelcomeVideo ? 'has-welcome-image' : ''}}">
+  <image class="bg-img" src="/assets/images/bg-default.jpg" mode="aspectFill"></image>
+  <view class="overlay"></view>
 
-  <!-- 角色卡片列表 -->
-  <view class="card-list">
-    <view
-      wx:for="{{characters}}"
-      wx:key="id"
-      class="char-card"
-      bind:tap="onCharSelect"
-      data-id="{{item.artistId}}"
+  <!-- 有欢迎视频时：展示视频 -->
+  <block wx:if="{{showWelcomeVideo}}">
+    <video
+      class="welcome-video"
+      src="{{welcomeVideo}}"
+      autoplay
+      loop
+      muted
+      object-fit="cover"
+      show-center-play-btn="{{false}}"
+      show-play-btn="{{false}}"
+      controls="{{false}}"
+      enable-progress-gesture="{{false}}"
+      binderror="onVideoError"
+    ></video>
+  </block>
+
+  <!-- 有欢迎图片时：展示图片轮播 / 单图 -->
+  <block wx:elif="{{showWelcomeImages}}">
+    <!-- 多张图：swiper 轮播，1秒切换 -->
+    <swiper
+      wx:if="{{welcomeImages.length > 1}}"
+      class="welcome-swiper"
+      autoplay
+      interval="{{swiperInterval}}"
+      duration="500"
+      circular
+      indicator-dots
+      indicator-color="rgba(255,255,255,0.4)"
+      indicator-active-color="#ffffff"
     >
-      <!-- 卡片背景图 -->
-      <view class="char-card-bg">
-        <image class="char-card-img" src="{{item.appCover}}" mode="aspectFill" lazy-load="{{index > 0}}" />
-        <view class="char-card-gradient" style="background: {{item._gradient}};"></view>
-      </view>
+      <swiper-item wx:for="{{welcomeImages}}" wx:key="*this">
+        <image class="welcome-img" src="{{item}}" mode="aspectFill"></image>
+      </swiper-item>
+    </swiper>
 
-      <!-- 卡片文字覆盖层 -->
-      <view class="char-card-content">
-        <!-- 角色英文名 -->
-        <text class="char-en-name" style="color: {{item.accentColor}};">
-          {{item.artistId === 'yunyi' ? 'YUNYI' : item.artistId === 'haoyiran' ? 'HAO YIRAN' : 'YUNQI'}}
-        </text>
-        <!-- 角色中文名 -->
-        <text class="char-cn-name">{{item.name}}</text>
-        <!-- 角色定位 -->
-        <!-- <view class="char-role-row">
-          <view class="char-role-dot" style="background-color: {{item.accentColor}};"></view>
-          <text class="char-role-text">{{item.role}}</text>
-        </view> -->
-        <!-- 进入箭头 -->
-        <!-- <view class="char-arrow" style="border-color: {{item.accentColor}};">
-          <text class="char-arrow-icon" style="color: {{item.accentColor}};">→</text>
-        </view> -->
+    <!-- 单张图：直接展示 -->
+    <image wx:else class="welcome-img single-img" src="{{welcomeImages[0]}}" mode="aspectFill"></image>
+  </block>
+
+  <!-- 无欢迎图片/视频时：显示原打字机文字 -->
+  <block wx:else>
+    <view class="center-wrap">
+      <view class="text typewriter">
+        <view class="text-line">
+          <text
+            wx:for="{{line1Chars}}"
+            wx:key="*this"
+            wx:for-index="i"
+            class="char"
+            style="animation-delay: {{i * 150}}ms"
+          >{{item}}</text>
+        </view>
+        <view class="text-line">
+          <text
+            wx:for="{{line2Chars}}"
+            wx:key="*this"
+            wx:for-index="i"
+            class="char"
+            style="animation-delay: {{(line1len + i) * 150}}ms"
+          >{{item}}</text>
+        </view>
+   
       </view>
     </view>
-  </view>
+  </block>
+
+  <view class="skip-btn" bindtap="skipToIndex">跳过 {{countdown > 0 ? countdown : ''}}s</view>
 </view>
