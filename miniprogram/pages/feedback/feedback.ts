@@ -1,5 +1,5 @@
 // pages/feedback/feedback.ts
-import { get, post } from '../../services/request';
+import { get, post, BASE_URL } from "../../services/request";
 
 interface ProblemType {
   id: number;
@@ -9,7 +9,6 @@ interface ProblemType {
 }
 
 /** 后端 API 基础地址（与 services/request.ts 保持一致） */
-const BASE_URL = 'https://api.tauol.online';
 
 Page({
   data: {
@@ -24,7 +23,7 @@ Page({
 
   async fetchProblemTypes() {
     try {
-      const res = await get<any[]>('/photo-feedback');
+      const res = await get<any[]>("/photo-feedback");
       const problemTypes = res.map((item) => ({
         id: item.id,
         name: item.name.trim(),
@@ -33,7 +32,7 @@ Page({
       }));
       this.setData({ problemTypes });
     } catch (err) {
-      console.error('获取问题类型失败:', err);
+      console.error("获取问题类型失败:", err);
     }
   },
 
@@ -69,11 +68,11 @@ Page({
   /** 上传图片到后端七牛云，返回原图 URL（image-full 接口返回 url + thumbUrl） */
   uploadImage(filePath: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      const token = wx.getStorageSync('mp_auth_token') || '';
+      const token = wx.getStorageSync("mp_auth_token") || "";
       wx.uploadFile({
         url: `${BASE_URL}/upload/image-full`,
         filePath,
-        name: 'file',
+        name: "file",
         header: token ? { Authorization: `Bearer ${token}` } : {},
         success: (res) => {
           try {
@@ -81,10 +80,10 @@ Page({
             if (res.statusCode === 200 && data.url) {
               resolve(data.url);
             } else {
-              reject(new Error(data.message || '图片上传失败'));
+              reject(new Error(data.message || "图片上传失败"));
             }
           } catch {
-            reject(new Error('图片上传响应解析失败'));
+            reject(new Error("图片上传响应解析失败"));
           }
         },
         fail: reject,
@@ -125,7 +124,7 @@ Page({
 
       // 提交反馈
       wx.showLoading({ title: "提交中..." });
-      await post('/feedback', {
+      await post("/feedback", {
         type: selectedTypes[0].name,
         description: this.data.description,
         image: imageUrl || undefined,
@@ -134,18 +133,18 @@ Page({
       wx.hideLoading();
 
       wx.showModal({
-        title: '反馈提交成功',
-        content: '感谢您的反馈，处理完成后回复将发送至预留邮箱',
+        title: "反馈提交成功",
+        content: "感谢您的反馈，处理完成后回复将发送至预留邮箱",
         showCancel: false,
-        confirmText: '我知道了',
+        confirmText: "我知道了",
         success: () => {
           wx.navigateBack();
         },
       });
     } catch (err) {
       wx.hideLoading();
-      console.error('提交反馈失败:', err);
-      wx.showToast({ title: '提交失败，请重试', icon: 'none' });
+      console.error("提交反馈失败:", err);
+      wx.showToast({ title: "提交失败，请重试", icon: "none" });
     } finally {
       this.setData({ submitting: false });
     }

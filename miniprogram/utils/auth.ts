@@ -2,9 +2,10 @@
  * 小程序用户认证工具函数
  * 管理 token 存储、登录状态检测、微信登录流程等
  */
+import { BASE_URL } from "../services/request";
 
-const TOKEN_KEY = 'mp_auth_token';
-const USER_INFO_KEY = 'mp_user_info';
+const TOKEN_KEY = "mp_auth_token";
+const USER_INFO_KEY = "mp_user_info";
 
 // ============================================
 // 登录锁：防止并发登录导致 code 冲突 (errcode: 40029)
@@ -19,13 +20,12 @@ let _profilePromise: Promise<boolean> | null = null;
 // ============================================
 const DEV_MODE = false;
 
-import { request } from '../services/request';
+import { request } from "../services/request";
 
-/** 后端 API 基础地址（与 request.ts 保持一致） */
-const BASE_URL = 'https://api.tauol.online';
+/** 后端 API 基础地址（与 request.ts 保持一致） */ 
 
 /** 七牛云 CDN 域名 */
-const QINIU_CDN = 'https://cdn.tauol.online';
+const QINIU_CDN = "https://cdn.tauol.online";
 
 export interface MpUserInfo {
   id: number;
@@ -54,7 +54,7 @@ export function isProfileComplete(): boolean {
 /**
  * 获取存储的 token */
 export function getToken(): string {
-  return wx.getStorageSync(TOKEN_KEY) || '';
+  return wx.getStorageSync(TOKEN_KEY) || "";
 }
 
 /**
@@ -72,7 +72,10 @@ export function getUserInfo(): MpUserInfo | null {
 function uploadAvatarToQiniu(tempPath: string): Promise<string> {
   return new Promise((resolve) => {
     // 非 wxfile:// 路径（已经是网络 URL）直接返回
-    if (!tempPath.startsWith('wxfile://') && !tempPath.startsWith('http://tmp/')) {
+    if (
+      !tempPath.startsWith("wxfile://") &&
+      !tempPath.startsWith("http://tmp/")
+    ) {
       resolve(tempPath);
       return;
     }
@@ -80,25 +83,27 @@ function uploadAvatarToQiniu(tempPath: string): Promise<string> {
     wx.uploadFile({
       url: `${BASE_URL}/upload/image-full`,
       filePath: tempPath,
-      name: 'file',
+      name: "file",
       success: (res) => {
         if (res.statusCode === 200 && res.data) {
           try {
             const data = JSON.parse(res.data);
             if (data.url) {
               const fullUrl = `${QINIU_CDN}${data.url}`;
-              console.log('[Auth] 头像上传成功:', fullUrl);
+              console.log("[Auth] 头像上传成功:", fullUrl);
               resolve(fullUrl);
               return;
             }
-          } catch { /* 解析失败走 fallback */ }
+          } catch {
+            /* 解析失败走 fallback */
+          }
         }
-        console.warn('[Auth] 头像上传失败，使用空 avatarUrl');
-        resolve('');
+        console.warn("[Auth] 头像上传失败，使用空 avatarUrl");
+        resolve("");
       },
       fail: (err) => {
-        console.warn('[Auth] 头像上传异常:', err);
-        resolve('');
+        console.warn("[Auth] 头像上传异常:", err);
+        resolve("");
       },
     });
   });
@@ -114,93 +119,101 @@ function uploadAvatarToQiniu(tempPath: string): Promise<string> {
 export async function login(): Promise<boolean> {
   // ── 登录锁：防止并发调用导致 code 冲突 (errcode: 40029) ──
   if (_loginPromise) {
-    console.log('[Auth] 登录进行中，复用现有 Promise');
+    console.log("[Auth] 登录进行中，复用现有 Promise");
     return _loginPromise;
   }
 
   _loginPromise = (async () => {
-  try {
-    // ============================================
-    // 开发模式：跳过微信登录，使用 mock token
-    // ============================================
-    if (DEV_MODE) {
-      console.warn('[Auth] ⚠️ DEV_MODE 已开启，使用 mock 登录');
+    try {
+      // ============================================
+      // 开发模式：跳过微信登录，使用 mock token
+      // ============================================
+      if (DEV_MODE) {
+        console.warn("[Auth] ⚠️ DEV_MODE 已开启，使用 mock 登录");
 
-      const mockToken = 'dev_mock_token_' + Date.now();
-      const mockUserInfo: MpUserInfo = {
-        id: 1,
-        nickName: '开发者',
-        avatarUrl: '',
-        isProfileComplete: false,
+        const mockToken = "dev_mock_token_" + Date.now();
+        const mockUserInfo: MpUserInfo = {
+          id: 1,
+          nickName: "开发者",
+          avatarUrl: "",
+          isProfileComplete: false,
+        };
+
+        wx.setStorageSync(TOKEN_KEY, mockToken);
+        wx.setStorageSync(USER_INFO_KEY, mockUserInfo);
+
+        const app = getApp<IAppOption>();
+        if (app.globalData) {
+          app.globalData.isLoggedIn = true;
+          app.globalData.token = mockToken;
+          app.globalData.mpUserInfo = mockUserInfo;
+        }
+
+        console.log("[Auth] Mock 登录成功");
+        return true;
+      }
+
+      // 1. 获取微信 login code
+      const loginRes =
+        await new Promise<WechatMiniprogram.LoginSuccessCallbackResult>(
+          (resolve, reject) => {
+            wx.login({
+              success: resolve,
+              fail: reject,
+            });
+          }
+        );
+
+      const code = loginRes.code;
+      if (!code) {
+        console.error("[Auth] wx.login 未返回 code");
+        return false;
+      }
+
+      // 2. 调用后端登录接口换取 token（不携带旧 token）
+      const res = await request<any>({
+        url: "/mp-auth/login",
+        method: "POST",
+        data: { code },
+        skipAuth: true,
+      });
+
+      if (!res || !res.token) {
+        console.error("[Auth] 登录接口未返回 token", res);
+        return false;
+      }
+
+      // 3. 构建完整的 userInfo（含服务端返回的 isProfileComplete 标识）
+      const userInfo: MpUserInfo = {
+        ...(res.userInfo || {}),
+        isProfileComplete: res.isProfileComplete || false,
       };
 
-      wx.setStorageSync(TOKEN_KEY, mockToken);
-      wx.setStorageSync(USER_INFO_KEY, mockUserInfo);
+      // 4. 存储到本地
+      wx.setStorageSync(TOKEN_KEY, res.token);
+      wx.setStorageSync(USER_INFO_KEY, userInfo);
 
+      // 5. 同步更新 app.globalData
       const app = getApp<IAppOption>();
       if (app.globalData) {
         app.globalData.isLoggedIn = true;
-        app.globalData.token = mockToken;
-        app.globalData.mpUserInfo = mockUserInfo;
+        app.globalData.token = res.token;
+        app.globalData.mpUserInfo = userInfo;
       }
 
-      console.log('[Auth] Mock 登录成功');
+      console.log(
+        "[Auth] 登录成功, userId=",
+        userInfo.id,
+        ", isProfileComplete=",
+        userInfo.isProfileComplete
+      );
       return true;
-    }
-
-    // 1. 获取微信 login code
-    const loginRes = await new Promise<WechatMiniprogram.LoginSuccessCallbackResult>((resolve, reject) => {
-      wx.login({
-        success: resolve,
-        fail: reject,
-      });
-    });
-
-    const code = loginRes.code;
-    if (!code) {
-      console.error('[Auth] wx.login 未返回 code');
+    } catch (err) {
+      console.error("[Auth] 登录失败:", err);
       return false;
+    } finally {
+      _loginPromise = null; // 清除锁，允许下次登录
     }
-
-    // 2. 调用后端登录接口换取 token（不携带旧 token）
-    const res = await request<any>({
-      url: '/mp-auth/login',
-      method: 'POST',
-      data: { code },
-      skipAuth: true,
-    });
-
-    if (!res || !res.token) {
-      console.error('[Auth] 登录接口未返回 token', res);
-      return false;
-    }
-
-    // 3. 构建完整的 userInfo（含服务端返回的 isProfileComplete 标识）
-    const userInfo: MpUserInfo = {
-      ...(res.userInfo || {}),
-      isProfileComplete: res.isProfileComplete || false,
-    };
-
-    // 4. 存储到本地
-    wx.setStorageSync(TOKEN_KEY, res.token);
-    wx.setStorageSync(USER_INFO_KEY, userInfo);
-
-    // 5. 同步更新 app.globalData
-    const app = getApp<IAppOption>();
-    if (app.globalData) {
-      app.globalData.isLoggedIn = true;
-      app.globalData.token = res.token;
-      app.globalData.mpUserInfo = userInfo;
-    }
-
-    console.log('[Auth] 登录成功, userId=', userInfo.id, ', isProfileComplete=', userInfo.isProfileComplete);
-    return true;
-  } catch (err) {
-    console.error('[Auth] 登录失败:', err);
-    return false;
-  } finally {
-    _loginPromise = null; // 清除锁，允许下次登录
-  }
   })(); // 立即执行 async IIFE
 
   return _loginPromise;
@@ -218,15 +231,15 @@ export async function silentLogin(): Promise<boolean> {
   try {
     // 本地已有 token → 已登录（可能是之前登录过的）
     if (isLoggedIn()) {
-      console.log('[Auth] 静默登录：已有 token，跳过');
+      console.log("[Auth] 静默登录：已有 token，跳过");
       return true;
     }
 
     // 无 token → 执行静默登录（调用现有的 login 方法）
-    console.log('[Auth] 静默登录：无 token，执行 wx.login...');
+    console.log("[Auth] 静默登录：无 token，执行 wx.login...");
     return await login();
   } catch (err) {
-    console.warn('[Auth] 静默登录失败（非致命）:', err);
+    console.warn("[Auth] 静默登录失败（非致命）:", err);
     // 静默登录失败不应阻塞小程序正常使用（游客模式仍可浏览部分内容）
     return false;
   }
@@ -243,22 +256,23 @@ export async function getUserProfileInfo(): Promise<{
   avatarUrl: string;
 } | null> {
   try {
-    console.log('[Auth] 正在调用 wx.getUserProfile...');
-    const res = await new Promise<WechatMiniprogram.GetUserProfileSuccessCallbackResult>(
-      (resolve, reject) => {
-        wx.getUserProfile({
-          desc: '用于完善会员资料',
-          success: resolve,
-          fail: reject,
-        });
-      }
-    );
+    console.log("[Auth] 正在调用 wx.getUserProfile...");
+    const res =
+      await new Promise<WechatMiniprogram.GetUserProfileSuccessCallbackResult>(
+        (resolve, reject) => {
+          wx.getUserProfile({
+            desc: "用于完善会员资料",
+            success: resolve,
+            fail: reject,
+          });
+        }
+      );
     const { nickName, avatarUrl } = res.userInfo;
-    console.log('[Auth] getUserProfile 成功, nickName=', nickName);
+    console.log("[Auth] getUserProfile 成功, nickName=", nickName);
     return { nickName, avatarUrl };
   } catch (err) {
     // 用户取消授权或调用失败
-    console.log('[Auth] getUserProfile 取消或失败:', err);
+    console.log("[Auth] getUserProfile 取消或失败:", err);
     return null;
   }
 }
@@ -272,11 +286,11 @@ export async function getUserProfileInfo(): Promise<{
 export async function loginWithProfile(): Promise<boolean> {
   // ── 独立登录锁：不与静默 login() 共享（避免被静默登录拦截导致不弹窗）──
   if (_profilePromise) {
-    console.log('[Auth] loginWithProfile: 登录进行中，复用现有 Promise');
+    console.log("[Auth] loginWithProfile: 登录进行中，复用现有 Promise");
     return _profilePromise;
   }
 
-  console.log('[Auth] loginWithProfile 开始执行...');
+  console.log("[Auth] loginWithProfile 开始执行...");
   _profilePromise = (async () => {
     const app = getApp<IAppOption>();
     try {
@@ -286,7 +300,7 @@ export async function loginWithProfile(): Promise<boolean> {
 
       if (app.globalData) {
         app.globalData.isLoggedIn = false;
-        app.globalData.token = '';
+        app.globalData.token = "";
         app.globalData.mpUserInfo = null;
       }
 
@@ -299,9 +313,11 @@ export async function loginWithProfile(): Promise<boolean> {
 
       // DEV_MODE 下使用 mock token
       if (DEV_MODE) {
-        console.warn('[Auth] ⚠️ DEV_MODE 已开启，loginWithProfile 使用 mock 登录');
+        console.warn(
+          "[Auth] ⚠️ DEV_MODE 已开启，loginWithProfile 使用 mock 登录"
+        );
 
-        const mockToken = 'dev_mock_token_' + Date.now();
+        const mockToken = "dev_mock_token_" + Date.now();
         const mockUserInfo: MpUserInfo = { id: 1, ...profile };
 
         wx.setStorageSync(TOKEN_KEY, mockToken);
@@ -313,67 +329,73 @@ export async function loginWithProfile(): Promise<boolean> {
           app.globalData.mpUserInfo = mockUserInfo;
         }
 
-        console.log('[Auth] loginWithProfile Mock 登录成功');
+        console.log("[Auth] loginWithProfile Mock 登录成功");
         return true;
       }
 
-    // 2. 正式环境：wx.login 换取 code
-    const loginRes = await new Promise<WechatMiniprogram.LoginSuccessCallbackResult>(
-      (resolve, reject) => {
-        wx.login({
-          success: resolve,
-          fail: reject,
-        });
+      // 2. 正式环境：wx.login 换取 code
+      const loginRes =
+        await new Promise<WechatMiniprogram.LoginSuccessCallbackResult>(
+          (resolve, reject) => {
+            wx.login({
+              success: resolve,
+              fail: reject,
+            });
+          }
+        );
+
+      const code = loginRes.code;
+      if (!code) {
+        console.error("[Auth] wx.login 未返回 code");
+        return false;
       }
-    );
 
-    const code = loginRes.code;
-    if (!code) {
-      console.error('[Auth] wx.login 未返回 code');
+      // 4. 后端接口换取 token，同时携带用户资料
+      const res = await request<any>({
+        url: "/mp-auth/login",
+        method: "POST",
+        data: { code, profile },
+        skipAuth: true,
+      });
+
+      if (!res || !res.token) {
+        console.error("[Auth] 登录接口未返回 token", res);
+        return false;
+      }
+
+      // 3. 存储登录成功的完整用户信息（profile 优先，避免被后端 null 覆盖）
+      wx.setStorageSync(TOKEN_KEY, res.token);
+      const baseInfo: MpUserInfo = { id: 0, ...profile };
+      const serverInfo = res.userInfo || {};
+      // 合并策略：服务端 userId 优先 + profile 昵称/头像优先（防止 null 覆盖）
+      const fullUserInfo: MpUserInfo = {
+        id: serverInfo.id || baseInfo.id,
+        nickName: serverInfo.nickName || baseInfo.nickName,
+        avatarUrl: serverInfo.avatarUrl || baseInfo.avatarUrl,
+        isProfileComplete:
+          res.isProfileComplete ||
+          !!(serverInfo.nickName && serverInfo.avatarUrl),
+      };
+      wx.setStorageSync(USER_INFO_KEY, fullUserInfo);
+
+      // 同步 globalData
+      if (app.globalData) {
+        app.globalData.isLoggedIn = true;
+        app.globalData.token = res.token;
+        app.globalData.mpUserInfo = fullUserInfo;
+      }
+
+      console.log(
+        "[Auth] loginWithProfile 登录成功, userId=",
+        res.userInfo?.id
+      );
+      return true;
+    } catch (err) {
+      console.error("[Auth] loginWithProfile 失败:", err);
       return false;
+    } finally {
+      _profilePromise = null; // 清除锁，允许下次登录
     }
-
-    // 4. 后端接口换取 token，同时携带用户资料
-    const res = await request<any>({
-      url: '/mp-auth/login',
-      method: 'POST',
-      data: { code, profile },
-      skipAuth: true,
-    });
-
-    if (!res || !res.token) {
-      console.error('[Auth] 登录接口未返回 token', res);
-      return false;
-    }
-
-    // 3. 存储登录成功的完整用户信息（profile 优先，避免被后端 null 覆盖）
-    wx.setStorageSync(TOKEN_KEY, res.token);
-    const baseInfo: MpUserInfo = { id: 0, ...profile };
-    const serverInfo = res.userInfo || {};
-    // 合并策略：服务端 userId 优先 + profile 昵称/头像优先（防止 null 覆盖）
-    const fullUserInfo: MpUserInfo = {
-      id: serverInfo.id || baseInfo.id,
-      nickName: serverInfo.nickName || baseInfo.nickName,
-      avatarUrl: serverInfo.avatarUrl || baseInfo.avatarUrl,
-      isProfileComplete: res.isProfileComplete || !!(serverInfo.nickName && serverInfo.avatarUrl),
-    };
-    wx.setStorageSync(USER_INFO_KEY, fullUserInfo);
-
-    // 同步 globalData
-    if (app.globalData) {
-      app.globalData.isLoggedIn = true;
-      app.globalData.token = res.token;
-      app.globalData.mpUserInfo = fullUserInfo;
-    }
-
-    console.log('[Auth] loginWithProfile 登录成功, userId=', res.userInfo?.id);
-    return true;
-  } catch (err) {
-    console.error('[Auth] loginWithProfile 失败:', err);
-    return false;
-  } finally {
-    _profilePromise = null; // 清除锁，允许下次登录
-  }
   })(); // 立即执行 async IIFE
 
   return _profilePromise;
@@ -388,18 +410,21 @@ export async function loginWithProfile(): Promise<boolean> {
  * @param nickName 用户输入的昵称
  * @returns 登录是否成功
  */
-export async function loginWithNewProfile(avatarUrl: string, nickName: string): Promise<boolean> {
+export async function loginWithNewProfile(
+  avatarUrl: string,
+  nickName: string
+): Promise<boolean> {
   if (_profilePromise) {
-    console.log('[Auth] loginWithNewProfile: 登录进行中，复用现有 Promise');
+    console.log("[Auth] loginWithNewProfile: 登录进行中，复用现有 Promise");
     return _profilePromise;
   }
 
   if (!nickName || !avatarUrl) {
-    console.warn('[Auth] loginWithNewProfile: 缺少头像或昵称');
+    console.warn("[Auth] loginWithNewProfile: 缺少头像或昵称");
     return false;
   }
 
-  console.log('[Auth] loginWithNewProfile 开始执行, nickName=', nickName);
+  console.log("[Auth] loginWithNewProfile 开始执行, nickName=", nickName);
   _profilePromise = (async () => {
     const app = getApp<IAppOption>();
     try {
@@ -408,14 +433,19 @@ export async function loginWithNewProfile(avatarUrl: string, nickName: string): 
       wx.removeStorageSync(USER_INFO_KEY);
       if (app.globalData) {
         app.globalData.isLoggedIn = false;
-        app.globalData.token = '';
+        app.globalData.token = "";
         app.globalData.mpUserInfo = null;
       }
 
       // DEV_MODE
       if (DEV_MODE) {
-        const mockToken = 'dev_mock_token_' + Date.now();
-        const mockUserInfo: MpUserInfo = { id: 1, nickName, avatarUrl, isProfileComplete: true };
+        const mockToken = "dev_mock_token_" + Date.now();
+        const mockUserInfo: MpUserInfo = {
+          id: 1,
+          nickName,
+          avatarUrl,
+          isProfileComplete: true,
+        };
         wx.setStorageSync(TOKEN_KEY, mockToken);
         wx.setStorageSync(USER_INFO_KEY, mockUserInfo);
         if (app.globalData) {
@@ -423,17 +453,20 @@ export async function loginWithNewProfile(avatarUrl: string, nickName: string): 
           app.globalData.token = mockToken;
           app.globalData.mpUserInfo = mockUserInfo;
         }
-        console.log('[Auth] loginWithNewProfile Mock 成功');
+        console.log("[Auth] loginWithNewProfile Mock 成功");
         return true;
       }
 
       // 1. wx.login 获取 code
-      const loginRes = await new Promise<WechatMiniprogram.LoginSuccessCallbackResult>(
-        (resolve, reject) => { wx.login({ success: resolve, fail: reject }); }
-      );
+      const loginRes =
+        await new Promise<WechatMiniprogram.LoginSuccessCallbackResult>(
+          (resolve, reject) => {
+            wx.login({ success: resolve, fail: reject });
+          }
+        );
       const code = loginRes.code;
       if (!code) {
-        console.error('[Auth] wx.login 未返回 code');
+        console.error("[Auth] wx.login 未返回 code");
         return false;
       }
 
@@ -442,14 +475,14 @@ export async function loginWithNewProfile(avatarUrl: string, nickName: string): 
 
       // 2. 后端接口，携带用户资料
       const res = await request<any>({
-        url: '/mp-auth/login',
-        method: 'POST',
+        url: "/mp-auth/login",
+        method: "POST",
         data: { code, profile: { nickName, avatarUrl: permanentAvatarUrl } },
         skipAuth: true,
       });
 
       if (!res || !res.token) {
-        console.error('[Auth] 登录接口未返回 token', res);
+        console.error("[Auth] 登录接口未返回 token", res);
         return false;
       }
 
@@ -469,10 +502,10 @@ export async function loginWithNewProfile(avatarUrl: string, nickName: string): 
         app.globalData.mpUserInfo = fullUserInfo;
       }
 
-      console.log('[Auth] loginWithNewProfile 成功, userId=', res.userInfo?.id);
+      console.log("[Auth] loginWithNewProfile 成功, userId=", res.userInfo?.id);
       return true;
     } catch (err) {
-      console.error('[Auth] loginWithNewProfile 失败:', err);
+      console.error("[Auth] loginWithNewProfile 失败:", err);
       return false;
     } finally {
       _profilePromise = null;
@@ -489,15 +522,23 @@ export async function loginWithNewProfile(avatarUrl: string, nickName: string): 
  * @param avatarUrl 用户选择的头像 URL
  * @param nickName 用户输入的昵称
  */
-export async function updateProfile(avatarUrl: string, nickName: string): Promise<boolean> {
+export async function updateProfile(
+  avatarUrl: string,
+  nickName: string
+): Promise<boolean> {
   try {
     if (!isLoggedIn()) {
-      console.error('[Auth] 未登录，无法完善资料');
+      console.error("[Auth] 未登录，无法完善资料");
       return false;
     }
 
     if (DEV_MODE) {
-      const updatedInfo: MpUserInfo = { ...(getUserInfo() || { id: 1 }), nickName, avatarUrl, isProfileComplete: true };
+      const updatedInfo: MpUserInfo = {
+        ...(getUserInfo() || { id: 1 }),
+        nickName,
+        avatarUrl,
+        isProfileComplete: true,
+      };
       wx.setStorageSync(USER_INFO_KEY, updatedInfo);
       const app = getApp<IAppOption>();
       if (app.globalData) app.globalData.mpUserInfo = updatedInfo;
@@ -508,8 +549,8 @@ export async function updateProfile(avatarUrl: string, nickName: string): Promis
     const permanentAvatarUrl = await uploadAvatarToQiniu(avatarUrl);
 
     await request<any>({
-      url: '/mp-auth/profile',
-      method: 'PUT',
+      url: "/mp-auth/profile",
+      method: "PUT",
       data: { nickName, avatarUrl: permanentAvatarUrl },
     });
 
@@ -524,10 +565,10 @@ export async function updateProfile(avatarUrl: string, nickName: string): Promis
     const app = getApp<IAppOption>();
     if (app.globalData) app.globalData.mpUserInfo = updatedInfo;
 
-    console.log('[Auth] updateProfile 成功');
+    console.log("[Auth] updateProfile 成功");
     return true;
   } catch (err) {
-    console.error('[Auth] updateProfile 失败:', err);
+    console.error("[Auth] updateProfile 失败:", err);
     return false;
   }
 }
@@ -542,11 +583,11 @@ export function logout(): void {
   const app = getApp<IAppOption>();
   if (app.globalData) {
     app.globalData.isLoggedIn = false;
-    app.globalData.token = '';
+    app.globalData.token = "";
     app.globalData.mpUserInfo = null;
   }
 
-  console.log('[Auth] 已退出登录');
+  console.log("[Auth] 已退出登录");
 }
 
 /**
@@ -561,7 +602,7 @@ export async function completeProfile(): Promise<boolean> {
   try {
     // 检查是否已登录（必须有 token 才能调用此接口）
     if (!isLoggedIn()) {
-      console.error('[Auth] 未登录，无法完善资料');
+      console.error("[Auth] 未登录，无法完善资料");
       // 先执行静默登录获取 token
       const loginOk = await login();
       if (!loginOk) return false;
@@ -569,12 +610,12 @@ export async function completeProfile(): Promise<boolean> {
 
     // DEV_MODE 下模拟完善资料
     if (DEV_MODE) {
-      console.warn('[Auth] ⚠️ DEV_MODE 已开启，completeProfile 使用 mock');
+      console.warn("[Auth] ⚠️ DEV_MODE 已开启，completeProfile 使用 mock");
 
       const mockUpdatedInfo: MpUserInfo = {
         id: 1,
-        nickName: '开发者',
-        avatarUrl: 'https://mock-avatar-url',
+        nickName: "开发者",
+        avatarUrl: "https://mock-avatar-url",
         isProfileComplete: true,
       };
 
@@ -585,26 +626,26 @@ export async function completeProfile(): Promise<boolean> {
         app.globalData.mpUserInfo = mockUpdatedInfo;
       }
 
-      console.log('[Auth] Mock 资料完善成功');
+      console.log("[Auth] Mock 资料完善成功");
       return true;
     }
 
     // 1. 调用 getUserProfile 获取头像昵称（会弹窗）
     const profile = await getUserProfileInfo();
     if (!profile) {
-      console.log('[Auth] 用户取消授权');
+      console.log("[Auth] 用户取消授权");
       return false;
     }
 
     // 2. 调用后端接口更新资料
     const res = await request<any>({
-      url: '/mp-auth/profile',
-      method: 'PUT',
+      url: "/mp-auth/profile",
+      method: "PUT",
       data: profile, // { nickName, avatarUrl }
     });
 
     if (!res || !res.success) {
-      console.error('[Auth] 完善资料接口失败', res);
+      console.error("[Auth] 完善资料接口失败", res);
       return false;
     }
 
@@ -625,11 +666,10 @@ export async function completeProfile(): Promise<boolean> {
       app.globalData.mpUserInfo = updatedInfo;
     }
 
-    console.log('[Auth] 资料完善成功，已升级为正式用户');
+    console.log("[Auth] 资料完善成功，已升级为正式用户");
     return true;
   } catch (err) {
-    console.error('[Auth] 完善资料失败:', err);
+    console.error("[Auth] 完善资料失败:", err);
     return false;
   }
 }
-

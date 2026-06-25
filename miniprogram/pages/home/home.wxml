@@ -33,8 +33,7 @@
         <image
           class="hero-empty-image"
           src="/assets/images/banner.png"
-          mode="aspectFit"
-        />
+          mode="aspectFit" />
         <text class="hero-empty-text">NO MATCHING RECORDS FOUND</text>
       </view>
     </block>
@@ -85,7 +84,6 @@
   <block wx:for="{{sortedModuleList}}" wx:key="key">
     <template is="tmpl-{{item.key}}" data="{{ module: item, loadingStates, errorStates, latestPost, postExpanded, upcomingEvents, featuredPhotos, featuredVideo, photocards, birthdayTrack }}" />
   </block>
-
   <!-- ═════════ 模板定义：最新动态 (posts) ═════════ -->
   <template name="tmpl-posts">
     <view class="section">
@@ -100,25 +98,35 @@
       <view class="card post-card" wx:if="{{loadingStates[module.key]}}">
         <view class="skeleton-post">
           <view class="skeleton-post-header">
-            <view class="skeleton-avatar skeleton-shimmer"></view>
+            <view class="skeleton-avatar skeleton-shimmer">
+            </view>
             <view class="skeleton-post-info">
-              <view class="skeleton-line skeleton-shimmer" style="width: 120rpx; height: 28rpx;"></view>
-              <view class="skeleton-line skeleton-shimmer" style="width: 80rpx; height: 18rpx; margin-top: 12rpx;"></view>
+              <view class="skeleton-line skeleton-shimmer" style="width: 120rpx; height: 28rpx;">
+              </view>
+              <view class="skeleton-line skeleton-shimmer" style="width: 80rpx; height: 18rpx; margin-top: 12rpx;">
+              </view>
             </view>
           </view>
-          <view class="skeleton-line skeleton-shimmer" style="width: 100%; height: 28rpx; margin-bottom: 16rpx;"></view>
-          <view class="skeleton-line skeleton-shimmer" style="width: 85%; height: 28rpx; margin-bottom: 16rpx;"></view>
-          <view class="skeleton-line skeleton-shimmer" style="width: 60%; height: 28rpx; margin-bottom: 24rpx;"></view>
+          <view class="skeleton-line skeleton-shimmer" style="width: 100%; height: 28rpx; margin-bottom: 16rpx;">
+          </view>
+          <view class="skeleton-line skeleton-shimmer" style="width: 85%; height: 28rpx; margin-bottom: 16rpx;">
+          </view>
+          <view class="skeleton-line skeleton-shimmer" style="width: 60%; height: 28rpx; margin-bottom: 24rpx;">
+          </view>
           <view class="skeleton-images">
-            <view class="skeleton-img skeleton-shimmer"></view>
-            <view class="skeleton-img skeleton-shimmer"></view>
+            <view class="skeleton-img skeleton-shimmer">
+            </view>
+            <view class="skeleton-img skeleton-shimmer">
+            </view>
           </view>
         </view>
       </view>
       <!-- 错误状态 -->
       <view class="card error-card" wx:elif="{{errorStates[module.key] && !loadingStates[module.key] && !latestPost}}">
         <text class="error-text">加载失败</text>
-        <view class="error-retry-btn" bind:tap="onRetryLoad"><text>点击重试</text></view>
+        <view class="error-retry-btn" bind:tap="onRetryLoad">
+          <text>点击重试</text>
+        </view>
       </view>
       <!-- 空状态 -->
       <empty-state wx:elif="{{!loadingStates[module.key] && !errorStates[module.key] && !latestPost}}" />
@@ -126,23 +134,37 @@
       <block wx:else>
         <view class="card post-card">
           <view class="post-header">
-            <image class="post-avatar" src="{{latestPost.authorAvatar}}" mode="aspectFill" />
+            <image
+              class="post-avatar"
+              src="{{latestPost.authorAvatar}}"
+              mode="aspectFill" />
             <view class="post-header-info">
               <text class="post-author">{{latestPost.authorName}}</text>
               <text class="post-time">POSTED {{latestPost.date}}</text>
             </view>
             <view class="post-badge">
-              <image class="post-badge-icon" src="{{latestPost.platformIcon}}" mode="aspectFit" />
+              <image
+                class="post-badge-icon"
+                src="{{latestPost.platformIcon}}"
+                mode="aspectFit" />
             </view>
           </view>
           <view class="post-content-wrap">
             <text class="post-content {{!postExpanded ? 'post-content--collapsed' : ''}}">{{latestPost.title}}</text>
-            <view class="post-expand-btn" bind:tap="onTogglePostExpand" wx:if="{{latestPost.title.length > 50}}">
+            <view
+              class="post-expand-btn"
+              bind:tap="onTogglePostExpand"
+              wx:if="{{latestPost.title.length > 50}}"
+            >
               <text>{{postExpanded ? '收起' : '展开'}}</text>
             </view>
           </view>
           <view class="post-images">
-            <block wx:for="{{latestPost.mediaList}}" wx:key="index" wx:for-item="media">
+            <block
+              wx:for="{{latestPost.mediaList}}"
+              wx:key="index"
+              wx:for-item="media"
+            >
               <image
                 wx:if="{{media.type === 'PHOTO'}}"
                 class="post-img"
@@ -157,15 +179,20 @@
                 class="post-video-wrap"
                 data-index="{{index}}"
                 data-media-list="{{latestPost.mediaList}}"
-                bind:tap="onPreviewPostMedia">
+                bind:tap="onPreviewPostMedia"
+              >
                 <image
                   wx:if="{{media.coverUrl}}"
                   class="post-video-cover"
                   src="{{media.coverUrl}}"
                   mode="aspectFill"
                   lazy-load />
-                <view wx:else class="post-video-cover post-video-cover--empty"></view>
-                <image class="post-video-play" src="/assets/icons/video_default.svg" mode="aspectFit" />
+                <view wx:else class="post-video-cover post-video-cover--empty">
+                </view>
+                <image
+                  class="post-video-play"
+                  src="/assets/icons/video_default.svg"
+                  mode="aspectFit" />
               </view>
             </block>
           </view>
@@ -173,7 +200,6 @@
       </block>
     </view>
   </template>
-
   <!-- ═════════ 模板定义：近期行程 (itineraries) ═════════ -->
   <template name="tmpl-itineraries">
     <view class="section">
@@ -187,27 +213,41 @@
       <!-- 骨架屏 -->
       <view class="card schedule-card" wx:if="{{loadingStates[module.key]}}">
         <view class="skeleton-schedule">
-          <view class="skeleton-schedule-item" wx:for="{{[1,2]}}" wx:key="*this">
+          <view
+            class="skeleton-schedule-item"
+            wx:for="{{[1,2]}}"
+            wx:key="*this"
+          >
             <view class="skeleton-schedule-left">
-              <view class="skeleton-line skeleton-shimmer" style="width: 60rpx; height: 44rpx;"></view>
-              <view class="skeleton-line skeleton-shimmer" style="width: 140rpx; height: 32rpx; margin-top: 16rpx;"></view>
-              <view class="skeleton-line skeleton-shimmer" style="width: 100rpx; height: 20rpx; margin-top: 12rpx;"></view>
+              <view class="skeleton-line skeleton-shimmer" style="width: 60rpx; height: 44rpx;">
+              </view>
+              <view class="skeleton-line skeleton-shimmer" style="width: 140rpx; height: 32rpx; margin-top: 16rpx;">
+              </view>
+              <view class="skeleton-line skeleton-shimmer" style="width: 100rpx; height: 20rpx; margin-top: 12rpx;">
+              </view>
             </view>
-            <view class="skeleton-poster-img skeleton-shimmer"></view>
+            <view class="skeleton-poster-img skeleton-shimmer">
+            </view>
           </view>
         </view>
       </view>
       <!-- 错误状态 -->
       <view class="card error-card" wx:elif="{{errorStates[module.key] && !loadingStates[module.key] && upcomingEvents.length === 0}}">
         <text class="error-text">加载失败</text>
-        <view class="error-retry-btn" bind:tap="onRetryLoad"><text>点击重试</text></view>
+        <view class="error-retry-btn" bind:tap="onRetryLoad">
+          <text>点击重试</text>
+        </view>
       </view>
       <!-- 空状态 -->
       <empty-state wx:elif="{{!loadingStates[module.key] && !errorStates[module.key] && upcomingEvents.length === 0}}" />
       <!-- 正常内容 -->
       <block wx:else>
         <view class="card schedule-card">
-          <view wx:for="{{upcomingEvents}}" wx:key="id" class="schedule-item">
+          <view
+            wx:for="{{upcomingEvents}}"
+            wx:key="id"
+            class="schedule-item"
+          >
             <view class="schedule-item-inner">
               <view class="schedule-date">{{item.date}}</view>
               <view class="schedule-info">
@@ -215,15 +255,22 @@
                 <text class="schedule-location">{{item.location}}</text>
               </view>
             </view>
-            <view wx:if="{{item.imageUrl}}" class="schedule-poster" bind:tap="onPreviewScheduleImage" data-url="{{item.imageUrl}}">
-              <image class="schedule-poster-img" src="{{item.imageUrl}}" mode="aspectFill" />
+            <view
+              wx:if="{{item.imageUrl}}"
+              class="schedule-poster"
+              bind:tap="onPreviewScheduleImage"
+              data-url="{{item.imageUrl}}"
+            >
+              <image
+                class="schedule-poster-img"
+                src="{{item.imageUrl}}"
+                mode="aspectFill" />
             </view>
           </view>
         </view>
       </block>
     </view>
   </template>
-
   <!-- ═════════ 模板定义：照片馆 (photos) ═════════ -->
   <template name="tmpl-photos">
     <view class="section">
@@ -236,14 +283,21 @@
         bind:more="onSectionMore" />
       <!-- 骨架屏 -->
       <view class="photo-grid" wx:if="{{loadingStates[module.key]}}">
-        <view class="photo-grid-item skeleton-photo-item" wx:for="{{[1,2,3]}}" wx:key="*this">
-          <view class="skeleton-photo-img skeleton-shimmer"></view>
+        <view
+          class="photo-grid-item skeleton-photo-item"
+          wx:for="{{[1,2,3]}}"
+          wx:key="*this"
+        >
+          <view class="skeleton-photo-img skeleton-shimmer">
+          </view>
         </view>
       </view>
       <!-- 错误状态 -->
       <view class="card error-card error-card--small" wx:elif="{{errorStates[module.key] && !loadingStates[module.key] && featuredPhotos.length === 0}}">
         <text class="error-text">加载失败</text>
-        <view class="error-retry-btn" bind:tap="onRetryLoad"><text>点击重试</text></view>
+        <view class="error-retry-btn" bind:tap="onRetryLoad">
+          <text>点击重试</text>
+        </view>
       </view>
       <!-- 空状态 -->
       <empty-state wx:elif="{{!loadingStates[module.key] && !errorStates[module.key] && featuredPhotos.length === 0}}" />
@@ -256,19 +310,20 @@
             wx:for-item="photo"
             class="photo-grid-item"
             bind:tap="onPreviewPhotoImage"
-            data-url="{{photo}}"
+            data-url="{{photo.reviewImageUrl}}"
             data-index="{{index}}"
           >
-            <image class="photo-grid-img" src="{{photo.url}}" mode="aspectFill" lazy-load />
-            <view class="photo-grid-overlay">
-              <text class="photo-grid-label">{{photo.type === 'RAW' ? 'RAW' : photo.type}}</text>
-            </view>
+            <image
+              class="photo-grid-img"
+              src="{{photo.url}}"
+              mode="aspectFill"
+              lazy-load />
+            <!-- <view class="photo-grid-overlay"> <text class="photo-grid-label">{{photo.type === 'RAW' ? 'RAW' : photo.type}}</text> </view> -->
           </view>
         </view>
       </block>
     </view>
   </template>
-
   <!-- ═════════ 模板定义：视频馆 (videos) ═════════ -->
   <template name="tmpl-videos">
     <view class="section">
@@ -281,23 +336,36 @@
         bind:more="onSectionMore" />
       <!-- 骨架屏 -->
       <view class="video-feature skeleton-video" wx:if="{{loadingStates[module.key]}}">
-        <view class="skeleton-video-img skeleton-shimmer"></view>
+        <view class="skeleton-video-img skeleton-shimmer">
+        </view>
         <view class="skeleton-video-info">
-          <view class="skeleton-line skeleton-shimmer" style="width: 120rpx; height: 20rpx; margin-bottom: 12rpx;"></view>
-          <view class="skeleton-line skeleton-shimmer" style="width: 80%; height: 28rpx;"></view>
+          <view class="skeleton-line skeleton-shimmer" style="width: 120rpx; height: 20rpx; margin-bottom: 12rpx;">
+          </view>
+          <view class="skeleton-line skeleton-shimmer" style="width: 80%; height: 28rpx;">
+          </view>
         </view>
       </view>
       <!-- 错误状态 -->
       <view class="card error-card error-card--small" wx:elif="{{errorStates[module.key] && !loadingStates[module.key] && !featuredVideo}}">
         <text class="error-text">加载失败</text>
-        <view class="error-retry-btn" bind:tap="onRetryLoad"><text>点击重试</text></view>
+        <view class="error-retry-btn" bind:tap="onRetryLoad">
+          <text>点击重试</text>
+        </view>
       </view>
       <!-- 空状态 -->
       <empty-state wx:elif="{{!loadingStates[module.key] && !errorStates[module.key] && !featuredVideo}}" />
       <!-- 正常内容 -->
       <block wx:else>
-        <view class="video-feature" bind:tap="onNavigateTo" data-key="videos">
-          <image class="video-feature-img" src="{{featuredVideo.thumbnail}}" mode="aspectFill" lazy-load />
+        <view
+          class="video-feature"
+          bind:tap="onNavigateTo"
+          data-key="videos"
+        >
+          <image
+            class="video-feature-img"
+            src="{{featuredVideo.thumbnail}}"
+            mode="aspectFill"
+            lazy-load />
           <view class="video-play-btn" catch:tap="onPreviewFeaturedVideo">
             <text class="video-play-icon">▶</text>
           </view>
@@ -309,7 +377,6 @@
       </block>
     </view>
   </template>
-
   <!-- ═════════ 模板定义：小卡馆 (photoCards) ═════════ -->
   <template name="tmpl-photoCards">
     <view class="section">
@@ -321,40 +388,57 @@
         disabled="{{!loadingStates[module.key] && !errorStates[module.key] && photocards.length === 0}}"
         bind:more="onSectionMore" />
       <!-- 骨架屏 -->
-      <scroll-view class="card-scroll" scroll-x enhanced show-scrollbar="{{false}}" wx:if="{{loadingStates[module.key]}}">
-        <view class="card-scroll-inner">
-          <view class="photocard-item skeleton-photocard" wx:for="{{[1,2,3]}}" wx:key="*this">
-            <view class="skeleton-photocard-img skeleton-shimmer"></view>
-            <view class="skeleton-line skeleton-shimmer" style="width: 80rpx; height: 18rpx; margin-top: 12rpx;"></view>
-            <view class="skeleton-line skeleton-shimmer" style="width: 100rpx; height: 20rpx; margin-top: 8rpx;"></view>
+      <view class="card-scroll-inner" wx:if="{{loadingStates[module.key]}}">
+        <view
+          class="photocard-item skeleton-photocard"
+          wx:for="{{[1,2,3]}}"
+          wx:key="*this"
+        >
+          <view class="skeleton-photocard-img skeleton-shimmer">
+          </view>
+          <view class="skeleton-line skeleton-shimmer" style="width: 80rpx; height: 18rpx; margin-top: 12rpx;">
+          </view>
+          <view class="skeleton-line skeleton-shimmer" style="width: 100rpx; height: 20rpx; margin-top: 8rpx;">
           </view>
         </view>
-      </scroll-view>
+      </view>
       <!-- 错误状态 -->
       <view class="card error-card error-card--small" wx:elif="{{errorStates[module.key] && !loadingStates[module.key] && photocards.length === 0}}">
         <text class="error-text">加载失败</text>
-        <view class="error-retry-btn" bind:tap="onRetryLoad"><text>点击重试</text></view>
+        <view class="error-retry-btn" bind:tap="onRetryLoad">
+          <text>点击重试</text>
+        </view>
       </view>
       <!-- 空状态 -->
       <empty-state wx:elif="{{!loadingStates[module.key] && !errorStates[module.key] && photocards.length === 0}}" />
       <!-- 正常内容 -->
       <block wx:else>
-        <scroll-view class="card-scroll" scroll-x enhanced show-scrollbar="{{false}}">
-          <view class="card-scroll-inner">
-            <view wx:for="{{photocards}}" wx:key="id" class="photocard-item">
-              <view class="photocard-image-wrap" bind:tap="onPreviewPhotocardImage" data-url="{{item.reviewImageUrl}}" data-index="{{index}}">
-                <image class="photocard-image" src="{{item.imageUrl}}" mode="aspectFill" lazy-load />
-              </view>
-              <text class="photocard-date">{{item.date}}</text>
-              <text class="photocard-title">{{item.title}}</text>
-              <view wx:if="{{item.specialEdition}}" class="photocard-special"><text>SPECIAL</text></view>
+        <view class="card-scroll-inner">
+          <view
+            wx:for="{{photocards}}"
+            wx:key="id"
+            class="photocard-item"
+          >
+            <view
+              class="photocard-image-wrap"
+              bind:tap="onPreviewPhotocardImage"
+              data-url="{{item.reviewImageUrl}}"
+              data-index="{{index}}"
+            >
+              <image
+                class="photocard-image"
+                src="{{item.imageUrl}}"
+                mode="aspectFill"
+                lazy-load />
             </view>
+            <!-- <text class="photocard-date">{{item.date}}</text> -->
+            <text class="photocard-title">{{item.title}}</text>
+            <!-- <view wx:if="{{item.specialEdition}}" class="photocard-special"><text>SPECIAL</text></view> -->
           </view>
-        </scroll-view>
+        </view>
       </block>
     </view>
   </template>
-
   <!-- ═════════ 模板定义：音频馆 (audios) ═════════ -->
   <template name="tmpl-audios">
     <view class="section" data-key="audio">
@@ -367,16 +451,23 @@
         bind:more="onSectionMore" />
       <!-- 骨架屏 -->
       <view class="voice-card card skeleton-voice" wx:if="{{loadingStates[module.key]}}">
-        <view class="skeleton-voice-title skeleton-shimmer" style="width: 120rpx; height: 40rpx;"></view>
-        <view class="skeleton-voice-desc skeleton-shimmer" style="width: 280rpx; height: 24rpx; margin-top: 16rpx;"></view>
-        <view class="skeleton-voice-disc skeleton-shimmer"></view>
-        <view class="skeleton-line skeleton-shimmer" style="width: 160rpx; height: 28rpx; margin-top: 32rpx;"></view>
-        <view class="skeleton-line skeleton-shimmer" style="width: 100rpx; height: 20rpx; margin-top: 12rpx;"></view>
+        <view class="skeleton-voice-title skeleton-shimmer" style="width: 120rpx; height: 40rpx;">
+        </view>
+        <view class="skeleton-voice-desc skeleton-shimmer" style="width: 280rpx; height: 24rpx; margin-top: 16rpx;">
+        </view>
+        <view class="skeleton-voice-disc skeleton-shimmer">
+        </view>
+        <view class="skeleton-line skeleton-shimmer" style="width: 160rpx; height: 28rpx; margin-top: 32rpx;">
+        </view>
+        <view class="skeleton-line skeleton-shimmer" style="width: 100rpx; height: 20rpx; margin-top: 12rpx;">
+        </view>
       </view>
       <!-- 错误状态 -->
       <view class="card error-card error-card--small" wx:elif="{{errorStates[module.key] && !loadingStates[module.key] && !birthdayTrack}}">
         <text class="error-text">加载失败</text>
-        <view class="error-retry-btn" bind:tap="onRetryLoad"><text>点击重试</text></view>
+        <view class="error-retry-btn" bind:tap="onRetryLoad">
+          <text>点击重试</text>
+        </view>
       </view>
       <!-- 空状态 -->
       <empty-state wx:elif="{{!loadingStates[module.key] && !errorStates[module.key] && !birthdayTrack}}" />
@@ -384,31 +475,48 @@
       <block wx:else>
         <view class="voice-card card">
           <view class="voice-corners">
-            <view class="voice-corner voice-corner--tl"></view>
-            <view class="voice-corner voice-corner--tr"></view>
-            <view class="voice-corner voice-corner--bl"></view>
-            <view class="voice-corner voice-corner--br"></view>
+            <view class="voice-corner voice-corner--tl">
+            </view>
+            <view class="voice-corner voice-corner--tr">
+            </view>
+            <view class="voice-corner voice-corner--bl">
+            </view>
+            <view class="voice-corner voice-corner--br">
+            </view>
           </view>
           <text class="voice-title">{{module.name}}</text>
           <text class="voice-desc">"在每个静谧的时刻，与你的耳朵私语"</text>
           <view class="voice-disc voice-disc--spinning">
             <block wx:if="{{birthdayTrack.coverUrl}}">
-              <image class="voice-disc-img" src="{{birthdayTrack.coverUrl}}" mode="aspectFill" />
+              <image
+                class="voice-disc-img"
+                src="{{birthdayTrack.coverUrl}}"
+                mode="aspectFill" />
             </block>
             <view wx:else class="voice-disc-img-fallback">
-              <image class="voice-disc-img-fallback-icon" src="/assets/icons/audio_default.svg" mode="aspectFit" />
+              <image
+                class="voice-disc-img-fallback-icon"
+                src="/assets/icons/audio_default.svg"
+                mode="aspectFit" />
             </view>
-            <view class="voice-disc-center"><view class="voice-disc-center-dot"></view></view>
+            <view class="voice-disc-center">
+              <view class="voice-disc-center-dot">
+              </view>
+            </view>
           </view>
           <text class="voice-track-title">{{birthdayTrack.title}}</text>
           <text class="voice-track-sub">{{birthdayTrack.author}}</text>
           <view class="voice-controls">
             <view class="voice-play-btn {{!birthdayTrack ? 'voice-play-btn--disabled' : ''}}" bind:tap="{{birthdayTrack ? 'onPlayAudio' : ''}}">
-              <image class="voice-play-icon" src="{{'/assets/icons/audioplay.svg'}}" mode="aspectFit" />
+              <image
+                class="voice-play-icon"
+                src="{{'/assets/icons/audioplay.svg'}}"
+                mode="aspectFit" />
             </view>
           </view>
           <view class="voice-progress">
-            <view class="voice-progress-fill" style="width: {{ '36%' }}"></view>
+            <view class="voice-progress-fill" style="width: {{ '36%' }}">
+            </view>
           </view>
           <view class="voice-waveform">
             <view
@@ -416,7 +524,8 @@
               wx:key="*this"
               class="voice-wavebar"
               style="opacity: {{  0.6  }}; animation-delay: {{item * 0.05}}s;"
-            ></view>
+            >
+            </view>
           </view>
         </view>
       </block>
@@ -444,7 +553,8 @@
     </view>
   </view>
   <!-- 底部占位 -->
-  <view class="bottom-placeholder"></view>
+  <view class="bottom-placeholder">
+  </view>
 </scroll-view>
 <!-- 图片预览 -->
 <image-preview
@@ -474,9 +584,7 @@
     <text class="switch-dialog-name" style="color: {{switchCharColor}};">{{switchCharName}}</text>
     <text class="switch-dialog-hint">请稍等</text>
     <view class="switch-dialog-progress-wrap">
-      <view
-        class="switch-dialog-progress-bar"
-        style="width: {{switchProgress * 100}}%; background-color: {{switchCharColor}};" />
+      <view class="switch-dialog-progress-bar" style="width: {{switchProgress * 100}}%; background-color: {{switchCharColor}};" />
     </view>
     <text class="switch-dialog-percent" style="color: {{switchCharColor}};">{{switchProgressText}}</text>
   </view>

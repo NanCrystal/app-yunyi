@@ -563,18 +563,23 @@
 }
 
 .photocard-item {
-  flex: 0 0 calc((100% - 16rpx) / 3);
-  aspect-ratio: 3/4;
+  flex: 0 0 calc((100% - 28rpx) / 3);
+  aspect-ratio: 2/3;
   background-color: #0a0a0a;
   border: 1px solid #262626;
-  padding: 12rpx;
+  padding-bottom: 12rpx;
   position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .photocard-image-wrap {
-  aspect-ratio: 2/3;
+  width: 100%;
+  flex: 1;  /* 占据剩余空间的全部 */
   overflow: hidden;
   border: 1px solid #262626;
+  /* 不要用 aspect-ratio: 2/3; */
 }
 
 .photocard-image {
@@ -603,6 +608,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+
+    /* 保持现有样式，或者加上 */
+  flex-shrink: 0;  /* 防止标题被压缩 */
+  margin-top: 8rpx;
 }
 
 .photocard-special {
