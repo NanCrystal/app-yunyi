@@ -39,27 +39,56 @@
     </block>
     <!-- Hero 正常内容 -->
     <block wx:else>
-      <swiper
-        class="hero-swiper"
-        autoplay
-        interval="5000"
-        duration="1500"
-        circular
-        indicator-dots="{{false}}"
-        bindchange="onSwiperChange"
-      >
-        <swiper-item wx:for="{{heroImages}}" wx:key="index">
-          <image
-            class="hero-image"
-            src="{{item}}"
-            mode="aspectFill"
-            lazy-load="{{index > 0}}" />
-        </swiper-item>
-      </swiper>
-      <!-- 渐变遮罩 -->
+      <!-- ═══ 纯视频模式：单条视频，无swiper ═══ -->
+      <block wx:if="{{isHeroVideo}}">
+        <view class="hero-video-container">
+          <!-- 加载遮罩：视频未就绪时显示 -->
+          <view class="hero-video-loading" wx:if="{{!heroVideoLoaded}}">
+            <text class="hero-video-loading-text">视频正在加载中，请稍候</text>
+          </view>
+          <video
+            id="heroVideoPlayer"
+            class="hero-video-player"
+            src="{{heroBanners[0].url}}"
+            autoplay
+            controls="{{false}}"
+            loop
+            muted
+            object-fit="cover"
+            show-center-play-btn="{{false}}"
+            show-play-btn="{{false}}"
+            enable-progress-gesture="{{false}}"
+            bindloadedmetadata="onHeroVideoReady"
+            binderror="onHeroVideoError"
+          />
+        </view>
+      </block>
+
+      <!-- ═══ 纯图片模式：保留swiper ═══ -->
+      <block wx:else>
+        <swiper
+          class="hero-swiper"
+          autoplay
+          interval="5000"
+          duration="1500"
+          circular
+          indicator-dots="{{false}}"
+          bindchange="onSwiperChange"
+        >
+          <swiper-item wx:for="{{heroImages}}" wx:key="index">
+            <image
+              class="hero-image"
+              src="{{item}}"
+              mode="aspectFill"
+              lazy-load="{{index > 0}}" />
+          </swiper-item>
+        </swiper>
+      </block>
+
+      <!-- 渐变遮罩（两种模式共用） -->
       <view class="hero-overlay">
       </view>
-      <!-- Hero 文字覆盖层 -->
+      <!-- Hero 文字覆盖层（两种模式共用） -->
       <view class="hero-content">
         <!-- <view class="hero-role-row"> <view class="hero-dot"></view> <text class="hero-role">{{activeChar.role}}</text> </view> -->
         <!-- <text class="hero-name">{{activeChar.name === '云熠' ? '云熠宇宙' : activeChar.name}}</text> -->

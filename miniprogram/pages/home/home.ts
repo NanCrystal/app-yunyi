@@ -72,6 +72,9 @@ interface IntegrationData {
 interface HomeData {
   currentTime: string;
   heroImages: string[];
+  heroBanners: { url: string; mediaType: 'image' | 'video' }[];
+  isHeroVideo: boolean;
+  heroVideoLoaded: boolean;
   currentSlide: number;
   characters: Character[];
   selectedCharId: string;
@@ -167,6 +170,9 @@ Page(
       scrollTop: 0,
       currentTime: "12:00:00",
       heroImages: [] as string[],
+      heroBanners: [] as { url: string; mediaType: 'image' | 'video' }[],
+      isHeroVideo: false,
+      heroVideoLoaded: false,
       currentSlide: 0,
       characters: [] as Character[],
       selectedCharId: "haoyiran",
@@ -341,15 +347,24 @@ Page(
         // 3. 解析各模块数据
         const setDataObj: any = {};
 
-        // Banner → heroImages
-        const heroImages: string[] = (data.banners || []).flatMap((b) => {
+        // Banner → heroBanners / heroImages / isHeroVideo
+        const heroBanners: { url: string; mediaType: 'image' | 'video' }[] = [];
+        (data.banners || []).forEach((b) => {
+          const mediaType = b.data?.mediaType || 'image';
           const img = b.data?.imageUrl;
-          if (Array.isArray(img)) return img;
-          if (typeof img === "string") return [img];
-          return [];
+          const urls: string[] = Array.isArray(img) ? img : (typeof img === 'string' ? [img] : []);
+          urls.forEach(url => {
+            heroBanners.push({
+              url: getImageUrl(url),
+              mediaType: mediaType as 'image' | 'video',
+            });
+          });
         });
-        setDataObj.heroImages =
-          heroImages.length > 0 ? heroImages.map(getImageUrl) : [];
+        const isHeroVideoOnly = heroBanners.length === 1 && heroBanners[0].mediaType === 'video';
+        setDataObj.heroBanners = heroBanners;
+        setDataObj.isHeroVideo = isHeroVideoOnly;
+        setDataObj.heroImages = heroBanners.map(b => b.url);
+        setDataObj.heroVideoLoaded = false;
 
         // 按模块配置解析数据字段
         for (const mod of moduleList) {
@@ -633,6 +648,17 @@ Page(
     /** swiper 切换时同步指示器状态 */
     onSwiperChange(this: HomePageInstance, e: WechatMiniprogram.SwiperChange) {
       this.setData({ currentSlide: e.detail.current });
+    },
+
+    /** Hero 视频元数据加载完成 */
+    onHeroVideoReady(this: HomePageInstance) {
+      this.setData({ heroVideoLoaded: true });
+    },
+
+    /** Hero 视频加载失败 */
+    onHeroVideoError(this: HomePageInstance, e: any) {
+      console.error('[home] Hero video load error:', e.detail);
+      this.setData({ heroVideoLoaded: true });
     },
 
     // ───────────── 事件处理 ─────────────
