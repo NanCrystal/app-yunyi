@@ -28,6 +28,8 @@ Page({
     countdown: COUNTDOWN_SECONDS,
     /** swiper 轮播间隔(ms) */
     swiperInterval: 1000,
+    /** 是否存在 welcome 模块（默认 false，等数据返回后再判断） */
+    hasWelcomeModule: false,
   },
 
   onLoad() {
@@ -81,8 +83,20 @@ Page({
         wx.setStorageSync(STORAGE_KEYS.modules, modulesRes.modules);
       }
 
-      // 查找 welcome 模块，提取视频或图片
+      // 查找 welcome 模块
       const welcomeModule = modulesRes?.modules?.find((m: any) => m.key === "welcome") as any;
+
+      // 如果不存在 welcome 模块，直接跳转到首页
+      if (!welcomeModule) {
+        console.log('[welcome] 不存在 welcome 模块，直接跳转');
+        wx.redirectTo({ url: "/pages/frontpage/frontpage" });
+        return;
+      }
+
+      // 确认存在 welcome 模块，展示内容
+      this.setData({ hasWelcomeModule: true });
+
+      // 提取视频或图片
       
       // 优先处理 video
       if (welcomeModule?.video) {

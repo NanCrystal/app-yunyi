@@ -1,12 +1,14 @@
 import type { Character } from "../../utils/types";
 import { parseColorToRgb } from "../../utils/theme";
-import { getThumbFullUrl } from "../../utils/util";
-import { fetchArtists } from "../../services/api";
+import { getThumbFullUrl, formatDateChinese } from "../../utils/util";
+import { fetchArtists, fetchArticles } from "../../services/api";
 
 const app = getApp<IAppOption>();
 
 interface IndexData {
   characters: Character[];
+  showHome: boolean;
+  articles: any[];
 }
 
 /** 从缓存读取预加载的艺人列表 */
@@ -15,6 +17,17 @@ function getCachedArtists(): Character[] | null {
     return wx.getStorageSync("cached_artists") || null;
   } catch {
     return null;
+  }
+}
+
+/** 从缓存读取模块列表，判断是否包含 home */
+function getShowHome(): boolean {
+  try {
+    const modules: { key: string }[] =
+      wx.getStorageSync("cached_modules") || [];
+    return modules.some((m) => m.key === "home");
+  } catch {
+    return false;
   }
 }
 
@@ -28,9 +41,31 @@ function getGradient(item: Character): string {
 Page({
   data: {
     characters: [] as Character[],
+    showHome: false,
+    articles: [] as any[],
   } as IndexData,
 
   onLoad() {
+    // 判断是否展示 home 模块
+    const showHome = getShowHome();
+    this.setData({ showHome });
+
+    // 如果 showHome 为 true，获取文章列表
+    if (showHome) {
+      fetchArticles()
+        .then((list) => {
+          const items = list.map((c) => ({
+            ...c,
+            createdAt: formatDateChinese(c.createdAt),
+            cover: getThumbFullUrl(c.cover),
+          }));
+          this.setData({ articles: items });
+        })
+        .catch(() => {
+          console.error("获取文章列表失败");
+        });
+    }
+
     // 优先从缓存读取（welcome 页已预加载）
     let characters = getCachedArtists();
 
@@ -60,12 +95,20 @@ Page({
   onCharSelect(e: WechatMiniprogram.BaseEvent) {
     const artistId = e.currentTarget.dataset.id as string;
     const char = this.data.characters.find(
-      (c: Character) => c.artistId === artistId
+      (c: Character) => c.artistId === artistId,
     );
     app.globalData.selectedCharId = artistId;
     if (char && char.accentColor) {
       app.globalData.selectedCharAccentColor = char.accentColor;
     }
     wx.reLaunch({ url: "/pages/home/home" });
+  },
+
+  /** 点击文章卡片，进入详情页 */
+  onArticleTap(e: WechatMiniprogram.BaseEvent) {
+    const id = e.currentTarget.dataset.id as number;
+    wx.navigateTo({
+      url: `/pages/home-detail/home-detail?id=${id}`,
+    });
   },
 });

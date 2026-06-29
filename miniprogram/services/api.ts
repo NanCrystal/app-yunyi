@@ -329,6 +329,16 @@ export const fetchHomeModules = () => {
   }>("/integration/home/modules");
 };
 
+/** 获取文章列表 */
+export const fetchArticles = () => {
+  return get<any[]>("/articles");
+};
+
+/** 获取文章详情 */
+export const fetchArticleDetail = (id: number) => {
+  return get<any>(`/articles/${id}`);
+};
+
 /** 获取首页聚合数据，按 artistId 过滤 */
 export const getHomeData = (artistId?: string) => {
   // 过滤辅助函数

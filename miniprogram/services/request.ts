@@ -1,6 +1,6 @@
 /** 后端 API 基础地址 */
-const BASE_URL = 'http://192.168.10.37:3000'; // 本地环境
-// export const BASE_URL = 'https://api.tauol.online'; // 线上环境
+// const BASE_URL = 'http://192.168.10.37:3000'; // 本地环境
+export const BASE_URL = 'https://api.tauol.online'; // 线上环境
 
 /** 后端是否可用（连续失败后标记为不可用，避免无效请求） */
 let backendAvailable = true;

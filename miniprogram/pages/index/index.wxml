@@ -1,73 +1,83 @@
-<view class="container {{showWelcomeImages || showWelcomeVideo ? 'has-welcome-image' : ''}}">
-  <image class="bg-img" src="/assets/images/bg-default.jpg" mode="aspectFill"></image>
-  <view class="overlay"></view>
-
-  <!-- 有欢迎视频时：展示视频 -->
-  <block wx:if="{{showWelcomeVideo}}">
-    <video
-      class="welcome-video"
-      src="{{welcomeVideo}}"
-      autoplay
-      loop
-      muted
-      object-fit="cover"
-      show-center-play-btn="{{false}}"
-      show-play-btn="{{false}}"
-      controls="{{false}}"
-      enable-progress-gesture="{{false}}"
-      binderror="onVideoError"
-    ></video>
-  </block>
-
-  <!-- 有欢迎图片时：展示图片轮播 / 单图 -->
-  <block wx:elif="{{showWelcomeImages}}">
-    <!-- 多张图：swiper 轮播，1秒切换 -->
-    <swiper
-      wx:if="{{welcomeImages.length > 1}}"
-      class="welcome-swiper"
-      autoplay
-      interval="{{swiperInterval}}"
-      duration="500"
-      circular
-      indicator-dots
-      indicator-color="rgba(255,255,255,0.4)"
-      indicator-active-color="#ffffff"
-    >
-      <swiper-item wx:for="{{welcomeImages}}" wx:key="*this">
-        <image class="welcome-img" src="{{item}}" mode="aspectFill"></image>
-      </swiper-item>
-    </swiper>
-
-    <!-- 单张图：直接展示 -->
-    <image wx:else class="welcome-img single-img" src="{{welcomeImages[0]}}" mode="aspectFill"></image>
-  </block>
-
-  <!-- 无欢迎图片/视频时：显示原打字机文字 -->
+<view class="container">
+  <!-- 无 welcome 模块时的加载态（黑色背景 + 加载中） -->
+  <view wx:if="{{!hasWelcomeModule}}" class="loading-wrap">
+    <text>加载中...</text>
+  </view>
   <block wx:else>
-    <view class="center-wrap">
-      <view class="text typewriter">
-        <view class="text-line">
-          <text
-            wx:for="{{line1Chars}}"
-            wx:key="*this"
-            wx:for-index="i"
-            class="char"
-            style="animation-delay: {{i * 150}}ms"
-          >{{item}}</text>
-        </view>
-        <view class="text-line">
-          <text
-            wx:for="{{line2Chars}}"
-            wx:key="*this"
-            wx:for-index="i"
-            class="char"
-            style="animation-delay: {{(line1len + i) * 150}}ms"
-          >{{item}}</text>
-        </view>
-   
-      </view>
+    <image
+      class="bg-img"
+      src="/assets/images/bg-default.jpg"
+      mode="aspectFill" />
+    <view class="overlay">
     </view>
+    <!-- 有欢迎视频时：展示视频 -->
+    <block wx:if="{{showWelcomeVideo}}">
+      <video
+        class="welcome-video"
+        src="{{welcomeVideo}}"
+        autoplay
+        loop
+        muted
+        object-fit="cover"
+        show-center-play-btn="{{false}}"
+        show-play-btn="{{false}}"
+        controls="{{false}}"
+        enable-progress-gesture="{{false}}"
+        binderror="onVideoError" />
+    </block>
+    <!-- 有欢迎图片时：展示图片轮播 / 单图 -->
+    <block wx:elif="{{showWelcomeImages}}">
+      <!-- 多张图：swiper 轮播，1秒切换 -->
+      <swiper
+        wx:if="{{welcomeImages.length > 1}}"
+        class="welcome-swiper"
+        autoplay
+        interval="{{swiperInterval}}"
+        duration="500"
+        circular
+        indicator-dots
+        indicator-color="rgba(255,255,255,0.4)"
+        indicator-active-color="#ffffff"
+      >
+        <swiper-item wx:for="{{welcomeImages}}" wx:key="*this">
+          <image
+            class="welcome-img"
+            src="{{item}}"
+            mode="aspectFill" />
+        </swiper-item>
+      </swiper>
+      <!-- 单张图：直接展示 -->
+      <image
+        wx:else
+        class="welcome-img single-img"
+        src="{{welcomeImages[0]}}"
+        mode="aspectFill" />
+    </block>
+    <!-- 无欢迎图片/视频时：显示原打字机文字 -->
+    <block wx:else>
+      <view class="center-wrap">
+        <view class="text typewriter">
+          <view class="text-line">
+            <text
+              wx:for="{{line1Chars}}"
+              wx:key="*this"
+              wx:for-index="i"
+              class="char"
+              style="animation-delay: {{i * 150}}ms"
+            >{{item}}</text>
+          </view>
+          <view class="text-line">
+            <text
+              wx:for="{{line2Chars}}"
+              wx:key="*this"
+              wx:for-index="i"
+              class="char"
+              style="animation-delay: {{(line1len + i) * 150}}ms"
+            >{{item}}</text>
+          </view>
+        </view>
+      </view>
+    </block>
+    <view class="skip-btn" bindtap="skipToIndex">跳过 {{countdown > 0 ? countdown : ''}}s</view>
   </block>
-
-  <view class="skip-btn" bindtap="skipToIndex">跳过 {{countdown > 0 ? countdown : ''}}s</view>
 </view>

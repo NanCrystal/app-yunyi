@@ -1,14 +1,15 @@
 <view class="page">
   <!-- 顶部品牌标题区 -->
   <view class="header">
-    <view class="header-line"></view>
+    <view class="header-line">
+    </view>
     <text class="header-brand">STARVIEW</text>
     <!-- <text class="header-sub">ARCHIVE</text> -->
-    <view class="header-line"></view>
+    <view class="header-line">
+    </view>
   </view>
-
-  <!-- 角色卡片列表 -->
-  <view class="card-list">
+  <!-- 角色卡片列表（默认展示，无 home 模块时显示） -->
+  <view class="card-list" wx:if="{{!showHome}}">
     <view
       wx:for="{{characters}}"
       wx:key="id"
@@ -18,27 +19,52 @@
     >
       <!-- 卡片背景图 -->
       <view class="char-card-bg">
-        <image class="char-card-img" src="{{item.appCover}}" mode="aspectFill" lazy-load="{{index > 0}}" />
-        <view class="char-card-gradient" style="background: {{item._gradient}};"></view>
+        <image
+          class="char-card-img"
+          src="{{item.appCover}}"
+          mode="aspectFill"
+          lazy-load="{{index > 0}}" />
+        <view class="char-card-gradient" style="background: {{item._gradient}};">
+        </view>
       </view>
-
       <!-- 卡片文字覆盖层 -->
       <view class="char-card-content">
         <!-- 角色英文名 -->
-        <text class="char-en-name" style="color: {{item.accentColor}};">
-          {{item.artistId === 'yunyi' ? 'YUNYI' : item.artistId === 'haoyiran' ? 'HAO YIRAN' : 'YUNQI'}}
-        </text>
+        <text class="char-en-name" style="color: {{item.accentColor}};">{{item.artistId === 'yunyi' ? 'YUNYI' : item.artistId === 'haoyiran' ? 'HAO YIRAN' : 'YUNQI'}}</text>
         <!-- 角色中文名 -->
         <text class="char-cn-name">{{item.name}}</text>
         <!-- 角色定位 -->
-        <!-- <view class="char-role-row">
-          <view class="char-role-dot" style="background-color: {{item.accentColor}};"></view>
-          <text class="char-role-text">{{item.role}}</text>
-        </view> -->
+        <!-- <view class="char-role-row"> <view class="char-role-dot" style="background-color: {{item.accentColor}};"></view> <text class="char-role-text">{{item.role}}</text> </view> -->
         <!-- 进入箭头 -->
-        <!-- <view class="char-arrow" style="border-color: {{item.accentColor}};">
-          <text class="char-arrow-icon" style="color: {{item.accentColor}};">→</text>
-        </view> -->
+        <!-- <view class="char-arrow" style="border-color: {{item.accentColor}};"> <text class="char-arrow-icon" style="color: {{item.accentColor}};">→</text> </view> -->
+      </view>
+    </view>
+  </view>
+  <!-- 读书笔记（有 home 模块时显示） -->
+  <view class="note-list" wx:if="{{showHome}}">
+    <!-- <view class="note-list-title">读书笔记</view> -->
+    <view class="article-card-list">
+      <view
+        wx:for="{{articles}}"
+        wx:key="id"
+        class="article-card"
+        bind:tap="onArticleTap"
+        data-id="{{item.id}}"
+      >
+        <!-- 封面图 -->
+        <image
+          wx:if="{{item.cover}}"
+          class="article-card-cover"
+          src="{{item.cover}}"
+          mode="aspectFill"
+          lazy-load
+        />
+        <!-- 卡片内容 -->
+        <view class="article-card-content">
+          <text class="article-card-title">{{item.title}}</text>
+          <text class="article-card-excerpt">{{item.content}}</text>
+          <text class="article-card-date">{{item.createdAt}}</text>
+        </view>
       </view>
     </view>
   </view>

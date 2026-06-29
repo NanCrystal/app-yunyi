@@ -1,0 +1,23 @@
+<!--pages/home-detail/home-detail.wxml-->
+<view class="detail-page" wx:if="{{article}}">
+  <!-- 标题 -->
+  <text class="detail-title">{{article.title}}</text>
+  
+  <!-- 发布时间 -->
+  <text class="detail-date">发布于 {{article.createdAt}}</text>
+  
+  <!-- 封面图 -->
+  <image
+    wx:if="{{article.cover}}"
+    class="detail-cover"
+    src="{{article.cover}}"
+    mode="widthFix"
+  />
+  
+  <!-- 正文内容（按段落渲染） -->
+  <view class="detail-content" wx:if="{{article.paragraphs.length > 0}}">
+    <view class="paragraph" wx:for="{{article.paragraphs}}" wx:key="index">
+      <text>{{item}}</text>
+    </view>
+  </view>
+</view>

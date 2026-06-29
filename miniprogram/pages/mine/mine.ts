@@ -28,6 +28,8 @@ interface MineData {
   showHelpPopup: boolean;
   /** 是否显示联系客服弹窗（二维码） */
   showContactPopup: boolean;
+  /** 是否显示评论菜单项（取决于 cached_modules 中是否有 comments 模块） */
+  showCommentsMenu: boolean;
 }
 
 Page(
@@ -46,6 +48,7 @@ Page(
       loginMode: "register",
       showHelpPopup: false,
       showContactPopup: false,
+      showCommentsMenu: false,
       title: "SUPPORT & FEEDBACK",
       menuObj: {
         comments: {
@@ -66,11 +69,13 @@ Page(
         : wx.getSystemInfoSync();
       this.setData({ statusBarHeight });
       this._syncLoginState();
+      this._checkCommentsModule();
     },
 
     onShow() {
       // 每次显示页面时同步最新登录态
       this._syncLoginState();
+      this._checkCommentsModule();
     },
 
     /** 从 auth 工具函数同步登录状态到 data */
@@ -87,6 +92,19 @@ Page(
             ? info.avatarUrl
             : "/assets/icons/user-default.svg",
       });
+    },
+
+    /** 检查 cached_modules 中是否有 comments 模块 */
+    _checkCommentsModule() {
+      try {
+        const modules = wx.getStorageSync("cached_modules");
+        const showComments = Array.isArray(modules) &&
+          modules.some((m: any) => m?.key === "comments");
+        this.setData({ showCommentsMenu: showComments });
+      } catch (err) {
+        console.warn("[mine] 读取 cached_modules 失败", err);
+        this.setData({ showCommentsMenu: false });
+      }
     },
 
     /** 显示登录/完善资料弹窗 */

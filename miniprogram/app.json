@@ -12,7 +12,8 @@
     "pages/mine/mine",
     "pages/comments/comments",
     "pages/feedback/feedback",
-    "pages/card-detail/card-detail"
+    "pages/card-detail/card-detail",
+    "pages/home-detail/home-detail"
   ],
   "window": {
     "navigationBarTextStyle": "white",

@@ -6,6 +6,21 @@
   overflow: hidden;
 }
 
+/* 无 welcome 模块时的加载态 */
+.loading-wrap {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-wrap text {
+  color: #999;
+  font-size: 28rpx;
+}
+
 .bg-img {
   position: absolute;
   top: 0; left: 0;
@@ -22,13 +37,6 @@
   background: rgba(0, 0, 0, 0.55);
   z-index: 1;
 }
-
-/* 有欢迎图片时隐藏遮罩，让图片完整展示 */
-.container.has-welcome-image .overlay {
-  display: none;
-}
-
- 
 
 /* ========== 居中容器（flex） ========== */
 .center-wrap {
