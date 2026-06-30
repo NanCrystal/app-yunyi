@@ -557,6 +557,16 @@ Page(
           );
       }
 
+      // 当 mediaList 恰好包含一个 PHOTO 和一个 VIDEO 时，只展示 VIDEO，并用 PHOTO 作封面
+      if (mediaList.length === 2) {
+        const photoItem = mediaList.find((m) => m.type === "PHOTO");
+        const videoItem = mediaList.find((m) => m.type === "VIDEO");
+        if (photoItem && videoItem) {
+          (videoItem as any).coverUrl = photoItem.url;
+          mediaList.splice(mediaList.indexOf(photoItem), 1);
+        }
+      }
+
       return {
         id: String(post.id),
         title: post.content || post.title || "",

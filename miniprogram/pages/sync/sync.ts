@@ -390,6 +390,7 @@ Page(
       // 媒体：优先 linkedMedia，兜底 images
       const mediaList: FeedCard["mediaList"] = [];
       if (post.linkedMedia && post.linkedMedia.length > 0) {
+        console.log("[mapCard] linkedMedia length:", post.linkedMedia.length, "postId:", post.id);
         for (const m of post.linkedMedia) {
           const isPhoto = m.mediaType === "PHOTO";
           const media = m.media || {};
@@ -420,9 +421,11 @@ Page(
       if (mediaList.length === 2) {
         const photoItem = mediaList.find((m: any) => m.type === "PHOTO");
         const videoItem = mediaList.find((m: any) => m.type === "VIDEO");
+        console.log("[merge] mediaList:", JSON.stringify(mediaList.map(m => m.type)), "photoItem:", !!photoItem, "videoItem:", !!videoItem);
         if (photoItem && videoItem) {
           videoItem.poster = photoItem.url;
           mediaList.splice(mediaList.indexOf(photoItem), 1);
+          console.log("[merge] after splice, length:", mediaList.length);
         }
       }
       // 兜底：images 字段
