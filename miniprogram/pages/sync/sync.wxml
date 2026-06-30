@@ -38,6 +38,7 @@
     show-scrollbar="{{false}}"
     scroll-top="{{scrollTop}}"
     bind:scrolltolower="onScrollToLower"
+    bind:scroll="onScroll"
     style="top: {{statusBarHeight + 44 + tabBarHeight}}px;"
     lower-threshold="300"
   >
@@ -118,13 +119,15 @@
               </view>
               <video
                 wx:if="{{item.videoVisible}}"
+                id="{{item.id}}"
                 class="media-video"
                 src="{{item.mediaList[0].url}}"
                 poster="{{item.mediaList[0].poster}}"
-                muted
-                autoplay="{{false}}"
+                autoplay="{{item.videoVisible}}"
                 object-fit="cover"
                 show-center-play-btn="{{true}}"
+                show-play-btn="{{true}}"
+                enable-progress-guest="{{true}}"
                 data-id="{{item.id}}" />
             </view>
           </block>
@@ -167,7 +170,6 @@
                       id="video-{{item.id}}-{{mediaIdx}}"
                       src="{{media.url}}"
                       poster="{{media.poster}}"
-                      muted
                       autoplay="{{false}}"
                       object-fit="contain"
                       show-center-play-btn="{{true}}" />

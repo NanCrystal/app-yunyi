@@ -99,7 +99,10 @@ interface PageData {
  * 用于方法内 this 注解，解决 withTheme 返回值 ThisType 丢失问题
  * WechatMiniprogram.Page.Instance 需要 DataOption 和 CustomOption 两个泛型参数
  */
-type PageInstance = WechatMiniprogram.Page.Instance<PageData & { tabTabs: { key: string; label: string; icon: string }[] }, Record<string, any>> & {
+type PageInstance = WechatMiniprogram.Page.Instance<
+  PageData & { tabTabs: { key: string; label: string; icon: string }[] },
+  Record<string, any>
+> & {
   navigator?: INavigator;
 };
 
@@ -173,7 +176,7 @@ Page(
     /** 页面卸载时清理所有 IntersectionObserver */
     onUnload(this: PageInstance) {
       (this as any)._observers.forEach(
-        (ob: WechatMiniprogram.IntersectionObserver) => ob.disconnect()
+        (ob: WechatMiniprogram.IntersectionObserver) => ob.disconnect(),
       );
       (this as any)._observers = [];
     },
@@ -190,7 +193,7 @@ Page(
 
       // Phase 3：清理旧 observers
       (this as any)._observers.forEach(
-        (ob: WechatMiniprogram.IntersectionObserver) => ob.disconnect()
+        (ob: WechatMiniprogram.IntersectionObserver) => ob.disconnect(),
       );
       (this as any)._observers = [];
       (this as any)._observedCount = 0;
@@ -207,6 +210,56 @@ Page(
       await this.fetchPosts();
       // Phase 3：注册新卡片可视区观察
       this._observeItems();
+    },
+
+    /** 滚动时检测视频可视状态，仅当卡片完全离开视口时才暂停 */
+    onScroll(this: PageInstance, e: WechatMiniprogram.ScrollViewScrollEvent) {
+      const activeIdx = this.data.activeVideoIndex;
+      if (activeIdx === null) return;
+      // 防抖：避免滚动过程中频繁触发
+      if ((this as any)._scrollTimer) clearTimeout((this as any)._scrollTimer);
+      (this as any)._scrollTimer = setTimeout(() => {
+        const sysInfo = (wx as any).getWindowInfo?.() || wx.getSystemInfoSync();
+        const screenHeight = sysInfo.windowHeight;
+        const query = this.createSelectorQuery();
+        query
+          .select(`#item-${activeIdx}`)
+          .boundingClientRect((rect) => {
+            // 仅当卡片完全离开屏幕（底部在屏幕上方 或 顶部在屏幕下方）才暂停
+            if (!rect || rect.bottom < -50 || rect.top > screenHeight + 50) {
+              this._pauseActiveVideo(activeIdx);
+            }
+          })
+          .exec();
+      }, 150);
+    },
+
+    /** 暂停当前活跃的视频并重置状态 */
+    _pauseActiveVideo(this: PageInstance, index: number) {
+      const card = this.data.cards[index];
+      if (!card) return;
+
+      // 暂停单视频
+      if (card.videoVisible && card.mediaList[0]?.type === "VIDEO") {
+        const ctx = wx.createVideoContext(String(card.id), this);
+        ctx.pause();
+      }
+
+      // 暂停 swiper 中当前帧视频
+      const swiperCur = card.swiperCurrent ?? 0;
+      if (card.mediaList[swiperCur]?.type === "VIDEO") {
+        const ctx = wx.createVideoContext(
+          `video-${card.id}-${swiperCur}`,
+          this,
+        );
+        ctx.pause();
+      }
+
+      // 隐藏 video 组件（回到封面态）
+      this.setData({
+        [`cards[${index}].videoVisible`]: false,
+        activeVideoIndex: null,
+      });
     },
 
     /** 滚动到底部 */
@@ -294,9 +347,13 @@ Page(
         // 已挂载的跳过
         if (item.swiperVisible) continue;
 
-        const ob = this.createIntersectionObserver({ nativeMode: true } as WechatMiniprogram.CreateIntersectionObserverOption).relativeToViewport({
-          bottom: 200,
-        });
+        const ob = this.createIntersectionObserver({
+          nativeMode: true,
+        } as WechatMiniprogram.CreateIntersectionObserverOption).relativeToViewport(
+          {
+            bottom: 200,
+          },
+        );
 
         ob.observe(`#item-${i}`, (res: { intersectionRatio: number }) => {
           if (!res.intersectionRatio) return;
@@ -324,6 +381,7 @@ Page(
       updates[`cards[${index}].videoVisible`] = true;
       updates["activeVideoIndex"] = index;
 
+      // autoplay="{{item.videoVisible}}" 会让 video 挂载后自动播放
       this.setData(updates);
     },
 
@@ -342,7 +400,8 @@ Page(
             });
           } else if (!isPhoto) {
             // VIDEO: 优先 playUrl，回退 originalUrl
-            const videoUrl = media.playUrl || media.originalUrl || media.url;
+            const videoUrl =
+              media.hdUrl || media.playUrl || media.originalUrl || media.url;
             const posterUrl = media.coverUrl || media.originalUrl || "";
             if (videoUrl) {
               mediaList.push({
@@ -371,7 +430,11 @@ Page(
         // 抖音/微博等视频动态：raw 里携带 videoUrl 时，识别为 VIDEO 媒体
         let raw: any = post.raw;
         if (typeof raw === "string") {
-          try { raw = JSON.parse(raw); } catch { raw = null; }
+          try {
+            raw = JSON.parse(raw);
+          } catch {
+            raw = null;
+          }
         }
         const videoUrl = raw?.videoUrl;
         if (videoUrl) {
@@ -395,7 +458,7 @@ Page(
       // 艺人信息：根据当前活跃平台切换对应昵称/头像（兼容 Artist 大写）
       const artistInfo = this.getArtistInfoByPlatform(
         post.artist || post.Artist,
-        this.data.activeTab
+        this.data.activeTab,
       );
       const artistName = artistInfo.name;
       const artistAvatar = getImageUrl(artistInfo.avatar);
@@ -415,12 +478,12 @@ Page(
       if (videoMedia?.width && videoMedia?.height) {
         // 基础宽度 750rpx，根据宽高比计算高度
         const containerHeight = Math.round(
-          750 * (videoMedia.height / videoMedia.width)
+          750 * (videoMedia.height / videoMedia.width),
         );
         // 限制范围：最小 400rpx，最大 1200rpx
         videoContainerHeight = `${Math.max(
           400,
-          Math.min(1200, containerHeight)
+          Math.min(1200, containerHeight),
         )}rpx`;
       }
 
@@ -448,7 +511,7 @@ Page(
     /** 单视频 loadedmetadata：根据原始宽高比计算精确容器高度(px) */
     onVideoLoadedMeta(
       this: PageInstance,
-      e: WechatMiniprogram.CustomEvent<{ width: number; height: number }>
+      e: WechatMiniprogram.CustomEvent<{ width: number; height: number }>,
     ) {
       const cardId = e.currentTarget.dataset.id as number;
       const { width, height } = e.detail;
@@ -471,6 +534,8 @@ Page(
 
     /** 多图/多视频 swiper 滑动：控制视频播放/暂停 */
     onSwiperChange(this: PageInstance, e: WechatMiniprogram.SwiperChange) {
+      console.log("1111111111111111111111111111111111111");
+
       const cardId = e.currentTarget.dataset.id as number;
       const current = e.detail.current;
       const cards = this.data.cards;
@@ -490,7 +555,7 @@ Page(
       if (card.mediaList[current]?.type === "VIDEO") {
         const curCtx = wx.createVideoContext(
           `video-${cardId}-${current}`,
-          this
+          this,
         );
         curCtx.play();
       }
@@ -501,7 +566,7 @@ Page(
     /** 根据平台 tab 获取艺人对应的昵称和头像 */
     getArtistInfoByPlatform(
       artist: any,
-      platform: string
+      platform: string,
     ): { name: string; avatar: string } {
       if (!artist) return { name: "", avatar: "" };
       const platformMap: Record<string, { nick: string; avatar: string }> = {
@@ -545,8 +610,8 @@ Page(
       if (days < 7) return `${days}天前`;
       return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(
         2,
-        "0"
+        "0",
       )}.${String(d.getDate()).padStart(2, "0")}`;
     },
-  })
+  }),
 );
