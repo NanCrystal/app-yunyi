@@ -1,5 +1,6 @@
 // pages/feedback/feedback.ts
 import { get, post, BASE_URL } from "../../services/request";
+import { isModuleEnabled } from "../../utils/util";
 
 interface ProblemType {
   id: number;
@@ -19,6 +20,8 @@ Page({
     navBarHeight: 64,
     statusBarHeight: 20, // 状态栏高度（px）
     submitting: false,
+    /** 模块是否启用（控制整个页面是否展示） */
+    moduleEnabled: true,
   },
 
   async fetchProblemTypes() {
@@ -157,6 +160,13 @@ Page({
     };
     const navBarHeight = statusBarHeight + 44;
     this.setData({ statusBarHeight, navBarHeight });
+
+    // 检查 feedback 模块是否启用（cached_modules 存在且包含 "feedback"）
+    if (!isModuleEnabled("feedback")) { 
+      this.setData({ moduleEnabled: false });
+      return;
+    }
+
     this.fetchProblemTypes();
   },
   /** 返回上一页 */

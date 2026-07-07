@@ -18,6 +18,21 @@ const formatNumber = (n: number) => {
   return s[1] ? s : "0" + s;
 };
 
+/**
+ * 检查 cached_modules 是否存在且包含指定模块 key
+ * @param moduleKey 要检查的模块 key（如 "home", "videos", "photos" 等）
+ * @returns true 表示模块存在且应该加载数据，false 表示模块不存在应跳过加载
+ */
+export const isModuleEnabled = (moduleKey: string): boolean => {
+  try {
+    const modules: { key: string }[] = wx.getStorageSync("cached_modules") || [];
+    // cached_modules 必须存在且包含指定的 moduleKey
+    return Array.isArray(modules) && modules.length > 0 && modules.some((m) => m.key === moduleKey);
+  } catch {
+    return false;
+  }
+};
+
 /** 本地资源路径前缀白名单（小程序项目内静态资源） */
 const LOCAL_PREFIXES = ["/assets/", "/pages/", "/components/", "/behaviors/", "/utils/"];
 

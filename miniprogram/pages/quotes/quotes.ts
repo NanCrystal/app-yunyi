@@ -1,7 +1,7 @@
 import { fetchAudioList, fetchAudioTimeline } from "../../services/api";
 import type { AudioItem } from "../../utils/types";
 import { withTheme } from "../../behaviors/theme";
-import { getThumbUrl,fmtDuration, getImageUrl } from "../../utils/util";
+import { getThumbUrl, fmtDuration, getImageUrl, isModuleEnabled } from "../../utils/util";
 import { isLoggedIn } from "../../utils/auth";
 import { safeNavigateBack } from "../../utils/nav";
 
@@ -55,6 +55,8 @@ interface AudioData {
   isLoggedIn: boolean;
   showLoginPopup: boolean;
   _guestLimit: boolean;
+  /** 模块是否启用（控制整个页面是否展示） */
+  moduleEnabled: boolean;
 }
 
 interface AudioInstance {
@@ -120,6 +122,7 @@ Page(withTheme({
     isLoggedIn: isLoggedIn(),
     showLoginPopup: false,
     _guestLimit: false,
+    moduleEnabled: true,
   } as AudioData,
 
   /** 页面加载：初始化音频播放器和数据 */
@@ -131,6 +134,13 @@ Page(withTheme({
     const navBarHeight = statusBarHeight + 44;
     this.setData({ artistId, statusBarHeight, navBarHeight });
     this.initYearRange();
+
+    // 检查 audios 模块是否启用（cached_modules 存在且包含 "audios"）
+    if (!isModuleEnabled("audios")) { 
+      this.setData({ moduleEnabled: false });
+      return;
+    }
+
     this.loadAudiosFromServer(artistId);
     this.initAudioContext();
   },

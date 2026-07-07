@@ -1,4 +1,6 @@
 <!--pages/feedback/feedback.wxml-->
+<!-- 模块未启用时整个页面不展示 -->
+<block wx:if="{{moduleEnabled}}">
 <view class="custom-nav" style="padding-top: {{statusBarHeight}}px;">
   <view class="custom-nav-inner">
     <view class="custom-nav-left" bindtap="goBack">
@@ -114,3 +116,4 @@
     <button class="submit-btn" bindtap="submitFeedback">提交反馈</button>
   </view>
 </view>
+</block>

@@ -1,6 +1,7 @@
 import { getItineraries } from "../../services/api";
 import type { EventItem, EventStatus } from "../../utils/types";
 import { withTheme } from "../../behaviors/theme";
+import { isModuleEnabled } from "../../utils/util";
 import { getThumbFullUrl } from "../../utils/util";
 import { safeNavigateBack } from "../../utils/nav";
 interface FilterItem {
@@ -23,6 +24,8 @@ interface ScheduleData {
   tempYear: number;
   loading: boolean;
   skeletonVisible: boolean;
+  /** 模块是否启用（控制整个页面是否展示） */
+  moduleEnabled: boolean;
 }
 
 /** 页面实例类型，用于方法内 this 注解 */
@@ -52,6 +55,7 @@ Page(withTheme({
     tempYear: new Date().getFullYear(),
     loading: false,
     skeletonVisible: true,
+    moduleEnabled: true,
   } as ScheduleData,
 
   /** 页面加载：获取系统信息并初始化数据 */
@@ -62,11 +66,19 @@ Page(withTheme({
     const pages = getCurrentPages();
     // 判断是否有上一页，决定是否显示返回按钮
     const canGoBack = pages.length > 1;
-    this.setData({ 
+    this.setData({
       statusBarHeight,
-      canGoBack 
+      canGoBack
     });
     this.initYearRange();
+
+    // 检查 itineraries 模块是否启用（cached_modules 存在且包含 "itineraries"）
+    if (!isModuleEnabled("itineraries")) {
+      console.warn("[schedule] itineraries 模块未启用，隐藏页面");
+      this.setData({ skeletonVisible: false, moduleEnabled: false });
+      return;
+    }
+
     this.fetchItineraries();
   },
 

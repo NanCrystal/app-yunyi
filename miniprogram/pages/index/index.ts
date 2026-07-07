@@ -32,6 +32,9 @@ Page({
     hasWelcomeModule: false,
   },
 
+  /** 倒计时是否已启动（防重复启动） */
+  _started: false,
+
   onLoad() {
     console.log('[welcome] onLoad 开始执行');
     try {
@@ -76,10 +79,10 @@ Page({
       ]);
       
       // 安全存储，即使数据为空也不报错
-      if (artists && Array.isArray(artists)) {
+      if (artists && Array.isArray(artists) && artists.length > 0) {
         wx.setStorageSync(STORAGE_KEYS.artists, artists);
       }
-      if (modulesRes && modulesRes.modules) {
+      if (modulesRes?.modules && Array.isArray(modulesRes.modules) && modulesRes.modules.length > 0) {
         wx.setStorageSync(STORAGE_KEYS.modules, modulesRes.modules);
       }
 
@@ -161,6 +164,10 @@ Page({
 
   /** 启动倒计时 + 定时跳转 */
   startCountdown(totalSeconds: number = COUNTDOWN_SECONDS) {
+    // 防重复启动：若已启动则跳过
+    if (this._started) return;
+    this._started = true;
+
     let remaining = totalSeconds;
     this.setData({ countdown: remaining });
 
@@ -168,17 +175,28 @@ Page({
       remaining -= 1;
       if (remaining <= 0) {
         clearInterval(timer);
+        (this as any)._countdownTimer = null;
         this.skipToIndex();
       } else {
         this.setData({ countdown: remaining });
       }
     }, 1000);
-    // 存储 timer 以便跳过时清理（页面销毁后自动失效）
     (this as any)._countdownTimer = timer;
   },
 
   skipToIndex() {
-    clearInterval((this as any)._countdownTimer);
+    if ((this as any)._countdownTimer) {
+      clearInterval((this as any)._countdownTimer);
+      (this as any)._countdownTimer = null;
+    }
     wx.redirectTo({ url: "/pages/frontpage/frontpage" });
+  },
+
+  /** 页面卸载时清理定时器，防止内存泄漏 */
+  onUnload() {
+    if ((this as any)._countdownTimer) {
+      clearInterval((this as any)._countdownTimer);
+      (this as any)._countdownTimer = null;
+    }
   },
 });

@@ -1,3 +1,5 @@
+<!-- 模块未启用时整个页面不展示 -->
+<block wx:if="{{moduleEnabled}}">
 <!-- 自定义导航栏（fixed） -->
 <view class="custom-nav" style="padding-top: {{statusBarHeight}}px;">
   <view class="custom-nav-inner">
@@ -293,3 +295,4 @@
   description="登录后可查看更多音频内容"
   bind:loginSuccess="onLoginSuccess"
   bind:cancel="onLoginCancel" />
+</block>

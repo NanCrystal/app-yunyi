@@ -30,6 +30,8 @@ interface MineData {
   showContactPopup: boolean;
   /** 是否显示评论菜单项（取决于 cached_modules 中是否有 comments 模块） */
   showCommentsMenu: boolean;
+  /** 是否显示帮助菜单项（取决于 cached_modules 中是否有 feedback 模块） */
+  showHelpMenu: boolean;
 }
 
 Page(
@@ -49,6 +51,7 @@ Page(
       showHelpPopup: false,
       showContactPopup: false,
       showCommentsMenu: false,
+      showHelpMenu: false,
       title: "SUPPORT & FEEDBACK",
       menuObj: {
         comments: {
@@ -94,16 +97,18 @@ Page(
       });
     },
 
-    /** 检查 cached_modules 中是否有 comments 模块 */
+    /** 检查 cached_modules 中是否有 comments 和 feedback 模块 */
     _checkCommentsModule() {
       try {
         const modules = wx.getStorageSync("cached_modules");
         const showComments = Array.isArray(modules) &&
           modules.some((m: any) => m?.key === "comments");
-        this.setData({ showCommentsMenu: showComments });
+        const showHelp = Array.isArray(modules) &&
+          modules.some((m: any) => m?.key === "feedback");
+        this.setData({ showCommentsMenu: showComments, showHelpMenu: showHelp });
       } catch (err) {
         console.warn("[mine] 读取 cached_modules 失败", err);
-        this.setData({ showCommentsMenu: false });
+        this.setData({ showCommentsMenu: false, showHelpMenu: false });
       }
     },
 

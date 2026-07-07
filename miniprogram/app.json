@@ -1,19 +1,19 @@
 {
   "pages": [
-    "pages/index/index",
+    "pages/index/index", 
     "pages/frontpage/frontpage",
     "pages/home/home",
-    "pages/sync/sync",
-    "pages/schedule/schedule",
+    "pages/sync/sync", 
     "pages/photos/photos",
-    "pages/videos/videos",
+    "pages/schedule/schedule",
+    "pages/archive/archive",
     "pages/cards/cards",
-    "pages/audio/audio",
+    "pages/quotes/quotes",
     "pages/mine/mine",
-    "pages/comments/comments",
     "pages/feedback/feedback",
-    "pages/card-detail/card-detail",
-    "pages/home-detail/home-detail"
+    "pages/comments/comments",
+    "pages/home-detail/home-detail",
+    "pages/card-detail/card-detail"
   ],
   "window": {
     "navigationBarTextStyle": "white",

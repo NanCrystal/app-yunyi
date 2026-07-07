@@ -7,6 +7,7 @@ import {
 } from "../../services/api";
 import { withTheme } from "../../behaviors/theme";
 import { getImageUrl, getThumbFullUrl } from "../../utils/util";
+import { isModuleEnabled } from "../../utils/util";
 import { safeNavigateBack } from "../../utils/nav";
 
 const app = getApp<IAppOption>();
@@ -68,6 +69,8 @@ interface VideosData {
   allLoaded: boolean;
 
   statusBarHeight: number;
+  /** 模块是否启用（控制整个页面是否展示） */
+  moduleEnabled: boolean;
 }
 
 interface VideosInstance {
@@ -108,6 +111,7 @@ Page(withTheme({
     allLoaded: false,
 
     statusBarHeight: 0,
+    moduleEnabled: true,
   } as VideosData,
 
   /** 页面加载：初始化所有数据和组件实例 */
@@ -136,6 +140,12 @@ Page(withTheme({
       currentArtistId: artistId,
       isLoading: true,
     });
+
+    // 检查 videos 模块是否启用（cached_modules 存在且包含 "videos"）
+    if (!isModuleEnabled("videos")) { 
+      this.setData({ isLoading: false, moduleEnabled: false });
+      return;
+    }
 
     // 加载筛选选项
     await this.loadFilterOptions();
@@ -315,7 +325,12 @@ Page(withTheme({
         });
 
         const days = Object.keys(dayMap)
-          .sort((a, b) => b.localeCompare(a))
+          .sort((a, b) => {
+            // 从 "6月20日" 格式中提取日期数字进行数值降序排序
+            const dayA = parseInt(a.replace(/[^\d]/g, ''), 10) || 0;
+            const dayB = parseInt(b.replace(/[^\d]/g, ''), 10) || 0;
+            return dayB - dayA;
+          })
           .map((day) => ({ day, items: dayMap[day] }));
 
         const updateData: Record<string, any> = {

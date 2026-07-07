@@ -18,6 +18,7 @@
         class="vp-video"
         src="{{videoUrl}}"
         poster="{{poster}}"
+        autoplay="{{true}}"
         object-fit="contain"
         show-center-play-btn="{{false}}"
         show-play-btn="{{false}}"

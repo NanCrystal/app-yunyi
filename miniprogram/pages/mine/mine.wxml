@@ -55,7 +55,7 @@
         mode="aspectFit" />
     </view>
     <!-- <view class="menu-item" bindtap="onHistoryTap"> <view class="menu-item-left"> <image class="menu-icon" src="/assets/icons/history.svg" mode="aspectFit" /> <text class="menu-text">HISTORY</text> </view> <image class="menu-arrow-icon" src="{{menuObj.comments.icon}}" mode="aspectFit" /> </view> -->
-    <view class="menu-item" bindtap="onHelpTap">
+    <view class="menu-item" bindtap="onHelpTap" wx:if="{{showHelpMenu}}">
       <view class="menu-item-left">
         <image
           class="menu-icon"

@@ -8,7 +8,7 @@ import {
 } from "../../services/api";
 import type { PhotoItem } from "../../utils/types";
 import { withTheme } from "../../behaviors/theme";
-import { getThumbFullUrl, buildThumbUrl, getImageUrl } from "../../utils/util";
+import { getThumbFullUrl, buildThumbUrl, getImageUrl, isModuleEnabled } from "../../utils/util";
 import { isLoggedIn } from "../../utils/auth";
 import { safeNavigateBack } from "../../utils/nav";
 
@@ -68,6 +68,8 @@ interface PhotosData {
   isLoggedIn: boolean;
   showLoginPopup: boolean;
   _guestLimit: boolean;
+  /** 模块是否启用（控制整个页面是否展示） */
+  moduleEnabled: boolean;
 }
 
 // 扩展组件实例类型以支持自定义属性
@@ -125,6 +127,7 @@ Page(withTheme({
     isLoggedIn: isLoggedIn(),
     showLoginPopup: false,
     _guestLimit: false,
+    moduleEnabled: true,
   } as PhotosData,
 
   /** 页面加载：初始化所有数据和组件实例 */
@@ -159,6 +162,13 @@ Page(withTheme({
       currentArtistId: artistId,
       isLoading: true,
     });
+
+    // 检查 photos 模块是否启用（cached_modules 存在且包含 "photos"）
+    if (!isModuleEnabled("photos")) {
+      console.warn("[photos] photos 模块未启用，隐藏页面");
+      this.setData({ isLoading: false, moduleEnabled: false });
+      return;
+    }
 
     // 加载筛选选项
     await this.loadFilterOptions();
@@ -407,7 +417,12 @@ Page(withTheme({
         });
 
         const days = Object.keys(dayMap)
-          .sort((a, b) => b.localeCompare(a))
+          .sort((a, b) => {
+            // 从 "6月20日" 格式中提取日期数字进行数值降序排序
+            const dayA = parseInt(a.replace(/[^\d]/g, ''), 10) || 0;
+            const dayB = parseInt(b.replace(/[^\d]/g, ''), 10) || 0;
+            return dayB - dayA;
+          })
           .map((day) => ({ day, items: dayMap[day] }));
 
         // 更新 groupedPhotos 中该月份的数据

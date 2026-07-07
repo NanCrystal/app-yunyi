@@ -1,6 +1,6 @@
 import type { Character } from "../../utils/types";
 import { parseColorToRgb } from "../../utils/theme";
-import { getThumbFullUrl, formatDateChinese } from "../../utils/util";
+import { getThumbFullUrl, formatDateChinese, isModuleEnabled } from "../../utils/util";
 import { fetchArtists, fetchArticles } from "../../services/api";
 
 const app = getApp<IAppOption>();
@@ -20,17 +20,6 @@ function getCachedArtists(): Character[] | null {
   }
 }
 
-/** 从缓存读取模块列表，判断是否包含 home */
-function getShowHome(): boolean {
-  try {
-    const modules: { key: string }[] =
-      wx.getStorageSync("cached_modules") || [];
-    return modules.some((m) => m.key === "home");
-  } catch {
-    return false;
-  }
-}
-
 /** 根据角色 accentColor 生成卡片渐变色 */
 function getGradient(item: Character): string {
   const color = item.accentColor || "86, 164, 173";
@@ -46,8 +35,11 @@ Page({
   } as IndexData,
 
   onLoad() {
-    // 判断是否展示 home 模块
-    const showHome = getShowHome();
+    // 判断 cached_modules 是否存在
+    const cachedModules = wx.getStorageSync("cached_modules");
+    const hasModuleConfig = Array.isArray(cachedModules) && cachedModules.length > 0;
+    // 有配置时按 isModuleEnabled 判断，无配置时 showHome 默认为 true（隐藏 frontpage）
+    const showHome = hasModuleConfig ? isModuleEnabled("home") : true;
     this.setData({ showHome });
 
     // 如果 showHome 为 true，获取文章列表

@@ -555,9 +555,11 @@
 }
 
 .video-feature-info {
+  background-color: rgba(0, 0, 0, 0.1);
   position: absolute;
-  left: 40rpx;
-  bottom: 40rpx;
+  padding: 12rpx;
+  left: 0rpx;
+  bottom: 0rpx;
   z-index: 2;
 }
 
@@ -573,12 +575,20 @@
 
 .video-feature-title {
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 24rpx;
+  font-size: 22rpx;
   /* font-weight: 400; */
   letter-spacing: 6rpx;
   text-transform: uppercase;
   color: #ffffffc4;
   opacity: 0.8;
+
+  /* 最多2行，超出显示省略号 */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ===== 小卡档案馆 ===== */
@@ -608,7 +618,7 @@
 
 .photocard-image-wrap {
   width: 100%;
-  flex: 1;  /* 占据剩余空间的全部 */
+  flex: 1; /* 占据剩余空间的全部 */
   overflow: hidden;
   border: 1px solid #262626;
   /* 不要用 aspect-ratio: 2/3; */
@@ -641,8 +651,8 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 
-    /* 保持现有样式，或者加上 */
-  flex-shrink: 0;  /* 防止标题被压缩 */
+  /* 保持现有样式，或者加上 */
+  flex-shrink: 0; /* 防止标题被压缩 */
   margin-top: 8rpx;
 }
 

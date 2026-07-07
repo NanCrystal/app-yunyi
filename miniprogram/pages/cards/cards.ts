@@ -1,6 +1,7 @@
 // pages/cards/cards.ts
 import { withTheme } from "../../behaviors/theme";
 import { fetchPhotoCardCategories, fetchPhotoCards } from "../../services/api";
+import { isModuleEnabled } from "../../utils/util";
 import { getThumbFullUrl, getImageUrl, formatDateDot } from "../../utils/util";
 import { safeNavigateBack } from "../../utils/nav";
 
@@ -69,6 +70,8 @@ Page(
       navBarHeight: 64,
       /** 固定标签栏高度（动态更新：单行/双行） */
       tagBarHeight: 52,
+      /** 模块是否启用（控制整个页面是否展示） */
+      moduleEnabled: true,
     },
 
     /** 页面加载：获取导航栏高度并加载数据 */
@@ -79,6 +82,14 @@ Page(
       };
       const navBarHeight = statusBarHeight + 44;
       this.setData({ artistId, statusBarHeight, navBarHeight });
+
+      // 检查 photoCards 模块是否启用（cached_modules 存在且包含 "photoCards"）
+      if (!isModuleEnabled("photoCards")) {
+        console.warn("[cards] photoCards 模块未启用，隐藏页面");
+        this.setData({ moduleEnabled: false });
+        return;
+      }
+
       this.loadCategories();
     },
 

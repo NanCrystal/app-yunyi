@@ -1,6 +1,7 @@
 // pages/comments/comments.ts
 import { get, post } from '../../services/request';
 import { isLoggedIn, getUserInfo, isProfileComplete } from '../../utils/auth';
+import { isModuleEnabled } from "../../utils/util";
 
 /** 留言数据结构 */
 interface CommentItem {
@@ -86,6 +87,8 @@ Page({
     spotlightComment: null as SpotlightData | null, // 聚光灯高亮留言（用户自己发送的）
     showLoginPopup: false, // 登录弹窗是否显示
     statusBarHeight: 20, // 状态栏高度（px）
+    /** 模块是否启用（控制整个页面是否展示） */
+    moduleEnabled: true,
   },
 
   /** 全量留言数据（内存缓存） */
@@ -314,6 +317,12 @@ Page({
     // 获取状态栏高度，用于顶部返回按钮定位（导航栏高度 = statusBarHeight + 44）
     const info = (wx as any).getWindowInfo ? (wx as any).getWindowInfo() : wx.getSystemInfoSync();
     this.setData({ statusBarHeight: info.statusBarHeight || 20 });
+
+    // 检查 comments 模块是否启用（cached_modules 存在且包含 "comments"）
+    if (!isModuleEnabled("comments")) {
+      this.setData({ moduleEnabled: false });
+      return;
+    }
 
     // 初始化数据
     this.fetchComments();

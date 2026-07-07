@@ -8,7 +8,7 @@
     <view class="custom-nav-right" />
   </view>
 </view>
-<view class="page" style="--theme: {{themeColor}}; --theme-r: {{themeR}}; --theme-g: {{themeG}}; --theme-b: {{themeB}}; padding-top: {{statusBarHeight + 44}}px;">
+<view class="page" wx:if="{{moduleEnabled}}" style="--theme: {{themeColor}}; --theme-r: {{themeR}}; --theme-g: {{themeG}}; --theme-b: {{themeB}}; padding-top: {{statusBarHeight + 44}}px;">
   <!-- 固定顶部 Tab 栏 -->
   <view class="tabs-fixed" style="top: {{statusBarHeight + 44}}px;">
     <scroll-view
@@ -126,6 +126,8 @@
                 autoplay="{{item.videoVisible}}"
                 object-fit="cover"
                 show-center-play-btn="{{true}}"
+                enable-play-gesture="{{true}}"
+                enable-progress-gesture="{{true}}"
                 show-play-btn="{{true}}"
                 enable-progress-guest="{{true}}"
                 data-id="{{item.id}}" />
@@ -172,7 +174,9 @@
                       poster="{{media.poster}}"
                       autoplay="{{false}}"
                       object-fit="contain"
-                      show-center-play-btn="{{true}}" />
+                      show-center-play-btn="{{true}}" 
+                      enable-progress-gesture="{{true}}" 
+                      />
                     <image
                       wx:else
                       class="swiper-image"

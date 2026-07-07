@@ -1,5 +1,6 @@
 import { get } from "../../services/request";
 import { getImageUrl } from "../../utils/util";
+import { isModuleEnabled } from "../../utils/util";
 import { withTheme } from "../../behaviors/theme";
 import { createNavigator, type INavigator } from "../../utils/navigator/index";
 
@@ -85,6 +86,8 @@ interface PageData {
   skeleton: boolean;
   /** Phase 2：列表数据已就绪 */
   listReady: boolean;
+  /** Phase 5：模块是否启用（控制整个页面是否展示） */
+  moduleEnabled: boolean;
   /** Phase 4：全局唯一活跃 video 卡片索引 */
   activeVideoIndex: number | null;
   // Navigator v3 导航状态（createNavigator 自动管理，勿手动修改）
@@ -124,6 +127,7 @@ Page(
       loadMoreLoading: false,
       skeleton: true,
       listReady: false,
+      moduleEnabled: true,
       activeVideoIndex: null,
       tabTabs: [
         { key: "home", label: "首页", icon: "/assets/icons/home.png" },
@@ -190,6 +194,12 @@ Page(
     async onTabTap(this: PageInstance, e: WechatMiniprogram.BaseEvent) {
       const key = e.currentTarget.dataset.key as string;
       if (key === this.data.activeTab) return;
+
+      // ✅ 模块未启用时禁止切换 tab 加载数据
+      if (!isModuleEnabled("posts")) {
+        console.warn("[sync] posts 模块未启用，禁止切换");
+        return;
+      }
 
       // Phase 3：清理旧 observers
       (this as any)._observers.forEach(
@@ -265,6 +275,8 @@ Page(
     /** 滚动到底部 */
     async onScrollToLower(this: PageInstance) {
       if (this.data.loadMoreLoading || !this.data.hasMore) return;
+      // ✅ 模块未启用时不加载更多
+      if (!isModuleEnabled("posts")) return;
       this.setData({ loadMoreLoading: true });
       const nextPage = this.data.page + 1;
       this.setData({ page: nextPage });
@@ -275,6 +287,12 @@ Page(
 
     /** Phase 1：异步初始化，数据到达后关闭骨架屏并注册可视区观察 */
     async _bootstrap(this: PageInstance) {
+      // 检查 posts 模块是否启用（cached_modules 存在且包含 "posts"）
+      if (!isModuleEnabled("posts")) {
+        this.setData({ moduleEnabled: false, skeleton: false, listReady: true });
+        return;
+      }
+
       // 超时保护：15 秒后无论接口是否返回都关闭骨架屏
       const timer = setTimeout(() => {
         if (this.data.skeleton) {
@@ -297,6 +315,13 @@ Page(
     /** 获取帖子列表 */
     async fetchPosts(this: PageInstance, append = false) {
       if (this.data.loading) return;
+
+      // ✅ 核心守卫：模块未启用时直接返回，不发起请求
+      if (!isModuleEnabled("posts")) {
+        console.warn("[sync] posts 模块未启用，跳过数据请求");
+        return;
+      }
+
       this.setData({ loading: true });
 
       try {
@@ -390,7 +415,7 @@ Page(
       // 媒体：优先 linkedMedia，兜底 images
       const mediaList: FeedCard["mediaList"] = [];
       if (post.linkedMedia && post.linkedMedia.length > 0) {
-        console.log("[mapCard] linkedMedia length:", post.linkedMedia.length, "postId:", post.id);
+        // console.log("[mapCard] linkedMedia length:", post.linkedMedia.length, "postId:", post.id);
         for (const m of post.linkedMedia) {
           const isPhoto = m.mediaType === "PHOTO";
           const media = m.media || {};
@@ -421,11 +446,11 @@ Page(
       if (mediaList.length === 2) {
         const photoItem = mediaList.find((m: any) => m.type === "PHOTO");
         const videoItem = mediaList.find((m: any) => m.type === "VIDEO");
-        console.log("[merge] mediaList:", JSON.stringify(mediaList.map(m => m.type)), "photoItem:", !!photoItem, "videoItem:", !!videoItem);
+        // console.log("[merge] mediaList:", JSON.stringify(mediaList.map(m => m.type)), "photoItem:", !!photoItem, "videoItem:", !!videoItem);
         if (photoItem && videoItem) {
           videoItem.poster = photoItem.url;
           mediaList.splice(mediaList.indexOf(photoItem), 1);
-          console.log("[merge] after splice, length:", mediaList.length);
+          // console.log("[merge] after splice, length:", mediaList.length);
         }
       }
       // 兜底：images 字段
@@ -537,7 +562,7 @@ Page(
 
     /** 多图/多视频 swiper 滑动：控制视频播放/暂停 */
     onSwiperChange(this: PageInstance, e: WechatMiniprogram.SwiperChange) {
-      console.log("1111111111111111111111111111111111111");
+      // console.log("1111111111111111111111111111111111111");
 
       const cardId = e.currentTarget.dataset.id as number;
       const current = e.detail.current;

@@ -60,9 +60,9 @@ Component({
   observers: {
     visible(val: boolean) {
       if (val) {
-        // 打开时重置状态
+        // 打开时重置状态并自动播放
         this.setData({
-          isPlaying: false,
+          isPlaying: true,
           currentTime: 0,
           progress: 0,
           currentTimeText: '00:00',

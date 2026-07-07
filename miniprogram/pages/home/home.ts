@@ -22,6 +22,7 @@ import {
   formatMonthAbbrUpper,
   formatMonthDayNum,
 } from "../../utils/util";
+import { isModuleEnabled } from "../../utils/util";
 import { createNavigator, type INavigator } from "../../utils/navigator/index";
 
 const app = getApp<IAppOption>();
@@ -150,9 +151,9 @@ const RENDERABLE_MODULES: Record<string, string> = {
   posts: "posts",
   itineraries: "itineraries",
   photos: "photos",
-  videos: "videos",
+  videos: "archive",
   photoCards: "photoCards",
-  audios: "audios",
+  audios: "quotes",
 };
 
 Page(
@@ -161,6 +162,7 @@ Page(
       statusBarHeight: 20,
       safeBottom: 0,
       showSwitchDialog: false,
+      homeModuleEnabled: false,
       switchCharAvatar: "",
       switchCharName: "",
       switchCharColor: "rgb(86, 164, 173)",
@@ -273,6 +275,14 @@ Page(
     async initData(this: HomePageInstance) {
       const selectedCharId = (app.globalData.selectedCharId ||
         "haoyiran") as string;
+
+      // 检查 home 模块是否启用（cached_modules 存在且包含 "home"）
+      const homeEnabled = isModuleEnabled("home");
+      this.setData({ homeModuleEnabled: homeEnabled });
+      if (homeEnabled) {
+        this.setData({ isLoading: false });
+        return;
+      }
 
       // 1. 加载模块配置（先读缓存，没有则请求）
       let moduleList = this.loadModuleConfigFromCache(selectedCharId) || [];
@@ -863,7 +873,7 @@ Page(
       });
 
       // 跳转到音频页面（使用 navigate 保持页面栈，支持滑动返回）
-      this.navigator?.navigate("/pages/audio/audio");
+      this.navigator?.navigate("/pages/quotes/quotes");
     },
 
     onPreviewPostMedia(this: HomePageInstance, e: WechatMiniprogram.BaseEvent) {

@@ -1,3 +1,5 @@
+<!-- 模块未启用时整个页面不展示 -->
+<block wx:if="{{moduleEnabled}}">
 <!-- 自定义导航栏 -->
 <view class="custom-nav" style="padding-top: {{statusBarHeight}}px;">
   <view class="custom-nav-inner">
@@ -145,3 +147,4 @@
   <view class="bottom-placeholder">
   </view>
 </scroll-view>
+</block>

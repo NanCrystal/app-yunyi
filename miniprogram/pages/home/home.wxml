@@ -59,11 +59,9 @@
             show-play-btn="{{false}}"
             enable-progress-gesture="{{false}}"
             bindloadedmetadata="onHeroVideoReady"
-            binderror="onHeroVideoError"
-          />
+            binderror="onHeroVideoError" />
         </view>
       </block>
-
       <!-- ═══ 纯图片模式：保留swiper ═══ -->
       <block wx:else>
         <swiper
@@ -84,7 +82,6 @@
           </swiper-item>
         </swiper>
       </block>
-
       <!-- 渐变遮罩（两种模式共用） -->
       <view class="hero-overlay">
       </view>
@@ -359,7 +356,7 @@
       <section-header
         title="{{module.name}}"
         showMore="{{true}}"
-        moreKey="videos"
+        moreKey="archive"
         themeColor="{{themeColor}}"
         disabled="{{!loadingStates[module.key] && !errorStates[module.key] && !featuredVideo}}"
         bind:more="onSectionMore" />
@@ -387,15 +384,15 @@
       <block wx:else>
         <view
           class="video-feature"
-          bind:tap="onNavigateTo"
           data-key="videos"
+          catch:tap="onPreviewFeaturedVideo"
         >
           <image
             class="video-feature-img"
             src="{{featuredVideo.thumbnail}}"
             mode="aspectFill"
             lazy-load />
-          <view class="video-play-btn" catch:tap="onPreviewFeaturedVideo">
+          <view class="video-play-btn">
             <text class="video-play-icon">▶</text>
           </view>
           <view class="video-feature-info">
@@ -470,11 +467,14 @@
   </template>
   <!-- ═════════ 模板定义：音频馆 (audios) ═════════ -->
   <template name="tmpl-audios">
-    <view class="section" data-key="audio">
+    <view
+      class="section"
+      data-key="audio"
+    >
       <section-header
         title="{{module.name}}"
         showMore="{{true}}"
-        moreKey="audio"
+        moreKey="quotes"
         themeColor="{{themeColor}}"
         disabled="{{!loadingStates[module.key] && !errorStates[module.key] && !birthdayTrack}}"
         bind:more="onSectionMore" />
@@ -602,8 +602,8 @@
   statusBarHeight="{{statusBarHeight}}"
   bind:close="onCloseVideoPreview"
   bind:share="onPreviewShare" />
-<!-- 角色切换弹窗 -->
-<view wx:if="{{showSwitchDialog}}" class="switch-dialog-mask">
+<!-- 角色切换弹窗：home 模块启用时不展示 -->
+<view wx:if="{{showSwitchDialog && !homeModuleEnabled}}" class="switch-dialog-mask">
   <view class="switch-dialog">
     <image
       class="switch-dialog-avatar"
@@ -612,7 +612,9 @@
     <text class="switch-dialog-text">正在为您切换到</text>
     <text class="switch-dialog-name" style="color: {{switchCharColor}};">{{switchCharName}}</text>
     <text class="switch-dialog-hint">请稍等</text>
-    <view class="switch-dialog-progress-wrap">
+    <view
+      class="switch-dialog-progress-wrap"
+    >
       <view class="switch-dialog-progress-bar" style="width: {{switchProgress * 100}}%; background-color: {{switchCharColor}};" />
     </view>
     <text class="switch-dialog-percent" style="color: {{switchCharColor}};">{{switchProgressText}}</text>

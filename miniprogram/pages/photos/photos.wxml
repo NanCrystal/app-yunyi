@@ -1,5 +1,7 @@
 <!-- 复选框状态判断工具（WXS） -->
 <wxs src="./checkbox.wxs" module="check" />
+<!-- 模块未启用时整个页面不展示 -->
+<block wx:if="{{moduleEnabled}}">
 <!-- 自定义导航栏 -->
 <view class="custom-nav" style="padding-top: {{statusBarHeight}}px;">
   <view class="custom-nav-inner">
@@ -304,3 +306,4 @@
   bind:vieworiginal="onViewOriginal"
   bind:download="onPreviewDownload"
   bind:favorite="onPreviewFavorite" />
+</block>
