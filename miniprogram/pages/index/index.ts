@@ -13,8 +13,8 @@ Page({
   data: {
     displayText: "",
     line1Chars: [] as string[],
-    line2Chars: [] as string[], 
-    line1len: 0, 
+    line2Chars: [] as string[],
+    line1len: 0,
     loading: true,
     /** 是否有欢迎图片需要展示 */
     showWelcomeImages: false,
@@ -34,22 +34,36 @@ Page({
 
   /** 倒计时是否已启动（防重复启动） */
   _started: false,
+  /** 是否已跳转（防止重复 redirectTo） */
+  _navigated: false,
 
   onLoad() {
-    console.log('[welcome] onLoad 开始执行');
+    console.log("[welcome] onLoad 开始执行");
     try {
       this.init();
     } catch (err) {
-      console.error('[welcome] init 失败', err);
+      console.error("[welcome] init 失败", err);
     }
-    
+
     try {
       this.preloadData();
     } catch (err) {
-      console.error('[welcome] preloadData 调用失败', err);
+      console.error("[welcome] preloadData 调用失败", err);
       // 确保即使预加载失败，也能正常显示页面并跳转
       this.setData({ loading: false });
       this.startCountdown();
+    }
+  },
+
+  onReady() {
+    // 页面首次渲染完成后标记为就绪
+    (this as any)._pageReady = true;
+
+    // 如果有待执行的跳转（数据在 onReady 之前返回），现在执行
+    if ((this as any)._pendingRedirect) {
+      const redirect = (this as any)._pendingRedirect;
+      (this as any)._pendingRedirect = null;
+      redirect();
     }
   },
   init() {
@@ -69,30 +83,37 @@ Page({
     try {
       const [artists, modulesRes] = await Promise.all([
         fetchArtists().catch((err) => {
-          console.warn('[welcome] fetchArtists 失败', err);
+          console.warn("[welcome] fetchArtists 失败", err);
           return [];
         }),
         fetchHomeModules().catch((err) => {
-          console.warn('[welcome] fetchHomeModules 失败', err);
+          console.warn("[welcome] fetchHomeModules 失败", err);
           return { modules: [] };
         }),
       ]);
-      
+
       // 安全存储，即使数据为空也不报错
       if (artists && Array.isArray(artists) && artists.length > 0) {
         wx.setStorageSync(STORAGE_KEYS.artists, artists);
       }
-      if (modulesRes?.modules && Array.isArray(modulesRes.modules) && modulesRes.modules.length > 0) {
+      if (
+        modulesRes?.modules &&
+        Array.isArray(modulesRes.modules) &&
+        modulesRes.modules.length > 0
+      ) {
         wx.setStorageSync(STORAGE_KEYS.modules, modulesRes.modules);
       }
 
       // 查找 welcome 模块
-      const welcomeModule = modulesRes?.modules?.find((m: any) => m.key === "welcome") as any;
+      const welcomeModule = modulesRes?.modules?.find(
+        (m: any) => m.key === "welcome",
+      ) as any;
 
       // 如果不存在 welcome 模块，直接跳转到首页
       if (!welcomeModule) {
-        console.log('[welcome] 不存在 welcome 模块，直接跳转');
-        wx.redirectTo({ url: "/pages/frontpage/frontpage" });
+        console.log("[welcome] 不存在 welcome 模块，直接跳转");
+        // 延迟跳转，确保页面已完成首次渲染，避免 "adapter page not exists" 错误
+        this.safeRedirectTo("/pages/frontpage/frontpage");
         return;
       }
 
@@ -100,14 +121,15 @@ Page({
       this.setData({ hasWelcomeModule: true });
 
       // 提取视频或图片
-      
+
       // 优先处理 video
       if (welcomeModule?.video) {
         let videos: string[] = [];
         try {
-          videos = typeof welcomeModule.video === "string"
-            ? JSON.parse(welcomeModule.video)
-            : welcomeModule.video;
+          videos =
+            typeof welcomeModule.video === "string"
+              ? JSON.parse(welcomeModule.video)
+              : welcomeModule.video;
           if (!Array.isArray(videos)) videos = [];
           videos = videos.filter((v: any) => typeof v === "string" && v.trim());
         } catch (e) {
@@ -128,11 +150,14 @@ Page({
       if (welcomeModule?.image) {
         let images: string[] = [];
         try {
-          images = typeof welcomeModule.image === "string"
-            ? JSON.parse(welcomeModule.image)
-            : welcomeModule.image;
+          images =
+            typeof welcomeModule.image === "string"
+              ? JSON.parse(welcomeModule.image)
+              : welcomeModule.image;
           if (!Array.isArray(images)) images = [];
-          images = images.filter((img: any) => typeof img === "string" && img.trim()).map((img) => getImageUrl(img));
+          images = images
+            .filter((img: any) => typeof img === "string" && img.trim())
+            .map((img) => getImageUrl(img));
         } catch (e) {
           console.warn("[welcome] 解析 image 失败", e);
         }
@@ -144,7 +169,11 @@ Page({
             welcomeImages: images,
             swiperInterval: useLongDuration ? IMAGE_DURATION_MS : 1000,
           });
-          this.startCountdown(useLongDuration ? images.length * (IMAGE_DURATION_MS / 1000) : COUNTDOWN_SECONDS);
+          this.startCountdown(
+            useLongDuration
+              ? images.length * (IMAGE_DURATION_MS / 1000)
+              : COUNTDOWN_SECONDS,
+          );
           return;
         }
       }
@@ -185,11 +214,43 @@ Page({
   },
 
   skipToIndex() {
+
     if ((this as any)._countdownTimer) {
       clearInterval((this as any)._countdownTimer);
       (this as any)._countdownTimer = null;
     }
-    wx.redirectTo({ url: "/pages/frontpage/frontpage" });
+
+    this.safeRedirectTo("/pages/frontpage/frontpage");
+  },
+
+  /**
+   * 安全跳转：防止重复 redirectTo 和页面未就绪时跳转导致的框架错误
+   * - 防止多次调用（倒计时结束 + 用户点击同时触发）
+   * - 确保页面已完成首次渲染（onReady）再跳转
+   */
+  safeRedirectTo(url: string) {
+    if ((this as any)._navigated) return;
+    (this as any)._navigated = true;
+
+    const doRedirect = () => {
+      wx.redirectTo({
+        url,
+        fail: (err) => {
+          console.warn("[welcome] redirectTo 失败，尝试 reLaunch", err);
+          // 如果 redirectTo 失败（如页面栈问题），降级为 reLaunch
+          (this as any)._navigated = false; // 允许重试
+          wx.reLaunch({ url });
+        },
+      });
+    };
+
+    // 如果页面已渲染完成，立即跳转；否则等待 onReady 后再跳转
+    if ((this as any)._pageReady) {
+      doRedirect();
+    } else {
+      // 页面还没渲染完成，等 onReady 后再执行跳转
+      (this as any)._pendingRedirect = doRedirect;
+    }
   },
 
   /** 页面卸载时清理定时器，防止内存泄漏 */

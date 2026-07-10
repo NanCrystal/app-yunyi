@@ -27,6 +27,10 @@ export interface VideoItem {
   platform?: string;
   reviewImageUrl?: string;
   associatedPosts?: string[];
+  /** 视频处理状态 */
+  status?: string;
+  /** 是否已就绪可播放 */
+  isReady?: boolean;
 }
 
 /** 社交平台类型 */

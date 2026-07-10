@@ -534,6 +534,53 @@
   opacity: 0.8;
 }
 
+/* 无封面时的占位背景 */
+.video-feature-img--placeholder {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+/* 视频未就绪状态 */
+.video-feature--not-ready {
+  background: #141414;
+}
+
+.video-status-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  z-index: 3;
+}
+
+.video-status-spinner {
+  width: 32rpx;
+  height: 32rpx;
+  border: 3rpx solid #333333;
+  border-top-color: #555555;
+  border-radius: 50%;
+  opacity: 0.4;
+}
+
+.video-status-spinner--active {
+  opacity: 1;
+  border-top-color: var(--theme, #8ed883);
+  animation: spin 0.9s linear infinite;
+}
+
+.video-status-text {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 18rpx;
+  color: #666666;
+  letter-spacing: 2rpx;
+  text-transform: uppercase;
+}
+
 .video-play-btn {
   position: absolute;
   top: 50%;
@@ -778,7 +825,7 @@
   height: 100%;
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.6);
-  filter: grayscale(1) brightness(0.9);
+  /* filter: grayscale(1) brightness(0.9); */
 }
 
 /* 无封面时的黑色占位 + 默认 icon */

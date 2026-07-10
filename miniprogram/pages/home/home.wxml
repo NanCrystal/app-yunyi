@@ -383,15 +383,26 @@
       <!-- 正常内容 -->
       <block wx:else>
         <view
-          class="video-feature"
+          class="video-feature {{featuredVideo.isReady === false ? 'video-feature--not-ready' : ''}}"
           data-key="videos"
           catch:tap="onPreviewFeaturedVideo"
         >
-          <image
-            class="video-feature-img"
-            src="{{featuredVideo.thumbnail}}"
-            mode="aspectFill"
-            lazy-load />
+          <!-- 视频未就绪：显示状态遮罩 -->
+          <block wx:if="{{featuredVideo.isReady === false}}">
+            <view class="video-feature-img video-feature-img--placeholder" />
+            <view class="video-status-overlay">
+              <view class="video-status-spinner {{featuredVideo.status === 'PROCESSING' ? 'video-status-spinner--active' : ''}}" />
+              <text class="video-status-text">{{featuredVideo.status === 'PROCESSING' ? '处理中...' : (featuredVideo.status === 'FAILED' ? '处理失败' : '暂不可用')}}</text>
+            </view>
+          </block>
+          <!-- 视频就绪：正常封面 -->
+          <block wx:else>
+            <image
+              class="video-feature-img"
+              src="{{featuredVideo.thumbnail}}"
+              mode="aspectFill"
+              lazy-load />
+          </block>
           <view class="video-play-btn">
             <text class="video-play-icon">▶</text>
           </view>
@@ -621,4 +632,4 @@
   </view>
 </view>
 <!-- 底部导航 -->
-<bottom-tab-bar current="home" tabs="{{tabTabs}}" />
+<bottom-tab-bar id="bottomTabBar" current="home" tabs="{{tabTabs}}" />

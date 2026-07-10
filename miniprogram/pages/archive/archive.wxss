@@ -840,8 +840,22 @@
 .play-icon {
   width: 64rpx;
   height: 64rpx;
+  background-color: var(--theme);
+  border-radius: 50%;
   opacity: 0.85;
   filter: drop-shadow(0 2rpx 8rpx rgba(0, 0, 0, 0.5));
+  position: relative;
+}
+
+.play-icon::after {
+  content: '';
+  position: absolute;
+  left: 55%;
+  top: 50%;
+  transform: translate(-40%, -50%);
+  border-left: 22rpx solid white;
+  border-top: 15rpx solid transparent;
+  border-bottom: 15rpx solid transparent;
 }
 
 /* ===== 无封面图时的渐变背景兜底 ===== */
@@ -853,4 +867,54 @@
   opacity: 1;
   width: 80rpx;
   height: 80rpx;
+}
+
+/* ===== 视频处理状态提示 ===== */
+.photo-item--not-ready {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+.video-status {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  z-index: 3;
+}
+
+.video-status-spinner {
+  width: 36rpx;
+  height: 36rpx;
+  border: 3rpx solid #333333;
+  border-top-color: #666666;
+  border-radius: 50%;
+  opacity: 0.4;
+}
+
+.video-status-spinner--active {
+  opacity: 1;
+  border-top-color: var(--theme, #8ed883);
+  animation: spin 0.9s linear infinite;
+}
+
+.video-status-text {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 18rpx;
+  color: #666666;
+  letter-spacing: 2rpx;
+  text-transform: uppercase;
+}
+
+/* ===== 大文件视频静态占位状态（无加载动画）===== */
+.video-status--static {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+.video-status-icon {
+  width: 56rpx;
+  height: 56rpx;
+  opacity: 0.6;
 }

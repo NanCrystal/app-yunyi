@@ -10,7 +10,7 @@
       mode="aspectFill" />
     <view class="overlay">
     </view>
-    <!-- 有欢迎视频时：展示视频 -->
+    <!-- 有欢迎视频时：展示视频（点击任意位置可跳过） -->
     <block wx:if="{{showWelcomeVideo}}">
       <video
         class="welcome-video"
@@ -23,11 +23,14 @@
         show-play-btn="{{false}}"
         controls="{{false}}"
         enable-progress-gesture="{{false}}"
-        binderror="onVideoError" />
+        binderror="onVideoError"
+        bindtap="skipToIndex" />
+      <!-- cover-view 放在 video 之后，覆盖在原生组件上层 -->
+      <cover-view class="skip-btn" catchtap="skipToIndex">跳过 {{countdown > 0 ? countdown : ''}}s</cover-view>
     </block>
     <!-- 有欢迎图片时：展示图片轮播 / 单图 -->
     <block wx:elif="{{showWelcomeImages}}">
-      <!-- 多张图：swiper 轮播，1秒切换 -->
+      <!-- 多张图：swiper 轮播 -->
       <swiper
         wx:if="{{welcomeImages.length > 1}}"
         class="welcome-swiper"
@@ -78,6 +81,7 @@
         </view>
       </view>
     </block>
-    <view class="skip-btn" bindtap="skipToIndex">跳过 {{countdown > 0 ? countdown : ''}}s</view>
+    <!-- 非视频场景：使用普通view（swiper已支持同层渲染，无需cover-view） -->
+    <view wx:if="{{!showWelcomeVideo}}" class="skip-btn" catchtap="skipToIndex">跳过 {{countdown > 0 ? countdown : ''}}s</view>
   </block>
 </view>

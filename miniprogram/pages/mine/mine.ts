@@ -11,7 +11,7 @@ import {
 interface MineData {
   /** 系统状态栏高度 */
   statusBarHeight: number;
-  tabTabs: { key: string; label: string; icon: string }[];
+  tabTabs: { key: string; label: string; icon: string; selectedIcon: string }[];
   /** 是否已登录 */
   loggedIn: boolean;
   /** 资料是否完整（nickName + avatarUrl 均非空） */
@@ -37,10 +37,7 @@ interface MineData {
 Page(
   withTheme({
     data: {
-      tabTabs: [
-        { key: "home", label: "首页", icon: "/assets/icons/home.png" },
-        { key: "mine", label: "我的", icon: "/assets/icons/mine.png" },
-      ],
+      tabTabs: [] as { key: string; label: string; icon: string; selectedIcon: string }[],
       statusBarHeight: 20,
       loggedIn: false,
       isProfileComplete: false,
@@ -71,6 +68,8 @@ Page(
         ? (wx as any).getWindowInfo()
         : wx.getSystemInfoSync();
       this.setData({ statusBarHeight });
+      // 初始化底部导航栏（根据选中角色动态生成图标）
+      this.initTabTabs();
       this._syncLoginState();
       this._checkCommentsModule();
     },
@@ -95,6 +94,27 @@ Page(
             ? info.avatarUrl
             : "/assets/icons/user-default.svg",
       });
+    },
+
+    /** 初始化底部导航栏图标（根据选中角色） */
+    initTabTabs() {
+      const app = getApp<IAppOption>();
+      const selectedCharId = (app.globalData.selectedCharId || "haoyiran") as string;
+      const tabTabs = [
+        {
+          key: "home",
+          label: "首页",
+          icon: "/assets/images/home_default.png",
+          selectedIcon: `/assets/images/home_${selectedCharId}.png`,
+        },
+        {
+          key: "mine",
+          label: "我的",
+          icon: "/assets/images/mine_default.png",
+          selectedIcon: `/assets/images/mine_${selectedCharId}.png`,
+        },
+      ];
+      this.setData({ tabTabs });
     },
 
     /** 检查 cached_modules 中是否有 comments 和 feedback 模块 */

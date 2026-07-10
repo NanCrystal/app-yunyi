@@ -44,7 +44,7 @@
 }
 
 .tab-item--active .tab-label {
-  color: #ffffff;
+  color: var(--theme, #ffffff);
 }
 
 .tab-indicator {

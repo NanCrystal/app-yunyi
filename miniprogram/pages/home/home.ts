@@ -73,7 +73,7 @@ interface IntegrationData {
 interface HomeData {
   currentTime: string;
   heroImages: string[];
-  heroBanners: { url: string; mediaType: 'image' | 'video' }[];
+  heroBanners: { url: string; mediaType: "image" | "video" }[];
   isHeroVideo: boolean;
   heroVideoLoaded: boolean;
   currentSlide: number;
@@ -172,7 +172,7 @@ Page(
       scrollTop: 0,
       currentTime: "12:00:00",
       heroImages: [] as string[],
-      heroBanners: [] as { url: string; mediaType: 'image' | 'video' }[],
+      heroBanners: [] as { url: string; mediaType: "image" | "video" }[],
       isHeroVideo: false,
       heroVideoLoaded: false,
       currentSlide: 0,
@@ -187,10 +187,7 @@ Page(
       birthdayTrack: null as AudioItem | null,
       playingTrackId: null as string | null,
       isPlayingAudio: false,
-      tabTabs: [
-        { key: "home", label: "首页", icon: "/assets/icons/home.png" },
-        { key: "mine", label: "我的", icon: "/assets/icons/mine.png" },
-      ] as { key: string; label: string; icon: string }[],
+      tabTabs: [] as { key: string; label: string; icon: string; selectedIcon: string }[],
       showImagePreview: false,
       previewImages: [] as string[],
       previewImageIndex: 0,
@@ -245,6 +242,8 @@ Page(
       const { statusBarHeight } = info;
       const safeBottom = info.safeAreaInsets?.bottom || 0;
       this.setData({ statusBarHeight, safeBottom });
+      // 初始化底部导航栏（根据选中角色动态生成图标）
+      this.initTabTabs();
       // 初始化 Navigator v3 调度器
       this.navigator = createNavigator(this);
       this.initData();
@@ -261,11 +260,31 @@ Page(
       // this.stopClock();
     },
 
+    /** 初始化底部导航栏图标（根据选中角色） */
+    initTabTabs(this: HomePageInstance) {
+      const selectedCharId = (app.globalData.selectedCharId || "haoyiran") as string;
+      const tabTabs = [
+        {
+          key: "home",
+          label: "首页",
+          icon: "/assets/images/home_default.png",
+          selectedIcon: `/assets/images/home_${selectedCharId}.png`,
+        },
+        {
+          key: "mine",
+          label: "我的",
+          icon: "/assets/images/mine_default.png",
+          selectedIcon: `/assets/images/mine_${selectedCharId}.png`,
+        },
+      ] as { key: string; label: string; icon: string; selectedIcon: string }[];
+      this.setData({ tabTabs });
+    },
+
     // ───────────── 核心数据加载 ─────────────
 
     /** 根据模块配置计算排序后的可渲染列表 */
     buildSortedModuleList(
-      moduleList: { key: string; name: string; sortOrder: number }[]
+      moduleList: { key: string; name: string; sortOrder: number }[],
     ) {
       return moduleList
         .filter((m) => RENDERABLE_MODULES[m.key])
@@ -295,7 +314,7 @@ Page(
           if (moduleList?.length > 0) {
             wx.setStorageSync(
               MODULES_CACHE_KEY_PREFIX + selectedCharId,
-              moduleList
+              moduleList,
             );
           }
         } catch (e) {
@@ -307,7 +326,7 @@ Page(
         moduleList,
         sortedModuleList: this.buildSortedModuleList(moduleList),
         hasBannerModule: moduleList.some(
-          (m: { key: string }) => m.key === "banners"
+          (m: { key: string }) => m.key === "banners",
         ),
       });
 
@@ -334,7 +353,7 @@ Page(
         // 2. 校验并更新模块配置缓存
         if (data.modules && data.modules.length > 0) {
           const cachedStr = wx.getStorageSync(
-            MODULES_CACHE_KEY_PREFIX + selectedCharId
+            MODULES_CACHE_KEY_PREFIX + selectedCharId,
           );
           const serverModules = JSON.stringify(data.modules);
           if (cachedStr !== serverModules) {
@@ -342,13 +361,13 @@ Page(
             moduleList = data.modules || [];
             wx.setStorageSync(
               MODULES_CACHE_KEY_PREFIX + selectedCharId,
-              moduleList
+              moduleList,
             );
             this.setData({
               moduleList,
               sortedModuleList: this.buildSortedModuleList(moduleList),
               hasBannerModule: moduleList.some(
-                (m: { key: string }) => m.key === "banners"
+                (m: { key: string }) => m.key === "banners",
               ),
             });
           }
@@ -358,22 +377,27 @@ Page(
         const setDataObj: any = {};
 
         // Banner → heroBanners / heroImages / isHeroVideo
-        const heroBanners: { url: string; mediaType: 'image' | 'video' }[] = [];
+        const heroBanners: { url: string; mediaType: "image" | "video" }[] = [];
         (data.banners || []).forEach((b) => {
-          const mediaType = b.data?.mediaType || 'image';
+          const mediaType = b.data?.mediaType || "image";
           const img = b.data?.imageUrl;
-          const urls: string[] = Array.isArray(img) ? img : (typeof img === 'string' ? [img] : []);
-          urls.forEach(url => {
+          const urls: string[] = Array.isArray(img)
+            ? img
+            : typeof img === "string"
+              ? [img]
+              : [];
+          urls.forEach((url) => {
             heroBanners.push({
               url: getImageUrl(url),
-              mediaType: mediaType as 'image' | 'video',
+              mediaType: mediaType as "image" | "video",
             });
           });
         });
-        const isHeroVideoOnly = heroBanners.length === 1 && heroBanners[0].mediaType === 'video';
+        const isHeroVideoOnly =
+          heroBanners.length === 1 && heroBanners[0].mediaType === "video";
         setDataObj.heroBanners = heroBanners;
         setDataObj.isHeroVideo = isHeroVideoOnly;
-        setDataObj.heroImages = heroBanners.map(b => b.url);
+        setDataObj.heroImages = heroBanners.map((b) => b.url);
         setDataObj.heroVideoLoaded = false;
 
         // 按模块配置解析数据字段
@@ -387,14 +411,14 @@ Page(
             case "itineraries": {
               setDataObj.upcomingEvents = (data.itineraries || []).flatMap(
                 (item: any) =>
-                  (item.data || []).map((e: any) => this.mapEvent(e))
+                  (item.data || []).map((e: any) => this.mapEvent(e)),
               );
               break;
             }
             case "photos": {
               setDataObj.featuredPhotos = (data.photos || [])
                 .flatMap((item: any) =>
-                  (item.data || []).map((p: any) => this.mapPhoto(p))
+                  (item.data || []).map((p: any) => this.mapPhoto(p)),
                 )
                 .map((p: any) => ({
                   ...p,
@@ -413,7 +437,7 @@ Page(
             case "photoCards": {
               setDataObj.photocards = (data.photoCards || [])
                 .flatMap((item: any) =>
-                  (item.data || []).map((c: any) => this.mapCard(c))
+                  (item.data || []).map((c: any) => this.mapCard(c)),
                 )
                 .map((c: any) => ({
                   ...c,
@@ -499,7 +523,7 @@ Page(
     /** 从本地缓存读取模块配置 */
     loadModuleConfigFromCache(
       this: HomePageInstance,
-      artistId: string
+      artistId: string,
     ): { key: string; name: string; sortOrder: number }[] | null {
       try {
         return wx.getStorageSync(MODULES_CACHE_KEY_PREFIX + artistId) || null;
@@ -544,7 +568,7 @@ Page(
             ...(type === "VIDEO"
               ? {
                   coverUrl: getThumbUrl(
-                    m.media?.coverUrl || m.video?.coverUrl || fallbackCoverUrl
+                    m.media?.coverUrl || m.video?.coverUrl || fallbackCoverUrl,
                   ),
                   hdUrl: getImageUrl(m.media?.hdUrl || videoUrl || ""),
                 }
@@ -563,7 +587,7 @@ Page(
         post.images
           .slice(0, 3)
           .forEach((img: string) =>
-            mediaList.push({ type: "PHOTO" as const, url: getImageUrl(img) })
+            mediaList.push({ type: "PHOTO" as const, url: getImageUrl(img) }),
           );
       }
 
@@ -625,17 +649,26 @@ Page(
     },
 
     mapVideo(this: HomePageInstance, video: any): VideoItem {
+      const videoStatus = (video.status || "UNKNOWN").toUpperCase();
+      // COMPLETED / READY 均视为可播放（后端转码完成）
+      const isVideoReady =
+        videoStatus === "READY" || videoStatus === "COMPLETED";
       return {
         id: String(video.id),
         title: video.title || video.description || "",
         duration: "",
         date: formatDateDot(video.shootDate),
         thumbnail: getImageUrl(video.coverUrl || ""),
-        reviewImageUrl: getImageUrl(video.playUrl || ""),
+        // 降级链：hdUrl > playUrl > originalUrl
+        reviewImageUrl:
+          getImageUrl(video.hdUrl || video.playUrl) ||
+          getImageUrl(video.originalUrl || ""),
         tags: [],
         description: video.description || "",
         platform: video.tagPlatform?.name || "",
         publishedTime: "",
+        status: videoStatus,
+        isReady: isVideoReady,
       };
     },
 
@@ -677,7 +710,7 @@ Page(
 
     /** Hero 视频加载失败 */
     onHeroVideoError(this: HomePageInstance, e: any) {
-      console.error('[home] Hero video load error:', e.detail);
+      console.error("[home] Hero video load error:", e.detail);
       this.setData({ heroVideoLoaded: true });
     },
 
@@ -706,7 +739,7 @@ Page(
 
       // 找到目标角色
       const targetChar = this.data.characters.find(
-        (c: Character) => c.artistId === artistId
+        (c: Character) => c.artistId === artistId,
       );
       if (!targetChar) return;
 
@@ -715,8 +748,7 @@ Page(
         showSwitchDialog: true,
         switchCharAvatar: targetChar.avatar,
         switchCharName: targetChar.name,
-        switchCharColor:
-          targetChar.accentColor || "rgb(86, 164, 173)",
+        switchCharColor: targetChar.accentColor || "rgb(86, 164, 173)",
         switchProgress: 0,
         switchProgressText: "0.0%",
       });
@@ -752,11 +784,21 @@ Page(
           showSwitchDialog: false,
           switchProgress: 0,
           scrollTop: 0,
+          selectedCharId: artistId,
           themeColor: targetColor,
           themeR: rgb.r,
           themeG: rgb.g,
           themeB: rgb.b,
         });
+
+        // 重新生成底部导航栏图标
+        (this as any).initTabTabs();
+
+        // 手动刷新底部导航栏组件的主题色
+        const tabbar = this.selectComponent?.('#bottomTabBar');
+        if (tabbar && typeof (tabbar as any).refreshTheme === 'function') {
+          (tabbar as any).refreshTheme();
+        }
 
         // 异步加载数据，完成后再次强制刷新主题
         this.initData().then(
@@ -765,7 +807,7 @@ Page(
           },
           () => {
             (this as any).refreshTheme();
-          }
+          },
         );
       }, 3000);
     },
@@ -777,7 +819,7 @@ Page(
     /** 记录滚动位置 */
     onHomeScroll(
       this: HomePageInstance,
-      e: WechatMiniprogram.ScrollViewScroll
+      e: WechatMiniprogram.ScrollViewScroll,
     ) {
       this.data.scrollTop = e.detail.scrollTop;
     },
@@ -827,7 +869,7 @@ Page(
             if (this.isTimeoutError(err)) {
               console.warn(
                 "[DevTools兼容] navigateTo 超时，降级为 redirectTo。",
-                url
+                url,
               );
             } else {
               console.error("[nav] navigateTo 失败，降级 redirectTo:", err);
@@ -905,7 +947,7 @@ Page(
         }));
       const imgIndex = Math.max(
         0,
-        sources.findIndex((s) => s.url === current?.url)
+        sources.findIndex((s) => s.url === current?.url),
       );
 
       wx.previewMedia({
@@ -918,7 +960,7 @@ Page(
     /** 预览日程海报图片 */
     onPreviewScheduleImage(
       this: HomePageInstance,
-      e: WechatMiniprogram.BaseEvent
+      e: WechatMiniprogram.BaseEvent,
     ) {
       const url = e.currentTarget.dataset.url as string;
       if (!url) return;
@@ -932,7 +974,7 @@ Page(
     /** 预览图片档案馆的图片 */
     onPreviewPhotoImage(
       this: HomePageInstance,
-      e: WechatMiniprogram.BaseEvent
+      e: WechatMiniprogram.BaseEvent,
     ) {
       const { url } = e.currentTarget.dataset as {
         url: string;
@@ -952,7 +994,7 @@ Page(
     /** 预览 photocard 图片 */
     onPreviewPhotocardImage(
       this: HomePageInstance,
-      e: WechatMiniprogram.BaseEvent
+      e: WechatMiniprogram.BaseEvent,
     ) {
       const { url } = e.currentTarget.dataset as {
         url: string;
@@ -998,16 +1040,33 @@ Page(
     /** 预览精选视频 */
     onPreviewFeaturedVideo(this: HomePageInstance) {
       const { featuredVideo } = this.data;
-      if (!featuredVideo?.reviewImageUrl) {
-        wx.showToast({ title: "视频暂不可用", icon: "none" });
+      if (!featuredVideo) return;
+
+      // 检查视频是否可用
+      if (featuredVideo.isReady === false) {
+        const statusText: Record<string, string> = {
+          PROCESSING: "视频正在处理中，请稍后再试",
+          FAILED: "视频处理失败，无法播放",
+        };
+        wx.showToast({
+          title: statusText[featuredVideo.status || ""] || "视频暂不可用",
+          icon: "none",
+          duration: 2000,
+        });
         return;
       }
+
+      if (!featuredVideo.reviewImageUrl && !featuredVideo.thumbnail) {
+        wx.showToast({ title: "视频资源缺失", icon: "none", duration: 1500 });
+        return;
+      }
+
       this.setData({
         showVideoPreview: true,
-        previewVideoUrl: featuredVideo.reviewImageUrl,
+        previewVideoUrl: featuredVideo.reviewImageUrl || "",
         previewVideoPoster: featuredVideo.thumbnail || "",
         previewVideoTitle: featuredVideo.description || "",
       });
     },
-  })
+  }),
 );

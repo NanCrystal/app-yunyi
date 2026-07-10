@@ -4,6 +4,7 @@ interface TabItem {
   key: string;
   label: string;
   icon: string;
+  selectedIcon?: string;
 }
 
 Component({

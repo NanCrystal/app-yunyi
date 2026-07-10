@@ -27,6 +27,7 @@
   width: 100%;
   height: 100%;
   z-index: 0;
+  pointer-events: none;
 }
 
 .overlay {
@@ -36,6 +37,7 @@
   height: 100%;
   background: rgba(0, 0, 0, 0.55);
   z-index: 1;
+  pointer-events: none;
 }
 
 /* ========== 居中容器（flex） ========== */
@@ -84,12 +86,12 @@
   to   { opacity: 1; transform: scale(1); }
 }
 
-/* ========== 跳过按钮 ========== */
+/* ========== 跳过按钮（fixed 定位，始终固定在右下角） ========== */
 .skip-btn {
-  position: absolute;
+  position: fixed;
   right: 40rpx;
   bottom: calc(env(safe-area-inset-bottom) + 40rpx);
-  z-index: 3;
+  z-index: 999;
   padding: 12rpx 32rpx;
   font-size: 28rpx;
   color: #ffffff;
@@ -121,6 +123,7 @@
   position: absolute;
   top: 0; left: 0;
   z-index: 2;
+  pointer-events: none;
 }
 
 /* ========== 欢迎视频 ========== */
@@ -130,4 +133,5 @@
   width: 100vw;
   height: 100vh;
   z-index: 2;
+  pointer-events: none;
 }

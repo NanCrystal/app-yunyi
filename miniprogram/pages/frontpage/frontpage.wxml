@@ -40,9 +40,9 @@
       </view>
     </view>
   </view>
-  <!-- 读书笔记（有 home 模块时显示） -->
+  <!-- 文章（有 home 模块时显示） -->
   <view class="note-list" wx:if="{{showHome}}">
-    <!-- <view class="note-list-title">读书笔记</view> -->
+    <!-- <view class="note-list-title">文章</view> -->
     <view class="article-card-list">
       <view
         wx:for="{{articles}}"

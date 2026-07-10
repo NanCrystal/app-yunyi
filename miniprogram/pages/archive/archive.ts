@@ -41,6 +41,14 @@ interface EnhancedVideoItem {
   system: string;
   _shootDate?: string;
   duration?: string;
+  /** 视频处理状态：READY / PROCESSING / FAILED / UNKNOWN */
+  status: string;
+  /** 是否已就绪可播放 */
+  isReady: boolean;
+  /** 原始文件是否存在（降级用） */
+  hasOriginal: boolean;
+  /** 文件大小（字节），用于判断是否为大文件 */
+  size?: number;
 }
 
 interface VideosData {
@@ -277,12 +285,19 @@ Page(withTheme({
 
         const mappedVideos: EnhancedVideoItem[] = allRawVideos.map((v: any) => {
           const rawCoverUrl = v.coverUrl ? getThumbFullUrl(v.coverUrl) : "";
+          const videoStatus = (v.status || "UNKNOWN").toUpperCase();
+          // COMPLETED / READY 均视为可播放（后端转码完成）
+          const isVideoReady = videoStatus === "READY" || videoStatus === "COMPLETED";
+          // 大文件阈值：50MB，超过此大小的未处理视频在列表中不尝试加载
+          const LARGE_VIDEO_THRESHOLD = 50 * 1024 * 1024;
+          const videoSize = v.size ? Number(v.size) : 0;
           return {
             id: String(v.id),
-            playUrl: getImageUrl(v.playUrl) || "",
+            playUrl: getImageUrl(v.hdUrl || v.playUrl) || getImageUrl(v.originalUrl) || "",
             coverUrl: rawCoverUrl,
             hasCover: !!rawCoverUrl,
             loaded: false,
+            size: videoSize,
             date: v.shootDate
               ? new Date(v.shootDate).toLocaleDateString("zh-CN", {
                   year: "numeric",
@@ -314,6 +329,9 @@ Page(withTheme({
             system: v.tagPlatform?.name || ("Platform" as any),
             _shootDate: v.shootDate,
             duration: v.duration || "",
+            status: videoStatus,
+            isReady: isVideoReady,
+            hasOriginal: !!v.originalUrl,
           };
         });
 
@@ -606,6 +624,31 @@ Page(withTheme({
         (v: EnhancedVideoItem) => v.id === videoId
       );
       if (index >= 0) {
+        const video = filtered[index];
+
+        // 检查视频是否可用
+        if (!video.isReady) {
+          const statusText: Record<string, string> = {
+            PROCESSING: "视频正在处理中，请稍后再试",
+            FAILED: "视频处理失败，无法播放",
+          };
+          wx.showToast({
+            title: statusText[video.status] || "视频暂不可用",
+            icon: "none",
+            duration: 2000,
+          });
+          return;
+        }
+
+        if (!video.playUrl && !video.hasOriginal) {
+          wx.showToast({
+            title: "视频资源缺失",
+            icon: "none",
+            duration: 1500,
+          });
+          return;
+        }
+
         this.setData({ previewVideo: filtered[index], previewIndex: index });
       }
     },

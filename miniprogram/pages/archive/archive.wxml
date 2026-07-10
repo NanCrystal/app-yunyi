@@ -91,7 +91,7 @@
               wx:for-index="videoIdx"
             >
               <view
-                class="photo-item {{!video.hasCover ? 'photo-item--no-cover' : ''}}"
+                class="photo-item {{!video.hasCover ? 'photo-item--no-cover' : ''}} {{!video.isReady ? 'photo-item--not-ready' : ''}}"
                 bindtap="{{showCheckboxMode ? 'onVideoTap' : 'onVideoTap'}}"
                 data-id="{{video.id}}"
               >
@@ -105,27 +105,44 @@
                     <text wx:if="{{check.isPhotoChecked(checkedVideoIds, video.id)}}" class="photo-check-mark">✓</text>
                   </view>
                 </view>
-                <!-- 骨架屏（单张图片级别） -->
-                <photo-skeleton wx:if="{{!video.loaded}}" />
-                <!-- 视频封面图 -->
-                <image
-                  wx:if="{{video.hasCover}}"
-                  class="photo-img {{video.loaded ? 'photo-img--visible' : ''}}"
-                  src="{{video.coverUrl}}"
-                  mode="aspectFill"
-                  lazy-load
-                  webp
-                  bindload="onImageLoad"
-                  binderror="onImageError"
-                  data-month-idx="{{monthIdx}}"
-                  data-day-idx="{{dayIdx}}"
-                  data-video-idx="{{videoIdx}}" />
+                <!-- 视频未就绪：根据文件大小显示不同状态 -->
+                <block wx:if="{{!video.isReady}}">
+                  <!-- 大文件(>50MB)未处理：显示静态占位，不显示加载动画 -->
+                  <block wx:if="{{video.size > 52428800}}">
+                    <view class="video-status video-status--static">
+                      <image class="video-status-icon" src="/assets/icons/play_circle-fill.svg" mode="aspectFit" />
+                      <text class="video-status-text">视频处理中</text>
+                    </view>
+                  </block>
+                  <!-- 小文件未处理：显示动态加载状态 -->
+                  <block wx:else>
+                    <view class="video-status">
+                      <view class="video-status-spinner {{video.status === 'PROCESSING' ? 'video-status-spinner--active' : ''}}" />
+                      <text class="video-status-text">{{video.status === 'PROCESSING' ? '处理中...' : (video.status === 'FAILED' ? '处理失败' : '暂不可用')}}</text>
+                    </view>
+                  </block>
+                </block>
+                <!-- 视频就绪：正常加载封面 -->
+                <block wx:else>
+                  <!-- 骨架屏（单张图片级别） -->
+                  <photo-skeleton wx:if="{{!video.loaded}}" />
+                  <!-- 视频封面图 -->
+                  <image
+                    wx:if="{{video.hasCover}}"
+                    class="photo-img {{video.loaded ? 'photo-img--visible' : ''}}"
+                    src="{{video.coverUrl}}"
+                    mode="aspectFill"
+                    lazy-load
+                    webp
+                    bindload="onImageLoad"
+                    binderror="onImageError"
+                    data-month-idx="{{monthIdx}}"
+                    data-day-idx="{{dayIdx}}"
+                    data-video-idx="{{videoIdx}}" />
+                </block>
                 <!-- 播放图标叠加层 -->
                 <view class="play-overlay">
-                  <image
-                    class="play-icon"
-                    src="/assets/icons/play_circle-fill.svg"
-                    mode="aspectFit" />
+                  <view class="play-icon"></view>
                 </view>
               </view>
             </block>
