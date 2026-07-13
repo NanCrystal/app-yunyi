@@ -26,6 +26,8 @@ export interface VideoItem {
   publishedTime?: string;
   platform?: string;
   reviewImageUrl?: string;
+  /** HLS (m3u8) 流媒体地址 */
+  hlsUrl?: string;
   associatedPosts?: string[];
   /** 视频处理状态 */
   status?: string;

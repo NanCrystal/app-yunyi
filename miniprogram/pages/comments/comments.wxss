@@ -87,6 +87,7 @@
 .bubble-text {
   white-space: nowrap;
   letter-spacing: 0.3px;
+  transform: translateX(-50%); /* 以 left 为文字中心，消除 nowrap 向右溢出 */
   text-shadow: 0 0 8px currentColor; /* 霓虹发光效果 */
 }
 

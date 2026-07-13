@@ -164,8 +164,7 @@
   transition: all 0.2s ease;
 }
 
-.form-cancel-btn text,
-.form-confirm-btn text {
+.form-btn-text {
   font-size: 28rpx;
   font-weight: 500;
   letter-spacing: 1px;
@@ -176,7 +175,7 @@
   border: 2rpx solid rgba(255, 255, 255, 0.12);
 }
 
-.form-cancel-btn text {
+.form-cancel-btn .form-btn-text {
   color: #999999;
 }
 
@@ -189,7 +188,7 @@
   border: none;
 }
 
-.form-confirm-btn text {
+.form-confirm-btn .form-btn-text {
   color: #ffffff;
 }
 

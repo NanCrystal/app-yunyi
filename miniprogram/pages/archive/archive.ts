@@ -25,6 +25,7 @@ interface GroupedVideos {
 interface EnhancedVideoItem {
   id: string;
   playUrl: string;
+  hlsUrl: string;       // ★ m3u8播放地址（小程序统一使用）
   coverUrl: string;
   hasCover: boolean;
   loaded: boolean;
@@ -291,9 +292,15 @@ Page(withTheme({
           // 大文件阈值：50MB，超过此大小的未处理视频在列表中不尝试加载
           const LARGE_VIDEO_THRESHOLD = 50 * 1024 * 1024;
           const videoSize = v.size ? Number(v.size) : 0;
+          // ★ 降级链：hlsUrl(m3u8) → hdUrl(720p mp4) → playUrl(360p mp4) → originalUrl
+          const bestVideoUrl =
+            getImageUrl(v.hlsUrl || v.hdUrl || v.playUrl) ||
+            getImageUrl(v.originalUrl) ||
+            "";
           return {
             id: String(v.id),
-            playUrl: getImageUrl(v.hdUrl || v.playUrl) || getImageUrl(v.originalUrl) || "",
+            playUrl: bestVideoUrl,
+            hlsUrl: v.hlsUrl ? getImageUrl(v.hlsUrl) : "",   // ★ 新增m3u8专用字段
             coverUrl: rawCoverUrl,
             hasCover: !!rawCoverUrl,
             loaded: false,

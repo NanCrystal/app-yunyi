@@ -376,16 +376,28 @@ Page(
         // 3. 解析各模块数据
         const setDataObj: any = {};
 
-        // Banner → heroBanners / heroImages / isHeroVideo
+        // Banner → heroBanners / heroImages / isHeroVideo（视频优先取 m3u8）
         const heroBanners: { url: string; mediaType: "image" | "video" }[] = [];
         (data.banners || []).forEach((b) => {
           const mediaType = b.data?.mediaType || "image";
           const img = b.data?.imageUrl;
+          const hls = b.data?.hlsUrl;
           const urls: string[] = Array.isArray(img)
             ? img
             : typeof img === "string"
               ? [img]
               : [];
+          // 视频类型：从 hlsUrl 中取 m3u8 地址，优先级高于原始 mp4
+          if (mediaType === "video" && Array.isArray(hls) && hls.length > 0) {
+            const m3u8Url = hls.find((u: string) => u.endsWith(".m3u8"));
+            if (m3u8Url) {
+              heroBanners.push({
+                url: getImageUrl(m3u8Url),
+                mediaType: "video",
+              });
+              return; // 已用 m3u8，跳过原始 imageUrl
+            }
+          }
           urls.forEach((url) => {
             heroBanners.push({
               url: getImageUrl(url),
@@ -554,8 +566,10 @@ Page(
       )
         .map((m: any) => {
           const type = (m.type || m.mediaType) as "PHOTO" | "VIDEO";
-          // 优先级: m.url → m.media.playUrl → raw.video_download_url
+          // ★ 降级链：hlsUrl(m3u8) → hdUrl(720p mp4) → playUrl(360p mp4) → originalUrl
           const videoUrl =
+            m.media?.hlsUrl ||
+            m.media?.hdUrl ||
             m.url ||
             m.media?.playUrl ||
             m.media?.originalUrl ||
@@ -653,16 +667,21 @@ Page(
       // COMPLETED / READY 均视为可播放（后端转码完成）
       const isVideoReady =
         videoStatus === "READY" || videoStatus === "COMPLETED";
+      // ★ 降级链：hlsUrl(m3u8) → hdUrl(720p mp4) → playUrl(360p mp4) → originalUrl
+      const bestVideoUrl =
+        getImageUrl(video.hlsUrl || video.hdUrl || video.playUrl) ||
+        getImageUrl(video.originalUrl) ||
+        "";
       return {
         id: String(video.id),
         title: video.title || video.description || "",
         duration: "",
         date: formatDateDot(video.shootDate),
         thumbnail: getImageUrl(video.coverUrl || ""),
-        // 降级链：hdUrl > playUrl > originalUrl
-        reviewImageUrl:
-          getImageUrl(video.hdUrl || video.playUrl) ||
-          getImageUrl(video.originalUrl || ""),
+        // 使用最佳视频URL
+        reviewImageUrl: bestVideoUrl,
+        // ★ 新增 hlsUrl 专用字段
+        hlsUrl: video.hlsUrl ? getImageUrl(video.hlsUrl) : "",
         tags: [],
         description: video.description || "",
         platform: video.tagPlatform?.name || "",
@@ -1056,14 +1075,20 @@ Page(
         return;
       }
 
-      if (!featuredVideo.reviewImageUrl && !featuredVideo.thumbnail) {
+      // ★ 使用降级链：hlsUrl → reviewImageUrl(hdUrl/playUrl) → originalUrl
+      const videoUrl =
+        (featuredVideo as any).hlsUrl ||
+        featuredVideo.reviewImageUrl ||
+        "";
+
+      if (!videoUrl && !featuredVideo.thumbnail) {
         wx.showToast({ title: "视频资源缺失", icon: "none", duration: 1500 });
         return;
       }
 
       this.setData({
         showVideoPreview: true,
-        previewVideoUrl: featuredVideo.reviewImageUrl || "",
+        previewVideoUrl: videoUrl,
         previewVideoPoster: featuredVideo.thumbnail || "",
         previewVideoTitle: featuredVideo.description || "",
       });

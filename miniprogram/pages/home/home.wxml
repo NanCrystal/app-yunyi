@@ -290,7 +290,8 @@
               <image
                 class="schedule-poster-img"
                 src="{{item.imageUrl}}"
-                mode="aspectFill" />
+                mode="aspectFill"
+                lazy-load />
             </view>
           </view>
         </view>

@@ -41,13 +41,13 @@
       <!-- 双按钮：取消 + 确认 -->
       <view class="form-actions">
         <view class="form-cancel-btn" bindtap="onCancelTap">
-          <text>取消</text>
+          <text class="form-btn-text">取消</text>
         </view>
         <view
           class="form-confirm-btn {{!tempNickName || !tempAvatarUrl || loading ? 'disabled' : ''}}"
           bindtap="onConfirmForm"
         >
-          <text>{{loading ? '处理中...' : (mode === 'complete' ? '确认更新' : '立即注册')}}</text>
+          <text class="form-btn-text">{{loading ? '处理中...' : (mode === 'complete' ? '确认更新' : '立即注册')}}</text>
         </view>
       </view>
     </block>

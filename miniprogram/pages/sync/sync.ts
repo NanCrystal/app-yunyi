@@ -425,9 +425,9 @@ Page(
               url: getImageUrl(media.url),
             });
           } else if (!isPhoto) {
-            // VIDEO: 优先 playUrl，回退 originalUrl
+            // VIDEO: 优先 hlsUrl（与 Archive 页和 getBestVideoUrl 保持一致）
             const videoUrl =
-              media.hdUrl || media.playUrl || media.originalUrl || media.url;
+              media.hlsUrl || media.hdUrl || media.playUrl || media.originalUrl || media.url;
             const posterUrl = media.coverUrl || media.originalUrl || "";
             if (videoUrl) {
               mediaList.push({

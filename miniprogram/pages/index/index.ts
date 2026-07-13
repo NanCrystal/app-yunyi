@@ -136,10 +136,13 @@ Page({
           console.warn("[welcome] 解析 video 失败", e);
         }
         if (videos.length > 0) {
-          const videoUrl = getVideoUrl(videos[0]);
+          // 优先级：hlsUrl(m3u8) → 原始 mp4
+          const finalUrl = welcomeModule?.hlsUrl
+            ? getVideoUrl(welcomeModule.hlsUrl)
+            : getVideoUrl(videos[0]);
           this.setData({
             showWelcomeVideo: true,
-            welcomeVideo: videoUrl,
+            welcomeVideo: finalUrl,
           });
           this.startCountdown(COUNTDOWN_SECONDS);
           return;

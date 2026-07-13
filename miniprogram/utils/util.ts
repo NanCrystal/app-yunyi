@@ -136,6 +136,52 @@ export const buildThumbUrl = (rawUrl: string, size: number) => {
   return `${base}?imageView2/1/w/${size}/h/${size}/format/webp/q/75/interlace/1/ignore-error/1`;
 };
 
+// ════════════════════════════════════════
+// 🖼️ CDN 图片尺寸常量化（提升缓存命中率）
+// ════════════════════════════════════════
+
+/** 统一缩略图尺寸常量（仅限3档），避免参数碎片化导致CDN缓存不命中 */
+export const THUMB_SIZE = {
+  /** 小图：头像/图标/列表缩略（200px） */
+  SMALL: 200,
+  /** 中图：卡片封面/照片墙网格（400px） */
+  MEDIUM: 400,
+  /** 大图：详情页/预览大图（600px） */
+  LARGE: 600,
+} as const;
+
+/**
+ * 标准化图片尺寸到最近档位
+ * 输入任意size → 输出200/400/600之一，提升CDN缓存命中率
+ * @param size 原始请求尺寸
+ * @returns 标准化后的档位值
+ */
+export const normalizeThumbSize = (size: number): number => {
+  if (!size || size <= 0 || isNaN(size)) return THUMB_SIZE.SMALL;
+  if (size <= 300) return THUMB_SIZE.SMALL;   // ≤300 → 200
+  if (size <= 500) return THUMB_SIZE.MEDIUM;  // 300~500 → 400
+  return THUMB_SIZE.LARGE;                     // >500 → 600
+};
+
+/**
+ * 获取最佳视频播放URL（统一m3u8优先策略）
+ * 降级链: hlsUrl(m3u8) → hdUrl(720p mp4) → playUrl(360p mp4) → originalUrl(原始)
+ * @param video 视频对象 { hlsUrl?, hdUrl?, playUrl?, originalUrl? }
+ */
+export const getBestVideoUrl = (video?: {
+  hlsUrl?: string;
+  hdUrl?: string;
+  playUrl?: string;
+  originalUrl?: string;
+}): string => {
+  if (!video) return "";
+  if (video.hlsUrl) return getImageUrl(video.hlsUrl);
+  if (video.hdUrl) return getImageUrl(video.hdUrl);
+  if (video.playUrl) return getImageUrl(video.playUrl);
+  if (video.originalUrl) return getImageUrl(video.originalUrl);
+  return "";
+};
+
 // ───────────── 日期/时间格式化工具 ─────────────
 
 /** YYYY.MM.DD 格式（如 2024.03.15） */

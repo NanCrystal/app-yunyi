@@ -114,6 +114,12 @@ Page({
       return;
     }
 
+    const emailReg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailReg.test(this.data.contactInfo.trim())) {
+      wx.showToast({ title: "请填写正确的邮箱格式", icon: "none" });
+      return;
+    }
+
     this.setData({ submitting: true });
 
     try {
