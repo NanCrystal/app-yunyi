@@ -90,6 +90,7 @@
 .skip-btn {
   position: fixed;
   right: 40rpx;
+  bottom: 40rpx;
   bottom: calc(env(safe-area-inset-bottom) + 40rpx);
   z-index: 999;
   padding: 12rpx 32rpx;

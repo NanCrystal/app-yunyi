@@ -71,7 +71,7 @@ Component({
 
       switch (effectiveMode) {
         case 'register':
-          if (!title) title = '欢迎来到 StarView';
+          if (!title) title = '欢迎来到';
           if (!desc) desc = '完善信息以解锁全部功能';
           break;
         case 'complete':

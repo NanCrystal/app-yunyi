@@ -41,7 +41,11 @@
   </view>
   <!-- 菜单列表 -->
   <view class="menu-list">
-    <view class="menu-item" bindtap="onCommentsTap" wx:if="{{showCommentsMenu}}">
+    <view
+      class="menu-item"
+      bindtap="onCommentsTap"
+      wx:if="{{showCommentsMenu}}"
+    >
       <view class="menu-item-left">
         <image
           class="menu-icon"
@@ -55,7 +59,11 @@
         mode="aspectFit" />
     </view>
     <!-- <view class="menu-item" bindtap="onHistoryTap"> <view class="menu-item-left"> <image class="menu-icon" src="/assets/icons/history.svg" mode="aspectFit" /> <text class="menu-text">HISTORY</text> </view> <image class="menu-arrow-icon" src="{{menuObj.comments.icon}}" mode="aspectFit" /> </view> -->
-    <view class="menu-item" bindtap="onHelpTap" wx:if="{{showHelpMenu}}">
+    <view
+      class="menu-item"
+      bindtap="onHelpTap"
+      wx:if="{{showHelpMenu}}"
+    >
       <view class="menu-item-left">
         <image
           class="menu-icon"
@@ -66,6 +74,19 @@
       <image
         class="menu-arrow-icon"
         src="{{menuObj.help.icon}}"
+        mode="aspectFit" />
+    </view>
+    <view class="menu-item" bindtap="onShareAppTap">
+      <view class="menu-item-left">
+        <image
+          class="menu-icon"
+          src="/assets/icons/share.svg"
+          mode="aspectFit" />
+        <text class="menu-text">SHARE APP</text>
+      </view>
+      <image
+        class="menu-arrow-icon"
+        src="/assets/icons/arrow_right.svg"
         mode="aspectFit" />
     </view>
   </view>
@@ -139,6 +160,45 @@
           src="/assets/icons/arrow-left.svg"
           mode="aspectFit" />
         <text class="back-text">返回</text>
+      </view>
+    </view>
+  </view>
+  <!-- 分享APP弹窗 -->
+  <view
+    wx:if="{{showSharePopup}}"
+    class="help-popup-mask"
+    bindtap="onCloseSharePopup"
+  >
+    <view class="help-popup-card" catchtap="noop">
+      <view class="popup-close-btn" catchtap="onCloseSharePopup">
+        <text>✕</text>
+      </view>
+      <text class="help-popup-title">SHARE APP</text>
+      <view class="help-popup-line">
+      </view>
+      <view class="share-btn-group">
+        <button
+          class="share-btn-reset"
+          style="width: 100%"
+          open-type="share"
+        >
+          <text class="share-btn-text">转发给朋友</text>
+          <image
+            class="share-arrow-icon"
+            src="/assets/icons/arrow_right.svg"
+            mode="aspectFit" />
+        </button>
+        <button
+          class="share-btn-reset"
+          style="width: 100%"
+          bindtap="onShareTimelineTap"
+        >
+          <text class="share-btn-text">分享朋友圈</text>
+          <image
+            class="share-arrow-icon"
+            src="/assets/icons/arrow_right.svg"
+            mode="aspectFit" />
+        </button>
       </view>
     </view>
   </view>

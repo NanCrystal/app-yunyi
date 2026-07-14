@@ -32,6 +32,8 @@ interface MineData {
   showCommentsMenu: boolean;
   /** 是否显示帮助菜单项（取决于 cached_modules 中是否有 feedback 模块） */
   showHelpMenu: boolean;
+  /** 是否显示分享APP弹窗 */
+  showSharePopup: boolean;
 }
 
 Page(
@@ -49,6 +51,7 @@ Page(
       showContactPopup: false,
       showCommentsMenu: false,
       showHelpMenu: false,
+      showSharePopup: false,
       title: "SUPPORT & FEEDBACK",
       menuObj: {
         comments: {
@@ -175,6 +178,9 @@ Page(
       this.setData({ showHelpPopup: true });
     },
 
+    /** 空操作（用于 catchtap 阻止事件冒泡） */
+    noop() {},
+
     /** 关闭帮助弹窗 */
     onCloseHelpPopup() {
       this.setData({ showHelpPopup: false });
@@ -249,6 +255,49 @@ Page(
         showCancel: false,
         confirmText: '我知道了'
       });
+    },
+
+    /** 点击SHARE APP - 弹出分享选项弹窗 */
+    onShareAppTap() {
+      this.setData({ showSharePopup: true });
+    },
+
+    /** 关闭分享APP弹窗 */
+    onCloseSharePopup() {
+      this.setData({ showSharePopup: false });
+    },
+
+    /** 分享朋友圈 - 启用朋友圈分享菜单 */
+    onShareTimelineTap() {
+      wx.showShareMenu({
+        withShareTicket: true,
+        menus: ['shareTimeline'],
+        success: () => {
+          this.setData({ showSharePopup: false });
+          wx.showToast({ title: '请点击右上角 ··· 分享到朋友圈', icon: 'none', duration: 2000 });
+        },
+        fail: () => {
+          this.setData({ showSharePopup: false });
+        },
+      });
+    },
+
+    /** 分享给朋友（被系统调用） */
+    onShareAppMessage() {
+      return {
+        title: '云熠录',
+        path: '/pages/index/index',
+        imageUrl: '/assets/images/share_image.jpg',
+      };
+    },
+
+    /** 分享到朋友圈（被系统调用） */
+    onShareTimeline() {
+      return {
+        title: '云熠录',
+        query: '',
+        imageUrl: '/assets/images/share_image.jpg',
+      };
     },
   })
 );

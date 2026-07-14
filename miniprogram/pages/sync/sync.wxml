@@ -99,7 +99,8 @@
                 class="media-image"
                 src="{{item.mediaList[0].url}}"
                 mode="aspectFit"
-                lazy-load />
+                lazy-load
+                show-menu-by-longpress />
             </view>
             <!-- Phase 4：单视频 — 点击封面才挂载 video 组件 -->
             <view class="media-single aspect-vert" style="{{item.videoContainerHeight ? 'height:' + item.videoContainerHeight : ''}}" wx:else>
@@ -163,7 +164,8 @@
                     class="swiper-image"
                     src="{{media.url}}"
                     mode="aspectFit"
-                    lazy-load />
+                    lazy-load
+                    show-menu-by-longpress />
                   <block wx:elif="{{media.type === 'VIDEO'}}">
                     <!-- 性能优化：仅当前帧 ±1 挂载 video 组件 -->
                     <video
